@@ -6,50 +6,116 @@
 //
 
 import SwiftUI
-import SwiftData
 
 struct ContentView: View {
-    @Environment(\.modelContext) private var modelContext
-    @Query private var items: [Item]
+    @StateObject private var sessionManager = FocusSessionManager.shared
+    @State private var showingSettings = false
+    @State private var showingAuthError = false
 
     var body: some View {
-        NavigationSplitView {
-            List {
-                ForEach(items) { item in
-                    NavigationLink {
-                        Text("Item at \(item.timestamp, format: Date.FormatStyle(date: .numeric, time: .standard))")
-                    } label: {
-                        Text(item.timestamp, format: Date.FormatStyle(date: .numeric, time: .standard))
+        NavigationStack {
+            VStack(spacing: 32) {
+                // Session Status Indicator
+                VStack(spacing: 16) {
+                    ZStack {
+                        Circle()
+                            .fill(sessionManager.isSessionActive ? Color.green : Color.gray.opacity(0.3))
+                            .frame(width: 120, height: 120)
+
+                        Image(systemName: sessionManager.isSessionActive ? "bolt.fill" : "bolt.slash.fill")
+                            .font(.system(size: 50))
+                            .foregroundColor(.white)
+                    }
+
+                    Text(sessionManager.isSessionActive ? "Focus Active" : "Not Focused")
+                        .font(.title2)
+                        .fontWeight(.semibold)
+
+                    if sessionManager.isSessionActive {
+                        Text("Apps are blocked")
+                            .font(.subheadline)
+                            .foregroundColor(.secondary)
                     }
                 }
-                .onDelete(perform: deleteItems)
+
+                Spacer()
+
+                // Controls
+                VStack(spacing: 16) {
+                    if !sessionManager.isAuthorized {
+                        // Authorization Request Button
+                        Button(action: requestAuthorization) {
+                            HStack {
+                                Image(systemName: "lock.shield")
+                                Text("Enable App Blocking")
+                            }
+                            .frame(maxWidth: .infinity)
+                            .padding()
+                            .background(Color.blue)
+                            .foregroundColor(.white)
+                            .cornerRadius(12)
+                        }
+                        .padding(.horizontal)
+
+                        Text("Required for Drift to block apps")
+                            .font(.caption)
+                            .foregroundColor(.secondary)
+                    } else {
+                        // Test Toggle Button (for development)
+                        Button(action: toggleSession) {
+                            HStack {
+                                Image(systemName: sessionManager.isSessionActive ? "stop.circle" : "play.circle")
+                                Text(sessionManager.isSessionActive ? "End Session (Test)" : "Start Session (Test)")
+                            }
+                            .frame(maxWidth: .infinity)
+                            .padding()
+                            .background(sessionManager.isSessionActive ? Color.red : Color.green)
+                            .foregroundColor(.white)
+                            .cornerRadius(12)
+                        }
+                        .padding(.horizontal)
+
+                        Text("Tap your NFC tag to toggle sessions normally")
+                            .font(.caption)
+                            .foregroundColor(.secondary)
+                            .multilineTextAlignment(.center)
+                            .padding(.horizontal)
+                    }
+                }
+
+                Spacer()
             }
+            .padding()
+            .navigationTitle("Drift")
             .toolbar {
                 ToolbarItem(placement: .navigationBarTrailing) {
-                    EditButton()
-                }
-                ToolbarItem {
-                    Button(action: addItem) {
-                        Label("Add Item", systemImage: "plus")
+                    Button(action: { showingSettings = true }) {
+                        Image(systemName: "gear")
                     }
+                    .disabled(!sessionManager.isAuthorized)
                 }
             }
-        } detail: {
-            Text("Select an item")
+            .sheet(isPresented: $showingSettings) {
+                SettingsView()
+            }
+            .alert("Authorization Required", isPresented: $showingAuthError) {
+                Button("OK", role: .cancel) { }
+            } message: {
+                Text("Please grant Screen Time permission to use Drift.")
+            }
         }
     }
 
-    private func addItem() {
-        withAnimation {
-            let newItem = Item(timestamp: Date())
-            modelContext.insert(newItem)
-        }
+    private func toggleSession() {
+        sessionManager.toggleSession()
     }
 
-    private func deleteItems(offsets: IndexSet) {
-        withAnimation {
-            for index in offsets {
-                modelContext.delete(items[index])
+    private func requestAuthorization() {
+        Task {
+            do {
+                try await sessionManager.requestAuthorization()
+            } catch {
+                showingAuthError = true
             }
         }
     }
@@ -57,5 +123,4 @@ struct ContentView: View {
 
 #Preview {
     ContentView()
-        .modelContainer(for: Item.self, inMemory: true)
 }

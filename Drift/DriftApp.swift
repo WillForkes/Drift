@@ -6,27 +6,31 @@
 //
 
 import SwiftUI
-import SwiftData
 
 @main
 struct DriftApp: App {
-    var sharedModelContainer: ModelContainer = {
-        let schema = Schema([
-            Item.self,
-        ])
-        let modelConfiguration = ModelConfiguration(schema: schema, isStoredInMemoryOnly: false)
-
-        do {
-            return try ModelContainer(for: schema, configurations: [modelConfiguration])
-        } catch {
-            fatalError("Could not create ModelContainer: \(error)")
-        }
-    }()
+    @StateObject private var sessionManager = FocusSessionManager.shared
 
     var body: some Scene {
         WindowGroup {
             ContentView()
+                .onOpenURL { url in
+                    handleUniversalLink(url)
+                }
         }
-        .modelContainer(sharedModelContainer)
+    }
+
+    /// Handle Universal Links from NFC tags
+    private func handleUniversalLink(_ url: URL) {
+        // Expected URL format: https://drift.app/focus
+        guard url.host == "drift.app",
+              url.path == "/focus" else {
+            return
+        }
+
+        // Toggle the focus session when NFC tag is tapped
+        Task { @MainActor in
+            sessionManager.toggleSession()
+        }
     }
 }
