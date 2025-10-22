@@ -10,6 +10,7 @@ import SwiftUI
 @main
 struct DriftApp: App {
     @StateObject private var sessionManager = FocusSessionManager.shared
+    @StateObject private var parentalControls = ParentalControlsManager.shared
 
     var body: some Scene {
         WindowGroup {
@@ -30,7 +31,16 @@ struct DriftApp: App {
 
         // Toggle the focus session when NFC tag is tapped
         Task { @MainActor in
-            sessionManager.toggleSession()
+            // If stopping session and parental controls enabled, post notification
+            if sessionManager.isSessionActive && parentalControls.isEnabled {
+                NotificationCenter.default.post(name: .nfcStopRequested, object: nil)
+            } else {
+                sessionManager.toggleSession()
+            }
         }
     }
+}
+
+extension Notification.Name {
+    static let nfcStopRequested = Notification.Name("nfcStopRequested")
 }

@@ -11,9 +11,12 @@ import FamilyControls
 struct SettingsView: View {
     @Environment(\.dismiss) private var dismiss
     @StateObject private var sessionManager = FocusSessionManager.shared
+    @StateObject private var parentalControls = ParentalControlsManager.shared
     @State private var selection = FamilyActivitySelection()
     @State private var showingPicker = false
     @State private var editingPreset: FocusPreset?
+    @State private var showingParentalSetup = false
+    @State private var showingDisableConfirm = false
 
     var body: some View {
         NavigationStack {
@@ -47,6 +50,29 @@ struct SettingsView: View {
                     Text("Presets")
                 } footer: {
                     Text("Tap a preset to select it. 'Social Media' and 'Work' can be configured with specific apps. 'All' automatically blocks every app including Drift (use NFC tag to exit).")
+                }
+
+                Section {
+                    HStack {
+                        Text("Parental Controls")
+                        Spacer()
+                        Text(parentalControls.isEnabled ? "Enabled" : "Disabled")
+                            .foregroundColor(.secondary)
+                    }
+
+                    if parentalControls.isEnabled {
+                        Button("Disable", role: .destructive) {
+                            showingDisableConfirm = true
+                        }
+                    } else {
+                        Button("Set Up") {
+                            showingParentalSetup = true
+                        }
+                    }
+                } header: {
+                    Text("Parental Controls")
+                } footer: {
+                    Text("When enabled, a passcode will be required to stop focus sessions. This prevents you from easily ending a session.")
                 }
 
                 Section {
@@ -106,6 +132,17 @@ struct SettingsView: View {
                 if let preset = editingPreset {
                     sessionManager.updatePreset(preset, selection: newSelection)
                 }
+            }
+            .sheet(isPresented: $showingParentalSetup) {
+                ParentalControlsSetupView()
+            }
+            .alert("Disable Parental Controls", isPresented: $showingDisableConfirm) {
+                Button("Cancel", role: .cancel) { }
+                Button("Disable", role: .destructive) {
+                    parentalControls.disable()
+                }
+            } message: {
+                Text("Are you sure you want to disable parental controls? You will no longer need a passcode to stop sessions.")
             }
         }
     }
