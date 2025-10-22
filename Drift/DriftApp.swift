@@ -22,8 +22,8 @@ struct DriftApp: App {
 
     /// Handle Universal Links from NFC tags
     private func handleUniversalLink(_ url: URL) {
-        // Expected URL format: https://drift.app/focus
-        guard url.host == "drift.app",
+        // Expected URL format: https://get-drift.app/focus
+        guard url.host == "get-drift.app",
               url.path == "/focus" else {
             return
         }

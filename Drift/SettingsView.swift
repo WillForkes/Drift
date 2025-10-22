@@ -47,7 +47,7 @@ struct SettingsView: View {
                         VStack(alignment: .leading, spacing: 4) {
                             Text("1. Write this URL to your NFC tag:")
                                 .font(.caption)
-                            Text("https://drift.app/focus")
+                            Text("https://get-drift.app/focus")
                                 .font(.caption.monospaced())
                                 .foregroundColor(.blue)
 

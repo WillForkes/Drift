@@ -1,10 +1,28 @@
 # Drift - Focus Ritual iOS App
 
-A minimalist focus ritual app that uses NFC tags to help users enter and exit focus sessions by blocking distracting apps.
+A minimalist focus ritual app that transforms phone blocking into a positive, aesthetic experience. Students tap a physical NFC object to enter a sanctuary of focus—no punishment, just intention.
 
-## Overview
+## Why Drift Exists
 
-Drift is a premium iOS app that enables users to reduce distractions by temporarily blocking access to configurable apps. Focus sessions are triggered by tapping an NFC tag, creating a physical ritual around focused work.
+**The Problem:**
+Students are chronically distracted by their phones—social media, notifications, and ambient digital noise fragment attention constantly. Existing "phone blockers" (apps, bricks, lockboxes) feel punitive and gimmicky. They turn work into prison, not flow.
+
+**The Drift Approach:**
+Instead of punishing distraction, Drift creates a **desire to focus**. A physical NFC object becomes a cognitive anchor—touching it signals: *"I am now focused."* The ritual is visible, elegant, and identity-affirming. It's not about locking yourself away; it's about creating a perfect working environment.
+
+**Why Now:**
+- Students are seeking subtle, tangible anchors for focus amid TikTok/Instagram scroll fatigue
+- Rising cultural trend of "aesthetic minimalism + ritual micro-actions" (viral-ready on social platforms)
+- Visible objects on desks/dorms signal self-discipline aesthetic, aligning with student identity trends
+
+**Psychology Leveraged:**
+1. **Physical Anchoring** — Touching the NFC object triggers a micro cognitive switch
+2. **Environmental Cueing** — The object visually defines a "focus zone" without explanation
+3. **Peer Signal** — Communicates aesthetic self-discipline, appealing to student social trends
+
+## Product Overview
+
+Drift is a premium iOS app that blocks distracting apps during focus sessions. Sessions are triggered by tapping a physical NFC tag—creating a tangible ritual around focused work that feels intentional, not restrictive.
 
 ### Core Features
 
