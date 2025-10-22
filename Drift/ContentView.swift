@@ -9,9 +9,12 @@ import SwiftUI
 
 struct ContentView: View {
     @StateObject private var sessionManager = FocusSessionManager.shared
+    @StateObject private var parentalControls = ParentalControlsManager.shared
     @State private var showingSettings = false
     @State private var showingAuthError = false
     @State private var showingConfigError = false
+    @State private var showingPasscodeEntry = false
+    @State private var showingForgotPasscode = false
 
     var body: some View {
         NavigationStack {
@@ -105,6 +108,25 @@ struct ContentView: View {
             .sheet(isPresented: $showingSettings) {
                 SettingsView()
             }
+            .sheet(isPresented: $showingPasscodeEntry) {
+                PasscodeEntryView(
+                    title: "Enter Passcode to Stop Session",
+                    onSuccess: stopSessionAfterPasscode,
+                    onForgot: {
+                        showingPasscodeEntry = false
+                        DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
+                            showingForgotPasscode = true
+                        }
+                    }
+                )
+            }
+            .sheet(isPresented: $showingForgotPasscode) {
+                SecurityQuestionRecoveryView()
+            }
+            .onReceive(NotificationCenter.default.publisher(for: .nfcStopRequested)) { _ in
+                // NFC tag tapped to stop session, show passcode entry
+                showingPasscodeEntry = true
+            }
             .alert("Authorization Required", isPresented: $showingAuthError) {
                 Button("OK", role: .cancel) { }
             } message: {
@@ -136,8 +158,20 @@ struct ContentView: View {
                 showingConfigError = true
                 return
             }
+            // Start session immediately
+            sessionManager.toggleSession()
+        } else {
+            // Stopping session - check if parental controls enabled
+            if parentalControls.isEnabled {
+                showingPasscodeEntry = true
+            } else {
+                sessionManager.toggleSession()
+            }
         }
-        sessionManager.toggleSession()
+    }
+
+    private func stopSessionAfterPasscode() {
+        sessionManager.stopSession()
     }
 
     private func requestAuthorization() {
