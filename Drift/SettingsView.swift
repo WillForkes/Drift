@@ -13,26 +13,40 @@ struct SettingsView: View {
     @StateObject private var sessionManager = FocusSessionManager.shared
     @State private var selection = FamilyActivitySelection()
     @State private var showingPicker = false
+    @State private var editingPreset: FocusPreset?
 
     var body: some View {
         NavigationStack {
             Form {
                 Section {
-                    Button(action: { showingPicker = true }) {
-                        HStack {
-                            Label("Select Apps to Block", systemImage: "app.badge.checkmark")
-                                .foregroundColor(.primary)
-                            Spacer()
-                            if !selection.applicationTokens.isEmpty || !selection.categoryTokens.isEmpty {
-                                Text("\(selection.applicationTokens.count) apps")
-                                    .foregroundColor(.secondary)
+                    ForEach(sessionManager.presets) { preset in
+                        Button(action: { handlePresetTap(preset) }) {
+                            HStack {
+                                VStack(alignment: .leading, spacing: 2) {
+                                    Text(preset.name)
+                                        .foregroundColor(.primary)
+                                    if preset.blocksAllApps {
+                                        Text("Blocks all apps")
+                                            .font(.caption)
+                                            .foregroundColor(.secondary)
+                                    } else if !preset.isConfigured {
+                                        Text("Not configured")
+                                            .font(.caption)
+                                            .foregroundColor(.orange)
+                                    }
+                                }
+                                Spacer()
+                                if sessionManager.currentPreset?.id == preset.id {
+                                    Image(systemName: "checkmark")
+                                        .foregroundColor(.blue)
+                                }
                             }
                         }
                     }
                 } header: {
-                    Text("Blocked Apps")
+                    Text("Presets")
                 } footer: {
-                    Text("Choose which apps to block during focus sessions. You can select individual apps or entire categories.")
+                    Text("Tap a preset to select it. 'Social Media' and 'Work' can be configured with specific apps. 'All' automatically blocks every app including Drift (use NFC tag to exit).")
                 }
 
                 Section {
@@ -89,11 +103,23 @@ struct SettingsView: View {
                 selection: $selection
             )
             .onChange(of: selection) { _, newSelection in
-                sessionManager.saveBlockedApps(newSelection)
+                if let preset = editingPreset {
+                    sessionManager.updatePreset(preset, selection: newSelection)
+                }
             }
-            .onAppear {
-                selection = sessionManager.getBlockedApps()
-            }
+        }
+    }
+
+    private func handlePresetTap(_ preset: FocusPreset) {
+        if preset.blocksAllApps {
+            // Just select "All" preset - no configuration needed
+            sessionManager.selectPreset(preset)
+        } else {
+            // Select preset and show picker to configure
+            editingPreset = preset
+            selection = preset.selection
+            sessionManager.selectPreset(preset)
+            showingPicker = true
         }
     }
 }

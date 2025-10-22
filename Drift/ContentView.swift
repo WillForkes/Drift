@@ -11,6 +11,7 @@ struct ContentView: View {
     @StateObject private var sessionManager = FocusSessionManager.shared
     @State private var showingSettings = false
     @State private var showingAuthError = false
+    @State private var showingConfigError = false
 
     var body: some View {
         NavigationStack {
@@ -31,9 +32,15 @@ struct ContentView: View {
                         .font(.title2)
                         .fontWeight(.semibold)
 
+                    if let preset = sessionManager.currentPreset {
+                        Text(preset.name)
+                            .font(.subheadline)
+                            .foregroundColor(.secondary)
+                    }
+
                     if sessionManager.isSessionActive {
                         Text("Apps are blocked")
-                            .font(.subheadline)
+                            .font(.caption)
                             .foregroundColor(.secondary)
                     }
                 }
@@ -103,10 +110,33 @@ struct ContentView: View {
             } message: {
                 Text("Please grant Screen Time permission to use Drift.")
             }
+            .alert("Configure Preset", isPresented: $showingConfigError) {
+                Button("Open Settings", role: .none) {
+                    showingSettings = true
+                }
+                Button("Cancel", role: .cancel) { }
+            } message: {
+                if let preset = sessionManager.currentPreset {
+                    Text("Please configure the '\(preset.name)' preset in Settings before starting a session.")
+                } else {
+                    Text("Please select and configure a preset in Settings.")
+                }
+            }
         }
     }
 
     private func toggleSession() {
+        // Check if we're starting a session
+        if !sessionManager.isSessionActive {
+            // Validate preset is configured before starting
+            if let preset = sessionManager.currentPreset, !preset.isConfigured {
+                showingConfigError = true
+                return
+            } else if sessionManager.currentPreset == nil {
+                showingConfigError = true
+                return
+            }
+        }
         sessionManager.toggleSession()
     }
 
