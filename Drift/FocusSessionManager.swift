@@ -21,8 +21,13 @@ class FocusSessionManager: ObservableObject {
             UserDefaults.standard.set(isSessionActive, forKey: Constants.sessionActiveKey)
             if isSessionActive {
                 applyAppBlocking()
+                // Start analytics tracking
+                let presetName = currentPreset?.name ?? "Unknown"
+                AnalyticsManager.shared.startSession(presetName: presetName)
             } else {
                 removeAppBlocking()
+                // Stop analytics tracking
+                AnalyticsManager.shared.stopSession()
             }
         }
     }

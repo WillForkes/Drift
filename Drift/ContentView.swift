@@ -11,6 +11,7 @@ struct ContentView: View {
     @StateObject private var sessionManager = FocusSessionManager.shared
     @StateObject private var parentalControls = ParentalControlsManager.shared
     @State private var showingSettings = false
+    @State private var showingAnalytics = false
     @State private var showingAuthError = false
     @State private var showingConfigError = false
     @State private var showingPasscodeEntry = false
@@ -98,6 +99,11 @@ struct ContentView: View {
             .padding()
             .navigationTitle("Drift")
             .toolbar {
+                ToolbarItem(placement: .navigationBarLeading) {
+                    Button(action: { showingAnalytics = true }) {
+                        Image(systemName: "chart.bar.fill")
+                    }
+                }
                 ToolbarItem(placement: .navigationBarTrailing) {
                     Button(action: { showingSettings = true }) {
                         Image(systemName: "gear")
@@ -107,6 +113,9 @@ struct ContentView: View {
             }
             .sheet(isPresented: $showingSettings) {
                 SettingsView()
+            }
+            .sheet(isPresented: $showingAnalytics) {
+                AnalyticsView()
             }
             .sheet(isPresented: $showingPasscodeEntry) {
                 PasscodeEntryView(
