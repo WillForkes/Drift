@@ -12,11 +12,13 @@ struct SettingsView: View {
     @Environment(\.dismiss) private var dismiss
     @StateObject private var sessionManager = FocusSessionManager.shared
     @StateObject private var parentalControls = ParentalControlsManager.shared
+    @StateObject private var tagManager = DriftTagManager.shared
     @State private var selection = FamilyActivitySelection()
     @State private var showingPicker = false
     @State private var editingPreset: FocusPreset?
     @State private var showingParentalSetup = false
     @State private var showingDisableConfirm = false
+    @State private var showingRegisteredTags = false
 
     var body: some View {
         NavigationStack {
@@ -76,32 +78,24 @@ struct SettingsView: View {
                 }
 
                 Section {
-                    VStack(alignment: .leading, spacing: 8) {
-                        Label("NFC Tag Setup", systemImage: "wave.3.right")
-                            .font(.headline)
-
-                        Text("To use Drift with NFC:")
-                            .font(.subheadline)
-                            .foregroundColor(.secondary)
-
-                        VStack(alignment: .leading, spacing: 4) {
-                            Text("1. Write this URL to your NFC tag:")
+                    Button(action: { showingRegisteredTags = true }) {
+                        HStack {
+                            Label("My Drifts", systemImage: "wave.3.right")
+                                .foregroundColor(.primary)
+                            Spacer()
+                            if !tagManager.tags.isEmpty {
+                                Text("\(tagManager.tags.count)")
+                                    .foregroundColor(.secondary)
+                            }
+                            Image(systemName: "chevron.right")
                                 .font(.caption)
-                            Text("https://get-drift.app/focus")
-                                .font(.caption.monospaced())
-                                .foregroundColor(.blue)
-
-                            Text("2. Tap the tag to start/stop sessions")
-                                .font(.caption)
-                                .padding(.top, 4)
+                                .foregroundColor(.secondary)
                         }
-                        .padding(.leading)
                     }
-                    .padding(.vertical, 4)
                 } header: {
-                    Text("NFC Configuration")
+                    Text("Drift Tags")
                 } footer: {
-                    Text("You'll need an NFC tag and an NFC writing app to set this up. Once configured, tapping the tag will toggle your focus sessions.")
+                    Text("Manage your registered Drift tags. Tap a Drift tag to set it up for the first time.")
                 }
 
                 Section {
@@ -135,6 +129,9 @@ struct SettingsView: View {
             }
             .sheet(isPresented: $showingParentalSetup) {
                 ParentalControlsSetupView()
+            }
+            .sheet(isPresented: $showingRegisteredTags) {
+                RegisteredTagsView()
             }
             .alert("Disable Parental Controls", isPresented: $showingDisableConfirm) {
                 Button("Cancel", role: .cancel) { }
