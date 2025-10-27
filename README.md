@@ -27,26 +27,65 @@ Drift is a premium iOS app that blocks distracting apps during focus sessions. S
 ### Core Features
 
 - **NFC-Triggered Sessions**: Tap an NFC tag to start/stop focus sessions
-- **App Blocking**: Blocks access to pre-selected apps during focus sessions
+- **Multi-Tag Support**: Register multiple NFC tags with unique IDs and preset assignments
+- **Focus Presets**: Three built-in presets (Social Media, Work, All) with customizable app selections
+- **App Blocking**: Blocks access to pre-selected apps during focus sessions using Screen Time API
+- **Parental Controls**: Optional 4-digit passcode protection with security question recovery
+- **Session Analytics**: Track focus time, streaks, and session history (last 30 days)
 - **Persistent Sessions**: Sessions survive app termination and device restarts
 - **Custom Shield Messages**: Shows "This app is a distraction" when blocked apps are accessed
-- **Fully Local**: No backend required, all data stored on device
+- **Design System**: Cohesive design with Futura PT font, custom colors, and reusable components
+- **Fully Local**: No backend required, all data stored securely on device (Keychain + UserDefaults)
 
 ## Project Structure
 
 ```
 Drift/
 ├── Drift/
-│   ├── DriftApp.swift              # Main app entry point with Universal Link handling
-│   ├── ContentView.swift            # Main screen with session status and controls
-│   ├── SettingsView.swift           # Settings screen with app selection
-│   ├── FocusSessionManager.swift    # Core session management and Screen Time integration
-│   ├── Drift.entitlements           # Required entitlements
-│   └── Info.plist                   # App configuration
+│   ├── App/
+│   │   └── DriftApp.swift                      # Main app entry point with Universal Link handling
+│   │
+│   ├── Core/
+│   │   ├── Managers/
+│   │   │   ├── FocusSessionManager.swift       # Session state & Screen Time integration
+│   │   │   ├── ParentalControlsManager.swift   # Passcode & security (Keychain)
+│   │   │   ├── DriftTagManager.swift           # NFC tag registration
+│   │   │   └── AnalyticsManager.swift          # Session tracking & statistics
+│   │   └── Models/
+│   │       └── FocusPreset.swift               # Preset data models
+│   │
+│   ├── Screens/
+│   │   ├── Main/
+│   │   │   └── ContentView.swift               # Main screen with session controls
+│   │   ├── Settings/
+│   │   │   └── SettingsView.swift              # Settings with preset management
+│   │   ├── ParentalControls/
+│   │   │   ├── ParentalControlsSetupView.swift # Passcode setup flow
+│   │   │   └── PasscodeEntryView.swift         # 4-digit PIN entry
+│   │   ├── Tags/
+│   │   │   ├── RegisteredTagsView.swift        # Manage registered NFC tags
+│   │   │   └── TagSetupView.swift              # Register new NFC tags
+│   │   └── Analytics/
+│   │       └── AnalyticsView.swift             # Session history & streaks
+│   │
+│   ├── Components/
+│   │   └── (reusable UI components)
+│   │
+│   ├── DesignSystem/
+│   │   ├── DesignTokens.swift                  # Colors, spacing, typography
+│   │   ├── Typography.swift                    # Text style modifiers
+│   │   ├── LayoutExtensions.swift              # Padding helpers
+│   │   └── ExampleDesignView.swift             # Design showcase
+│   │
+│   └── Resources/
+│       ├── Fonts/
+│       │   └── FuturaCyrillicBook.ttf          # Futura PT Book font
+│       ├── Info.plist                          # App configuration
+│       └── Drift.entitlements                  # Required entitlements
 │
 └── DriftShieldConfiguration/
-    ├── ShieldConfigurationExtension.swift  # Custom blocked app messages
-    └── Info.plist                          # Extension configuration
+    ├── ShieldConfigurationExtension.swift      # Custom blocked app messages
+    └── Info.plist                              # Extension configuration
 ```
 
 ## Technical Requirements
@@ -61,10 +100,12 @@ Drift/
 
 ### Entitlements
 
-The following entitlements are required and configured in `Drift.entitlements`:
-- `com.apple.developer.family-controls` - For app blocking
-- `com.apple.developer.device-activity` - For device activity monitoring
-- `com.apple.developer.associated-domains` - For Universal Links (NFC)
+The following entitlements are required and configured in `Resources/Drift.entitlements`:
+- `com.apple.developer.family-controls` - For app blocking (includes device activity in iOS 17+)
+- `com.apple.developer.associated-domains` - For Universal Links (NFC tag support)
+  - Domain: `applinks:get-drift.app`
+
+**Note**: Family Controls Distribution entitlement requires Apple approval for TestFlight/App Store distribution.
 
 ## Xcode Setup Instructions
 
@@ -100,8 +141,8 @@ The Shield Configuration extension requires a separate target:
 2. **Signing & Capabilities Tab**:
    - Add **Family Controls** capability
    - Add **Associated Domains** capability
-     - Add domain: `applinks:drift.app`
-   - Ensure entitlements file is `Drift/Drift.entitlements`
+     - Add domain: `applinks:get-drift.app`
+   - Ensure entitlements file is `Drift/Resources/Drift.entitlements`
 
 3. **Info Tab**:
    - Verify NFC and Universal Link configurations from `Info.plist`
@@ -128,7 +169,7 @@ Update imports in `DriftApp.swift` if needed (already updated in provided code).
 
 For NFC to work, you need to configure the Universal Link domain:
 
-1. **Host the `apple-app-site-association` file** at `https://drift.app/.well-known/apple-app-site-association`:
+1. **Host the `apple-app-site-association` file** at `https://get-drift.app/.well-known/apple-app-site-association`:
 
 ```json
 {
@@ -146,7 +187,7 @@ For NFC to work, you need to configure the Universal Link domain:
 
 Replace `TEAMID` and bundle identifier with your actual values.
 
-2. **Alternative for Development**: Use a custom domain you control or test with deep links in the simulator.
+2. **Testing Universal Links**: Universal Links only work properly in TestFlight or App Store builds. Development builds may open Safari instead of the app directly.
 
 ### NFC Tag Setup
 
@@ -154,8 +195,9 @@ To use with a physical NFC tag:
 
 1. Get a writable NFC tag (NTAG213/215/216)
 2. Use an NFC writing app (like NFC Tools)
-3. Write the Universal Link URL: `https://drift.app/focus`
-4. Tap the tag with your phone to trigger focus sessions
+3. Write the Universal Link URL with unique ID: `https://get-drift.app/focus?id=XXXX`
+   - Each tag should have a unique ID (e.g., `?id=1234`, `?id=5678`)
+4. Tap the tag with your phone to trigger the tag registration flow (first time) or toggle sessions (registered tags)
 
 ## Testing
 
@@ -211,22 +253,96 @@ On a physical device with a configured NFC tag:
 - Tap the NFC tag again (or use test button)
 - All blocked apps immediately become accessible
 
+## Design System
+
+Drift uses a comprehensive design system for consistent, maintainable UI.
+
+### Design Tokens
+
+**Colors** (defined in `DesignSystem/DesignTokens.swift`):
+- Background: `#F7F0E9` (warm beige)
+- Accent: `#E2B899` (soft peach)
+- Primary: `#C86A1C` (burnt orange)
+- Text colors with opacity variations
+
+**Typography**:
+- Font: Futura PT Book (custom font)
+- Sizes: heading1 (26pt), heading2 (20pt), body (18pt), bodySmall (16pt)
+- Custom tracking and line height for each style
+
+**Spacing**:
+- xxxLarge: 32px
+- xxLarge: 24px
+- xLarge: 16px (standard)
+- large: 8px
+- medium: 4px
+
+### Usage
+
+```swift
+// Typography modifiers
+Text("Focus Session").heading1()
+Text("Details").bodySmall().subtextColor()
+
+// Colors
+.background(DesignTokens.Colors.background)
+.foregroundColor(DesignTokens.Colors.primary)
+
+// Spacing & Padding
+VStack(spacing: DesignTokens.Spacing.standard) { ... }
+  .padding(.large)  // Semantic padding
+```
+
+See `DesignSystem/ExampleDesignView.swift` for full examples.
+
+For detailed setup instructions, see `DESIGN_SYSTEM_SETUP.md` and `FONT_SETUP.md`.
+
 ## Architecture Notes
 
 ### FocusSessionManager
 
 The `FocusSessionManager` is a singleton that:
 - Manages session state with `@Published` properties
-- Persists state to `UserDefaults`
+- Handles three presets: Social Media, Work, All
 - Integrates with Screen Time API via `ManagedSettings`
 - Restores session on app launch
-- Applies/removes app blocking based on user selection
+- Applies/removes app blocking based on selected preset
+- Validates presets are configured before starting sessions
+- Integrates with AnalyticsManager to track sessions
+
+### ParentalControlsManager
+
+Manages passcode protection with secure storage:
+- 4-digit PIN stored in iOS Keychain (encrypted)
+- Security question/answer for password recovery
+- Validates passcode attempts
+- Optional feature (can be enabled/disabled)
+
+### DriftTagManager
+
+Handles multiple NFC tag registrations:
+- Store tag ID, label, and assigned preset
+- Persist tags to UserDefaults
+- Support tag editing and deletion
+- Each tag can be assigned to a different preset
+
+### AnalyticsManager
+
+Tracks focus session statistics:
+- Records session start/end times and preset used
+- Calculates daily focus time and total session count
+- Computes streaks with 1-day grace period
+- Keeps last 90 days of sessions, auto-prunes older data
+- All data stored locally in UserDefaults
 
 ### State Persistence
 
-- **Session State**: Stored in UserDefaults at key `drift.session.active`
-- **Blocked Apps**: Stored as encoded `FamilyActivitySelection` at key `drift.blocked.apps`
-- Both persist across app launches and device restarts
+- **Session State**: UserDefaults (`drift.session.active`)
+- **Presets**: UserDefaults (`drift.presets`) - includes FamilyActivitySelection
+- **Tags**: UserDefaults (`drift.tags`)
+- **Analytics**: UserDefaults (`drift.analytics.sessions`)
+- **Passcode**: iOS Keychain (encrypted, secure)
+- All data persists across app launches and device restarts
 
 ### Screen Time Integration
 
@@ -239,20 +355,31 @@ The `FocusSessionManager` is a singleton that:
 
 ### Required for Production
 
-1. **Configure actual domain** for Universal Links (replace `drift.app`)
-2. **Test on physical device** with NFC capability
-3. **Design polish** - Update UI with final branding and design
-4. **Privacy Policy** - Required for Screen Time API usage
-5. **App Store assets** - Screenshots, description, etc.
+1. ✅ **Universal Links configured** - Domain: `get-drift.app` with AASA file hosted
+2. ✅ **Physical NFC tags written** with unique IDs
+3. ⏳ **Family Controls Distribution entitlement** - Awaiting Apple approval (1-3 business days)
+4. 🔄 **Design polish** - Apply design system to all views
+5. **TestFlight testing** - Test Universal Links in TestFlight build
+6. **Privacy Policy** - Required for Screen Time API usage
+7. **App Store assets** - Screenshots, description, marketing materials
+
+### Implemented Features
+
+✅ Session analytics/history
+✅ Multiple focus modes with different app lists (Presets)
+✅ Parental controls with passcode protection
+✅ Multi-tag support with unique IDs
+✅ Design system with custom typography and colors
 
 ### Potential Enhancements
 
-- Session analytics/history
-- Configurable focus durations
-- Multiple focus modes with different app lists
+- Configurable focus durations with timers
 - Widget showing current session status
 - Notifications when session starts/ends
 - Sound/haptic feedback on tag tap
+- Export analytics data
+- Custom preset creation (beyond the 3 defaults)
+- Focus session scheduling
 
 ## Important Notes
 
