@@ -44,12 +44,12 @@
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
-		BE4419E52EAFCD1D0059A045 /* Exceptions for "Drift" folder in "DriftShieldConfiguration" target */ = {
+		BE441A1B2EAFD7380059A045 /* Exceptions for "Drift" folder in "Drift" target */ = {
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
-				FuturaCyrillicBook.ttf,
+				Resources/Info.plist,
 			);
-			target = BEBF707A2EA6DD910066B37F /* DriftShieldConfiguration */;
+			target = BEBF705F2EA6CF690066B37F /* Drift */;
 		};
 		BEBF70892EA6DD910066B37F /* Exceptions for "DriftShieldConfiguration" folder in "DriftShieldConfiguration" target */ = {
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
@@ -58,21 +58,13 @@
 			);
 			target = BEBF707A2EA6DD910066B37F /* DriftShieldConfiguration */;
 		};
-		BEBF70902EA6FBD80066B37F /* Exceptions for "Drift" folder in "Drift" target */ = {
-			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
-			membershipExceptions = (
-				Info.plist,
-			);
-			target = BEBF705F2EA6CF690066B37F /* Drift */;
-		};
 /* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
 		BEBF70622EA6CF690066B37F /* Drift */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
 			exceptions = (
-				BEBF70902EA6FBD80066B37F /* Exceptions for "Drift" folder in "Drift" target */,
-				BE4419E52EAFCD1D0059A045 /* Exceptions for "Drift" folder in "DriftShieldConfiguration" target */,
+				BE441A1B2EAFD7380059A045 /* Exceptions for "Drift" folder in "Drift" target */,
 			);
 			path = Drift;
 			sourceTree = "<group>";
@@ -391,7 +383,7 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
-				CODE_SIGN_ENTITLEMENTS = Drift/Drift.entitlements;
+				CODE_SIGN_ENTITLEMENTS = Drift/Resources/Drift.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
 				CODE_SIGN_STYLE = Manual;
@@ -400,7 +392,7 @@
 				"DEVELOPMENT_TEAM[sdk=iphoneos*]" = SRM3XRAN3S;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
-				INFOPLIST_FILE = Drift/Info.plist;
+				INFOPLIST_FILE = Drift/Resources/Info.plist;
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
@@ -427,7 +419,7 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
-				CODE_SIGN_ENTITLEMENTS = Drift/Drift.entitlements;
+				CODE_SIGN_ENTITLEMENTS = Drift/Resources/Drift.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
 				CODE_SIGN_STYLE = Manual;
@@ -436,7 +428,7 @@
 				"DEVELOPMENT_TEAM[sdk=iphoneos*]" = SRM3XRAN3S;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
-				INFOPLIST_FILE = Drift/Info.plist;
+				INFOPLIST_FILE = Drift/Resources/Info.plist;
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;

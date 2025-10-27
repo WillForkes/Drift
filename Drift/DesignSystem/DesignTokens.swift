@@ -21,9 +21,14 @@ enum DesignTokens {
         static let extraSubtext = Color(hex: "000000").opacity(0.5)
         static let whiteText = Color(hex: "FFFFFF")
     }
-
+    
+    // MARK: - Radii
+    enum Radii {
+        static let radiusStandard: CGFloat = 16
+        static let radiusSmall: CGFloat = 8
+    }
+    
     // MARK: - Typography
-
     enum Typography {
         /// Futura PT Book - fallback to system if not available
         static let fontFamily = "Futura PT"
