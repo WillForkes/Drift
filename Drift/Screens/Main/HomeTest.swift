@@ -38,6 +38,12 @@ struct HomeTest: View {
 
                     Spacer()
                 }
+
+                // Bottom Preset Slider - Fixed at bottom
+                VStack {
+                    Spacer()
+                    BottomPresetSlider()
+                }
             }
         }
     }
@@ -103,6 +109,102 @@ struct SlideIndicator: View {
                         height: height
                     )
             }
+        }
+    }
+}
+
+// MARK: - Bottom Preset Slider Component
+
+struct BottomPresetSlider: View {
+    @State private var selectedIndex: Int = 0
+    let presets = ["Work", "Sleep", "Gym", "Poo", "Add"]
+
+    var body: some View {
+        HStack(spacing: DesignTokens.Spacing.large) {
+            ForEach(0..<presets.count, id: \.self) { index in
+                let isSelected = index == selectedIndex
+
+                if presets[index] == "Add" {
+                    AddPresetCard()
+                        .scaleEffect(isSelected ? 1.0 : 0.9)
+                        .opacity(isSelected ? 1.0 : 0.5)
+                        .shadow(
+                            color: isSelected ? DesignTokens.Shadow.color : .clear,
+                            radius: DesignTokens.Shadow.radius,
+                            x: DesignTokens.Shadow.x,
+                            y: DesignTokens.Shadow.y
+                        )
+                        .onTapGesture {
+                            withAnimation(.spring(response: 0.3, dampingFraction: 0.7)) {
+                                selectedIndex = index
+                            }
+                        }
+                } else {
+                    PresetCard(title: presets[index])
+                        .scaleEffect(isSelected ? 1.0 : 0.9)
+                        .opacity(isSelected ? 1.0 : 0.5)
+                        .shadow(
+                            color: isSelected ? DesignTokens.Shadow.color : .clear,
+                            radius: DesignTokens.Shadow.radius,
+                            x: DesignTokens.Shadow.x,
+                            y: DesignTokens.Shadow.y
+                        )
+                        .onTapGesture {
+                            withAnimation(.spring(response: 0.3, dampingFraction: 0.7)) {
+                                selectedIndex = index
+                            }
+                        }
+                }
+            }
+        }
+        .frame(height: 80)
+        .frame(maxWidth: .infinity)
+        .background(
+            LinearGradient(
+                gradient: Gradient(colors: [
+                    DesignTokens.Colors.background,
+                    DesignTokens.Colors.accent
+                ]),
+                startPoint: .top,
+                endPoint: .bottom
+            )
+        )
+    }
+}
+
+// MARK: - Preset Card Component
+
+struct PresetCard: View {
+    let title: String
+
+    var body: some View {
+        ZStack {
+            RoundedRectangle(cornerRadius: DesignTokens.Radii.radiusStandard)
+                .fill(DesignTokens.Colors.whiteText)
+                .frame(width: 80, height: 80)
+
+            Text(title)
+                .bodySmall()
+                .foregroundColor(DesignTokens.Colors.textPrimary)
+        }
+    }
+}
+
+// MARK: - Add Preset Card Component
+
+struct AddPresetCard: View {
+    var body: some View {
+        ZStack {
+            RoundedRectangle(cornerRadius: DesignTokens.Radii.radiusStandard)
+                .fill(DesignTokens.Colors.whiteText)
+                .strokeBorder(style: StrokeStyle(lineWidth: 2, dash: [5]))
+                .foregroundColor(DesignTokens.Colors.textPrimary)
+                .frame(width: 80, height: 80)
+
+
+            Image(systemName: "plus")
+                .font(.system(size: 24))
+                .foregroundColor(DesignTokens.Colors.textPrimary)
         }
     }
 }

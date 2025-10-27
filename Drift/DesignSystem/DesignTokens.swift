@@ -71,6 +71,15 @@ enum DesignTokens {
         static let medium: CGFloat = 8
         static let small: CGFloat = 4
     }
+
+    // MARK: - Shadow
+
+    enum Shadow {
+        static let color = Color.black.opacity(0.12)
+        static let radius: CGFloat = 6
+        static let x: CGFloat = 0
+        static let y: CGFloat = 3
+    }
 }
 
 // MARK: - Color Extension for Hex
