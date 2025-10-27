@@ -16,6 +16,9 @@ struct ContentView: View {
     @State private var showingConfigError = false
     @State private var showingPasscodeEntry = false
     @State private var showingForgotPasscode = false
+    @State private var showingTagSetup = false
+    @State private var tagIdToSetup: String?
+    @State private var showingMissingIdError = false
 
     var body: some View {
         NavigationStack {
@@ -136,6 +139,29 @@ struct ContentView: View {
                 // NFC tag tapped to stop session, show passcode entry
                 showingPasscodeEntry = true
             }
+            .onReceive(NotificationCenter.default.publisher(for: .nfcTagNeedsSetup)) { notification in
+                // Tag needs to be set up
+                if let tagId = notification.object as? String {
+                    tagIdToSetup = tagId
+                    showingTagSetup = true
+                }
+            }
+            .onReceive(NotificationCenter.default.publisher(for: .nfcTagMissingId)) { _ in
+                // Tag is missing ID parameter
+                showingMissingIdError = true
+            }
+            .sheet(isPresented: $showingTagSetup) {
+                if let tagId = tagIdToSetup {
+                    TagSetupView(tagId: tagId) {
+                        // After setup completes, try to start session
+                        if let tag = DriftTagManager.shared.getTag(by: tagId),
+                           let preset = sessionManager.presets.first(where: { $0.id == tag.presetId }) {
+                            sessionManager.selectPreset(preset)
+                            sessionManager.startSession()
+                        }
+                    }
+                }
+            }
             .alert("Authorization Required", isPresented: $showingAuthError) {
                 Button("OK", role: .cancel) { }
             } message: {
@@ -152,6 +178,11 @@ struct ContentView: View {
                 } else {
                     Text("Please select and configure a preset in Settings.")
                 }
+            }
+            .alert("Invalid Drift Tag", isPresented: $showingMissingIdError) {
+                Button("OK", role: .cancel) { }
+            } message: {
+                Text("This Drift tag is not properly configured. Please ensure you're using an official Drift tag with a valid ID.")
             }
         }
     }
