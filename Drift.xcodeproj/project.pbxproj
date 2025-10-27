@@ -44,6 +44,13 @@
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
+		BE4419E52EAFCD1D0059A045 /* Exceptions for "Drift" folder in "DriftShieldConfiguration" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				FuturaCyrillicBook.ttf,
+			);
+			target = BEBF707A2EA6DD910066B37F /* DriftShieldConfiguration */;
+		};
 		BEBF70892EA6DD910066B37F /* Exceptions for "DriftShieldConfiguration" folder in "DriftShieldConfiguration" target */ = {
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
@@ -65,6 +72,7 @@
 			isa = PBXFileSystemSynchronizedRootGroup;
 			exceptions = (
 				BEBF70902EA6FBD80066B37F /* Exceptions for "Drift" folder in "Drift" target */,
+				BE4419E52EAFCD1D0059A045 /* Exceptions for "Drift" folder in "DriftShieldConfiguration" target */,
 			);
 			path = Drift;
 			sourceTree = "<group>";
@@ -392,6 +400,7 @@
 				"DEVELOPMENT_TEAM[sdk=iphoneos*]" = SRM3XRAN3S;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = Drift/Info.plist;
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
@@ -427,6 +436,7 @@
 				"DEVELOPMENT_TEAM[sdk=iphoneos*]" = SRM3XRAN3S;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = Drift/Info.plist;
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;

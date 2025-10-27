@@ -2,11 +2,9 @@
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
-	<key>NFCReaderUsageDescription</key>
-	<string>Drift uses NFC to start and stop focus sessions when you tap your phone on your Drift tag.</string>
-	<key>NSUserActivityTypes</key>
+	<key>UIAppFonts</key>
 	<array>
-		<string>NSUserActivityTypeBrowsingWeb</string>
+		<string>FuturaCyrillicBook.ttf</string>
 	</array>
 </dict>
 </plist>
