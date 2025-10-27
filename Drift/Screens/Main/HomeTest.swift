@@ -8,6 +8,8 @@
 import SwiftUI
 
 struct HomeTest: View {
+    let imageSize = UIScreen.main.bounds.width * 0.6
+    
     var body: some View {
         GeometryReader { geometry in
             ZStack {
@@ -26,8 +28,10 @@ struct HomeTest: View {
                         .foregroundColor(DesignTokens.Colors.textPrimary)
 
                     // Square Image (60% of screen width)
-                    PlaceholderImage()
-                        .frame(width: geometry.size.width * 0.6, height: geometry.size.width * 0.6)
+                    Image("above")
+                        .resizable()
+                        .scaledToFill()
+                        .frame(width: imageSize, height: imageSize)
                 }
                 .padding(.large) // Large padding from edges
 
@@ -116,59 +120,91 @@ struct SlideIndicator: View {
 // MARK: - Bottom Preset Slider Component
 
 struct BottomPresetSlider: View {
-    @State private var selectedIndex: Int = 0
+    @State private var scrollPosition: Int? = 0
     let presets = ["Work", "Sleep", "Gym", "Poo", "Add"]
 
     var body: some View {
-        HStack(spacing: DesignTokens.Spacing.large) {
-            ForEach(0..<presets.count, id: \.self) { index in
-                let isSelected = index == selectedIndex
+        GeometryReader { geometry in
+            ZStack {
+                // Vertical gradient background
+                LinearGradient(
+                    gradient: Gradient(colors: [
+                        DesignTokens.Colors.background,
+                        DesignTokens.Colors.accent
+                    ]),
+                    startPoint: .top,
+                    endPoint: .bottom
+                )
+                .ignoresSafeArea()
 
-                if presets[index] == "Add" {
-                    AddPresetCard()
-                        .scaleEffect(isSelected ? 1.0 : 0.9)
-                        .opacity(isSelected ? 1.0 : 0.5)
-                        .shadow(
-                            color: isSelected ? DesignTokens.Shadow.color : .clear,
-                            radius: DesignTokens.Shadow.radius,
-                            x: DesignTokens.Shadow.x,
-                            y: DesignTokens.Shadow.y
-                        )
-                        .onTapGesture {
-                            withAnimation(.spring(response: 0.3, dampingFraction: 0.7)) {
-                                selectedIndex = index
+                // Scrollable carousel
+                ScrollView(.horizontal, showsIndicators: false) {
+                    HStack(spacing: DesignTokens.Spacing.large) {
+                        ForEach(Array(presets.enumerated()), id: \.offset) { index, preset in
+                            if preset == "Add" {
+                                AddPresetCard()
+                                    .containerRelativeFrame(.horizontal, count: 1, spacing: DesignTokens.Spacing.large)
+                                    .scrollTransition { content, phase in
+                                        content
+                                            .scaleEffect(phase.isIdentity ? 1.0 : 0.75)
+                                            .opacity(phase.isIdentity ? 1.0 : 0.3)
+                                    }
+                                    .shadow(
+                                        color: DesignTokens.Shadow.color,
+                                        radius: DesignTokens.Shadow.radius,
+                                        x: DesignTokens.Shadow.x,
+                                        y: DesignTokens.Shadow.y
+                                    )
+                                    .id(index)
+                            } else {
+                                PresetCard(title: preset)
+                                    .containerRelativeFrame(.horizontal, count: 1, spacing: DesignTokens.Spacing.large)
+                                    .scrollTransition { content, phase in
+                                        content
+                                            .scaleEffect(phase.isIdentity ? 1.0 : 0.75)
+                                            .opacity(phase.isIdentity ? 1.0 : 0.3)
+                                    }
+                                    .shadow(
+                                        color: DesignTokens.Shadow.color,
+                                        radius: DesignTokens.Shadow.radius,
+                                        x: DesignTokens.Shadow.x,
+                                        y: DesignTokens.Shadow.y
+                                    )
+                                    .id(index)
                             }
                         }
-                } else {
-                    PresetCard(title: presets[index])
-                        .scaleEffect(isSelected ? 1.0 : 0.9)
-                        .opacity(isSelected ? 1.0 : 0.5)
-                        .shadow(
-                            color: isSelected ? DesignTokens.Shadow.color : .clear,
-                            radius: DesignTokens.Shadow.radius,
-                            x: DesignTokens.Shadow.x,
-                            y: DesignTokens.Shadow.y
-                        )
-                        .onTapGesture {
-                            withAnimation(.spring(response: 0.3, dampingFraction: 0.7)) {
-                                selectedIndex = index
-                            }
-                        }
+                    }
+                    .scrollTargetLayout()
                 }
+                .scrollTargetBehavior(.viewAligned)
+                .scrollPosition(id: $scrollPosition)
+                .safeAreaPadding(.horizontal, (geometry.size.width * 0.8) / 2 - 40)
+                .frame(width: geometry.size.width * 0.8)
+                .mask(
+                    HStack(spacing: 0) {
+                        // Left fade
+                        LinearGradient(
+                            colors: [.clear, .black],
+                            startPoint: .leading,
+                            endPoint: .trailing
+                        )
+                        .frame(width: 60)
+
+                        // Center (no fade)
+                        Rectangle()
+
+                        // Right fade
+                        LinearGradient(
+                            colors: [.black, .clear],
+                            startPoint: .leading,
+                            endPoint: .trailing
+                        )
+                        .frame(width: 60)
+                    }
+                )
             }
         }
         .frame(height: 80)
-        .frame(maxWidth: .infinity)
-        .background(
-            LinearGradient(
-                gradient: Gradient(colors: [
-                    DesignTokens.Colors.background,
-                    DesignTokens.Colors.accent
-                ]),
-                startPoint: .top,
-                endPoint: .bottom
-            )
-        )
     }
 }
 
