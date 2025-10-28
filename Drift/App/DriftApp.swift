@@ -15,7 +15,7 @@ struct DriftApp: App {
 
     var body: some Scene {
         WindowGroup {
-            ContentView()
+            MainContainerView()
                 .onOpenURL { url in
                     handleUniversalLink(url)
                 }
