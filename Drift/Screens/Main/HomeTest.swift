@@ -17,7 +17,7 @@ struct HomeTest: View {
                 DesignTokens.Colors.background
                     .ignoresSafeArea()
 
-                // Main Content - Centered in screen
+                // Main Content - Image centered, text above
                 VStack(spacing: DesignTokens.Spacing.xLarge) {
                     // Pill Badge with "drifting" text
                     PillBadge(text: "drifting")
@@ -27,13 +27,17 @@ struct HomeTest: View {
                         .heading1()
                         .foregroundColor(DesignTokens.Colors.textPrimary)
 
-                    // Square Image (60% of screen width)
+                    Spacer()
+                        .frame(height: DesignTokens.Spacing.xxxLarge)
+
+                    // Square Image - Centered
                     Image("above")
                         .resizable()
                         .scaledToFill()
                         .frame(width: imageSize, height: imageSize)
                 }
                 .padding(.large) // Large padding from edges
+                .offset(y: -30) // Adjust to center the image on screen
 
                 // Slide Indicator - Fixed at top
                 VStack {

@@ -34,10 +34,10 @@ enum DesignTokens {
         static let fontFamily = "Futura PT"
 
         enum Size {
-            static let heading1: CGFloat = 26
-            static let heading2: CGFloat = 20
-            static let body: CGFloat = 18
-            static let bodySmall: CGFloat = 16
+            static let heading1: CGFloat = 28
+            static let heading2: CGFloat = 22
+            static let body: CGFloat = 20
+            static let bodySmall: CGFloat = 18
         }
 
         enum Tracking {
