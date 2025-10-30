@@ -8,14 +8,84 @@
 import SwiftUI
 
 struct AnalyticsPage: View {
+    // Placeholder data
+    let tapData: [(date: String, taps: Int)] = [
+        ("25th Oct", 12),
+        ("26th Oct", 8),
+        ("27th Oct", 15),
+        ("28th Oct", 10),
+        ("29th Oct", 20),
+        ("30th Oct", 7)
+    ]
+
     var body: some View {
         ZStack {
+            // Background
             DesignTokens.Colors.background
                 .ignoresSafeArea()
 
-            Text("Analytics")
-                .heading1()
-                .foregroundColor(DesignTokens.Colors.textPrimary)
+            VStack(spacing: DesignTokens.Spacing.xxLarge) {
+                // Page Title
+                Text("Your Analytics")
+                    .heading1()
+                    .foregroundColor(DesignTokens.Colors.textPrimary)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .padding(.horizontal, DesignTokens.Padding.large)
+                    .padding(.top, DesignTokens.Spacing.xxLarge)
+
+                // Grid Layout
+                HStack(spacing: DesignTokens.Spacing.xLarge) {
+                    // Left Column - Two stacked cards
+                    VStack(spacing: DesignTokens.Spacing.xLarge) {
+                        // Current Streak Card
+                        StatCard(icon: "flame.fill", title: "Current Streak") {
+                            Text("7 days")
+                                .body()
+                                .foregroundColor(DesignTokens.Colors.textPrimary)
+                        }
+
+                        // Today Card
+                        StatCard(icon: "clock.fill", title: "Today") {
+                            Text("45 minutes")
+                                .body()
+                                .foregroundColor(DesignTokens.Colors.textPrimary)
+                        }
+                    }
+                    .frame(maxWidth: .infinity)
+
+                    // Right Column - Taps per day (full height)
+                    StatCard(icon: "hand.tap.fill", title: "Taps per day") {
+                        VStack(spacing: DesignTokens.Spacing.large) {
+                            // List of days
+                            ForEach(tapData, id: \.date) { item in
+                                HStack {
+                                    Text(item.date)
+                                        .bodySmall()
+                                        .foregroundColor(DesignTokens.Colors.textPrimary)
+
+                                    Spacer()
+
+                                    Text("\(item.taps)")
+                                        .bodySmall()
+                                        .foregroundColor(DesignTokens.Colors.primary)
+                                }
+                            }
+
+                            Spacer()
+
+                            // View All Button
+                            ViewAllButton {
+                                // Action placeholder
+                                print("View All tapped")
+                            }
+                        }
+                    }
+                    .frame(maxWidth: .infinity)
+                }
+                .padding(.horizontal, DesignTokens.Padding.large)
+
+                Spacer()
+            }
         }
     }
 }
