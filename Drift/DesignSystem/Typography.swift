@@ -9,13 +9,22 @@ import SwiftUI
 
 // MARK: - Typography View Modifiers
 
+struct HeadingXLModifier: ViewModifier {
+    func body(content: Content) -> some View {
+        content
+            .font(.custom(DesignTokens.Typography.fontFamily, size: DesignTokens.Typography.Size.headingXL))
+            .fontWeight(.semibold)
+            .tracking(DesignTokens.Typography.Tracking.headingXL)
+            .lineSpacing(DesignTokens.Typography.Size.headingXL * (DesignTokens.Typography.LineHeight.heading - 1))
+    }
+}
+
 struct Heading1Modifier: ViewModifier {
     func body(content: Content) -> some View {
         content
             .font(.custom(DesignTokens.Typography.fontFamily, size: DesignTokens.Typography.Size.heading1))
             .tracking(DesignTokens.Typography.Tracking.heading1)
             .lineSpacing(DesignTokens.Typography.Size.heading1 * (DesignTokens.Typography.LineHeight.heading - 1))
-            .foregroundColor(DesignTokens.Colors.textPrimary)
     }
 }
 
@@ -25,7 +34,6 @@ struct Heading2Modifier: ViewModifier {
             .font(.custom(DesignTokens.Typography.fontFamily, size: DesignTokens.Typography.Size.heading2))
             .tracking(DesignTokens.Typography.Tracking.heading2)
             .lineSpacing(DesignTokens.Typography.Size.heading2 * (DesignTokens.Typography.LineHeight.heading - 1))
-            .foregroundColor(DesignTokens.Colors.textPrimary)
     }
 }
 
@@ -52,7 +60,12 @@ struct BodySmallModifier: ViewModifier {
 // MARK: - View Extensions
 
 extension View {
-    /// Apply Heading 1 text style (26pt, -0.04 tracking, 1.4 line height)
+    /// Apply Heading XL text style (48pt, -0.06 tracking, 1.4 line height)
+    func headingXL() -> some View {
+        modifier(HeadingXLModifier())
+    }
+
+    /// Apply Heading 1 text style (28pt, -0.04 tracking, 1.4 line height)
     func heading1() -> some View {
         modifier(Heading1Modifier())
     }

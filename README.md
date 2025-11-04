@@ -24,6 +24,9 @@ Instead of punishing distraction, Drift creates a **desire to focus**. A physica
 
 Drift is a premium iOS app that blocks distracting apps during focus sessions. Sessions are triggered by tapping a physical NFC tag—creating a tangible ritual around focused work that feels intentional, not restrictive.
 
+**📄 Documentation**:
+- **LEGACY_FUNCTIONALITY.md** - Complete documentation of all Core managers (FocusSessionManager, AnalyticsManager, ParentalControlsManager, DriftTagManager) and how to integrate them into the new design pages
+
 ### Core Features
 
 - **NFC-Triggered Sessions**: Tap an NFC tag to start/stop focus sessions
@@ -34,7 +37,8 @@ Drift is a premium iOS app that blocks distracting apps during focus sessions. S
 - **Session Analytics**: Track focus time, streaks, and session history (last 30 days)
 - **Persistent Sessions**: Sessions survive app termination and device restarts
 - **Custom Shield Messages**: Shows "This app is a distraction" when blocked apps are accessed
-- **Design System**: Cohesive design with Futura PT font, custom colors, and reusable components
+- **Swipeable Navigation**: Native iOS swipe gestures between 3 main pages (Analytics, Home, Settings)
+- **Design System**: Cohesive design with Futura PT font, custom colors, shadows, and reusable components
 - **Fully Local**: No backend required, all data stored securely on device (Keychain + UserDefaults)
 
 ## Project Structure
@@ -56,20 +60,26 @@ Drift/
 │   │
 │   ├── Screens/
 │   │   ├── Main/
-│   │   │   └── ContentView.swift               # Main screen with session controls
+│   │   │   └── MainContainerView.swift         # Root coordinator with swipeable pages
+│   │   ├── Home/
+│   │   │   └── HomePage.swift                  # Home page with centered image & preset slider
+│   │   ├── Analytics/
+│   │   │   └── AnalyticsPage.swift             # Analytics page with 2x2 stats grid
 │   │   ├── Settings/
-│   │   │   └── SettingsView.swift              # Settings with preset management
+│   │   │   └── SettingsPage.swift              # Settings page (design in progress)
 │   │   ├── ParentalControls/
 │   │   │   ├── ParentalControlsSetupView.swift # Passcode setup flow
 │   │   │   └── PasscodeEntryView.swift         # 4-digit PIN entry
-│   │   ├── Tags/
-│   │   │   ├── RegisteredTagsView.swift        # Manage registered NFC tags
-│   │   │   └── TagSetupView.swift              # Register new NFC tags
-│   │   └── Analytics/
-│   │       └── AnalyticsView.swift             # Session history & streaks
+│   │   └── Tags/
+│   │       ├── RegisteredTagsView.swift        # Manage registered NFC tags
+│   │       └── TagSetupView.swift              # Register new NFC tags
 │   │
 │   ├── Components/
-│   │   └── (reusable UI components)
+│   │   ├── PillBadge.swift                     # Status indicator badge
+│   │   ├── SlideIndicator.swift                # Page indicator dots
+│   │   ├── BottomPresetSlider.swift            # Horizontal preset carousel
+│   │   ├── StatCard.swift                      # Reusable analytics card
+│   │   └── ViewAllButton.swift                 # Action button with arrow icon
 │   │
 │   ├── DesignSystem/
 │   │   ├── DesignTokens.swift                  # Colors, spacing, typography
@@ -253,6 +263,75 @@ On a physical device with a configured NFC tag:
 - Tap the NFC tag again (or use test button)
 - All blocked apps immediately become accessible
 
+## App Structure
+
+### Swipeable Page Navigation
+
+The app uses a native iOS TabView with page style to provide smooth swipe navigation between three main pages:
+
+1. **Analytics Page** (Left) - View focus statistics, streaks, and daily usage
+2. **Home Page** (Center) - Main screen with centered image and preset selection
+3. **Settings Page** (Right) - Configure presets and app settings
+
+The `MainContainerView` coordinates page navigation with a synced `SlideIndicator` at the top showing the current page.
+
+### Home Page
+
+The home page features a minimalist, centered design:
+- **Pill Badge**: Status indicator with "drifting" text and red dot
+- **Heading**: "Tap drift to activate" in Futura PT heading1 style
+- **Centered Image**: Square image at 60% screen width, positioned absolutely centered
+- **Bottom Preset Slider**: Horizontal carousel with Work, Sleep, and Add cards
+  - Selected card: Full scale with shadow
+  - Unselected cards: 75% scale with reduced opacity
+  - Gradient background from accent to background color
+
+### Analytics Page
+
+The analytics page displays user statistics in a 2x2 grid layout:
+
+**Left Column** (2 stacked cards):
+- **Current Streak**: Flame icon with day count
+- **Today**: Clock icon with minutes tracked
+
+**Right Column** (Full-height card):
+- **Taps per Day**: Hand tap icon with list of 6 recent days
+- Shows date and tap count for each day
+- "View All" button at bottom to see full history
+
+All cards use:
+- White background with rounded corners
+- Subtle shadow (6px radius, 3px y-offset, 12% opacity)
+- Primary color icons (burnt orange)
+- Structured layout: Icon → Title → Content
+
+### Reusable Components
+
+**PillBadge**: Status indicator with text and colored dot
+- White background, rounded corners
+- 5x5px red circle indicator
+- Used for showing session status
+
+**SlideIndicator**: Page indicator dots
+- 3 horizontal rounded rectangles
+- Active page: 2x width, accent color
+- Inactive pages: Standard width, 50% opacity accent
+
+**BottomPresetSlider**: Horizontal preset carousel
+- Native iOS ScrollTargetBehavior for smooth snapping
+- Scale and opacity transitions on scroll
+- Gradient background overlay
+
+**StatCard**: Generic analytics card with flexible content
+- Uses ViewBuilder pattern for custom content
+- Consistent structure: Icon (32pt SF Symbol) → Title → Content
+- White background with shadow
+
+**ViewAllButton**: Action button with arrow
+- Black background, white text
+- Chevron right icon
+- Used for navigation to detail views
+
 ## Design System
 
 Drift uses a comprehensive design system for consistent, maintainable UI.
@@ -266,8 +345,8 @@ Drift uses a comprehensive design system for consistent, maintainable UI.
 - Text colors with opacity variations
 
 **Typography**:
-- Font: Futura PT Book (custom font)
-- Sizes: heading1 (26pt), heading2 (20pt), body (18pt), bodySmall (16pt)
+- Font: Futura PT Book (custom font - FuturaCyrillicBook.ttf)
+- Sizes: heading1 (28pt), heading2 (22pt), body (20pt), bodySmall (18pt)
 - Custom tracking and line height for each style
 
 **Spacing**:
@@ -276,6 +355,12 @@ Drift uses a comprehensive design system for consistent, maintainable UI.
 - xLarge: 16px (standard)
 - large: 8px
 - medium: 4px
+
+**Shadows**:
+- Subtle shadow for elevated UI elements
+- Color: Black with 12% opacity
+- Radius: 6px, Offset: (0, 3)
+- Used on cards, selected carousel items, and buttons
 
 ### Usage
 
@@ -297,7 +382,35 @@ See `DesignSystem/ExampleDesignView.swift` for full examples.
 
 For detailed setup instructions, see `DESIGN_SYSTEM_SETUP.md` and `FONT_SETUP.md`.
 
+### Custom Font Setup
+
+The app uses **Futura PT Book** (FuturaCyrillicBook.ttf) as the primary font:
+
+1. **Font File**: Located in `Resources/Fonts/FuturaCyrillicBook.ttf`
+2. **Registration**: Font must be registered in Xcode's Build Settings:
+   - Navigate to: Target → Info → Custom iOS Target Properties
+   - Add to "Fonts provided by application" array
+   - Value: `FuturaCyrillicBook.ttf`
+3. **Font Family Name**: The actual font family name is `"Futura PT"` (not the filename)
+4. **Usage in Code**: `DesignTokens.Typography.fontFamily = "Futura PT"`
+
+**Debugging Font Loading**:
+To verify the font loaded correctly, you can temporarily add this to `DriftApp.init()`:
+```swift
+for family in UIFont.familyNames.sorted() {
+    let names = UIFont.fontNames(forFamilyName: family)
+    print("Family: \(family) - Fonts: \(names)")
+}
+```
+You should see: `Family: Futura PT - Fonts: ["FuturaCyrillicBook"]`
+
 ## Architecture Notes
+
+### App Entry Point
+
+The app launches with `MainContainerView` as the root view (configured in `DriftApp.swift`). This provides the swipeable 3-page navigation structure with Analytics, Home, and Settings pages.
+
+**Note**: Legacy functional UI files (ContentView, AnalyticsView, SettingsView) have been documented in `LEGACY_FUNCTIONALITY.md` for reference. The new design pages will integrate the same Core managers (FocusSessionManager, AnalyticsManager, ParentalControlsManager, DriftTagManager) with the new design system.
 
 ### FocusSessionManager
 
@@ -358,18 +471,30 @@ Tracks focus session statistics:
 1. ✅ **Universal Links configured** - Domain: `get-drift.app` with AASA file hosted
 2. ✅ **Physical NFC tags written** with unique IDs
 3. ⏳ **Family Controls Distribution entitlement** - Awaiting Apple approval (1-3 business days)
-4. 🔄 **Design polish** - Apply design system to all views
-5. **TestFlight testing** - Test Universal Links in TestFlight build
-6. **Privacy Policy** - Required for Screen Time API usage
-7. **App Store assets** - Screenshots, description, marketing materials
+4. 🔄 **Complete UI design phase** - Finish all screen designs, then integrate Core managers
+5. 🔄 **Integrate functionality** - Connect Core managers to new design pages
+6. **TestFlight testing** - Test Universal Links in TestFlight build
+7. **Privacy Policy** - Required for Screen Time API usage
+8. **App Store assets** - Screenshots, description, marketing materials
 
 ### Implemented Features
 
-✅ Session analytics/history
+**Core Functionality** (Ready for UI Integration):
+✅ Session analytics/history with FocusSessionManager
 ✅ Multiple focus modes with different app lists (Presets)
 ✅ Parental controls with passcode protection
 ✅ Multi-tag support with unique IDs
-✅ Design system with custom typography and colors
+✅ NFC Universal Link handling
+✅ Screen Time API integration
+
+**Design System & UI**:
+✅ Design system with custom typography, colors, and shadows
+✅ Swipeable 3-page navigation (Analytics, Home, Settings)
+✅ Complete home page with centered image and preset slider
+✅ Analytics page with 2x2 statistics grid (placeholder data)
+✅ Reusable component library (StatCard, ViewAllButton, PillBadge, etc.)
+
+**Current Phase**: Building new UI designs for all screens. Once designs are complete, we'll integrate the existing Core managers with the new pages.
 
 ### Potential Enhancements
 

@@ -25,7 +25,7 @@ enum DesignTokens {
     // MARK: - Radii
     enum Radii {
         static let radiusStandard: CGFloat = 16
-        static let radiusSmall: CGFloat = 8
+        static let radiusSmall: CGFloat = 12
     }
     
     // MARK: - Typography
@@ -34,13 +34,15 @@ enum DesignTokens {
         static let fontFamily = "Futura PT"
 
         enum Size {
-            static let heading1: CGFloat = 26
-            static let heading2: CGFloat = 20
-            static let body: CGFloat = 18
-            static let bodySmall: CGFloat = 16
+            static let headingXL: CGFloat = 48
+            static let heading1: CGFloat = 28
+            static let heading2: CGFloat = 22
+            static let body: CGFloat = 20
+            static let bodySmall: CGFloat = 18
         }
 
         enum Tracking {
+            static let headingXL: CGFloat = -0.06
             static let heading1: CGFloat = -0.04
             static let heading2: CGFloat = -0.02
             static let body: CGFloat = 0
@@ -62,6 +64,10 @@ enum DesignTokens {
         static let xLarge: CGFloat = 16
         static let large: CGFloat = 8
         static let medium: CGFloat = 4
+
+        /// Top padding for page content to clear the slide indicator
+        /// Accounts for: indicator top padding (24) + indicator height (6) + spacing below (24) = 54
+        static let pageContentTop: CGFloat = 60
     }
 
     // MARK: - Padding
@@ -70,6 +76,15 @@ enum DesignTokens {
         static let large: CGFloat = 16
         static let medium: CGFloat = 8
         static let small: CGFloat = 4
+    }
+
+    // MARK: - Shadow
+
+    enum Shadow {
+        static let color = Color.black.opacity(0.12)
+        static let radius: CGFloat = 6
+        static let x: CGFloat = 0
+        static let y: CGFloat = 3
     }
 }
 
