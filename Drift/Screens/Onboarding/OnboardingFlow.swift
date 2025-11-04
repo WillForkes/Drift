@@ -40,48 +40,9 @@ struct OnboardingFlow: View {
                     
                 }
                 .tabViewStyle(PageTabViewStyle(indexDisplayMode: .never))
-                .disabled(true) // Disable swiping as requested
+                .disabled(currentPage != 0) // Only allow swiping on first page
                 
                 Spacer()
-                
-                // Debug navigation arrows
-                HStack {
-                    Button(action: {
-                        if currentPage > 0 {
-                            withAnimation(.easeInOut(duration: 0.3)) {
-                                currentPage -= 1
-                            }
-                        }
-                    }) {
-                        Image(systemName: "chevron.left")
-                            .font(.title)
-                            .foregroundColor(.black)
-                            .padding()
-                            .background(Color.white.opacity(0.7))
-                            .clipShape(Circle())
-                    }
-                    .opacity(currentPage > 0 ? 1.0 : 0.3)
-                    
-                    Spacer()
-                    
-                    Button(action: {
-                        if currentPage < totalPages - 1 {
-                            withAnimation(.easeInOut(duration: 0.3)) {
-                                currentPage += 1
-                            }
-                        }
-                    }) {
-                        Image(systemName: "chevron.right")
-                            .font(.title)
-                            .foregroundColor(.black)
-                            .padding()
-                            .background(Color.white.opacity(0.7))
-                            .clipShape(Circle())
-                    }
-                    .opacity(currentPage < totalPages - 1 ? 1.0 : 0.3)
-                }
-                .padding(.horizontal, 30)
-                .padding(.bottom, 30)
             }
         }
     }
@@ -184,7 +145,6 @@ struct SyncingPage: View {
             Spacer()
             
             VStack(spacing: DesignTokens.Spacing.large) {
-                // Sync status examples
                 PillBadge(
                     text: "NFC Chip valid",
                     icon: .systemImage(name: "checkmark", color: .green, size: 14),
@@ -238,27 +198,25 @@ struct TapToStartPage: View {
             
             Spacer()
             
-            VStack(spacing: DesignTokens.Spacing.xLarge) {
-                PillBadge(
-                    text: "Waiting for tap",
-                    icon: .circle(color: .red, size: 12),
-                    style: .light
-                )
-                
-                Spacer()
-                
-                Button(action: {
-                    print("I don't have a drift tapped")
-                }) {
-                    HStack(spacing: DesignTokens.Spacing.medium) {
-                        Text("I don't have a drift")
-                            .bodySmall()
-                            .foregroundColor(DesignTokens.Colors.extraSubtext)
-                        
-                        Image(systemName: "questionmark.circle")
-                            .font(.system(size: DesignTokens.Typography.Size.bodySmall))
-                            .foregroundColor(DesignTokens.Colors.extraSubtext)
-                    }
+            PillBadge(
+                text: "Waiting for tap",
+                icon: .circle(color: .red, size: 12),
+                style: .light
+            )
+            
+            Spacer()
+            
+            Button(action: {
+                print("I don't have a drift tapped")
+            }) {
+                HStack(spacing: DesignTokens.Spacing.medium) {
+                    Text("I don't have a drift")
+                        .bodySmall()
+                        .foregroundColor(DesignTokens.Colors.extraSubtext)
+                    
+                    Image(systemName: "questionmark.circle")
+                        .font(.system(size: DesignTokens.Typography.Size.bodySmall))
+                        .foregroundColor(DesignTokens.Colors.extraSubtext)
                 }
             }
             .padding(.bottom, 50)
