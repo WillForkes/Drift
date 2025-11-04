@@ -24,6 +24,9 @@ Instead of punishing distraction, Drift creates a **desire to focus**. A physica
 
 Drift is a premium iOS app that blocks distracting apps during focus sessions. Sessions are triggered by tapping a physical NFC tag—creating a tangible ritual around focused work that feels intentional, not restrictive.
 
+**📄 Documentation**:
+- **LEGACY_FUNCTIONALITY.md** - Complete documentation of all Core managers (FocusSessionManager, AnalyticsManager, ParentalControlsManager, DriftTagManager) and how to integrate them into the new design pages
+
 ### Core Features
 
 - **NFC-Triggered Sessions**: Tap an NFC tag to start/stop focus sessions
@@ -57,16 +60,13 @@ Drift/
 │   │
 │   ├── Screens/
 │   │   ├── Main/
-│   │   │   ├── MainContainerView.swift         # Root coordinator with swipeable pages
-│   │   │   └── ContentView.swift               # Legacy main screen with session controls
+│   │   │   └── MainContainerView.swift         # Root coordinator with swipeable pages
 │   │   ├── Home/
 │   │   │   └── HomePage.swift                  # Home page with centered image & preset slider
 │   │   ├── Analytics/
-│   │   │   ├── AnalyticsPage.swift             # New analytics page with 2x2 stats grid
-│   │   │   └── AnalyticsView.swift             # Legacy session history & streaks
+│   │   │   └── AnalyticsPage.swift             # Analytics page with 2x2 stats grid
 │   │   ├── Settings/
-│   │   │   ├── SettingsPage.swift              # New settings page placeholder
-│   │   │   └── SettingsView.swift              # Legacy settings with preset management
+│   │   │   └── SettingsPage.swift              # Settings page (design in progress)
 │   │   ├── ParentalControls/
 │   │   │   ├── ParentalControlsSetupView.swift # Passcode setup flow
 │   │   │   └── PasscodeEntryView.swift         # 4-digit PIN entry
@@ -410,7 +410,7 @@ You should see: `Family: Futura PT - Fonts: ["FuturaCyrillicBook"]`
 
 The app launches with `MainContainerView` as the root view (configured in `DriftApp.swift`). This provides the swipeable 3-page navigation structure with Analytics, Home, and Settings pages.
 
-The legacy `ContentView` with functional session controls remains in the project for reference and future integration with the new UI pages.
+**Note**: Legacy functional UI files (ContentView, AnalyticsView, SettingsView) have been documented in `LEGACY_FUNCTIONALITY.md` for reference. The new design pages will integrate the same Core managers (FocusSessionManager, AnalyticsManager, ParentalControlsManager, DriftTagManager) with the new design system.
 
 ### FocusSessionManager
 
@@ -471,22 +471,30 @@ Tracks focus session statistics:
 1. ✅ **Universal Links configured** - Domain: `get-drift.app` with AASA file hosted
 2. ✅ **Physical NFC tags written** with unique IDs
 3. ⏳ **Family Controls Distribution entitlement** - Awaiting Apple approval (1-3 business days)
-4. 🔄 **Design polish** - Apply design system to all views
-5. **TestFlight testing** - Test Universal Links in TestFlight build
-6. **Privacy Policy** - Required for Screen Time API usage
-7. **App Store assets** - Screenshots, description, marketing materials
+4. 🔄 **Complete UI design phase** - Finish all screen designs, then integrate Core managers
+5. 🔄 **Integrate functionality** - Connect Core managers to new design pages
+6. **TestFlight testing** - Test Universal Links in TestFlight build
+7. **Privacy Policy** - Required for Screen Time API usage
+8. **App Store assets** - Screenshots, description, marketing materials
 
 ### Implemented Features
 
-✅ Session analytics/history (functional + new UI)
+**Core Functionality** (Ready for UI Integration):
+✅ Session analytics/history with FocusSessionManager
 ✅ Multiple focus modes with different app lists (Presets)
 ✅ Parental controls with passcode protection
 ✅ Multi-tag support with unique IDs
+✅ NFC Universal Link handling
+✅ Screen Time API integration
+
+**Design System & UI**:
 ✅ Design system with custom typography, colors, and shadows
 ✅ Swipeable 3-page navigation (Analytics, Home, Settings)
 ✅ Complete home page with centered image and preset slider
-✅ Analytics page with 2x2 statistics grid
+✅ Analytics page with 2x2 statistics grid (placeholder data)
 ✅ Reusable component library (StatCard, ViewAllButton, PillBadge, etc.)
+
+**Current Phase**: Building new UI designs for all screens. Once designs are complete, we'll integrate the existing Core managers with the new pages.
 
 ### Potential Enhancements
 

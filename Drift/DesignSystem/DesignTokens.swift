@@ -62,6 +62,10 @@ enum DesignTokens {
         static let xLarge: CGFloat = 16
         static let large: CGFloat = 8
         static let medium: CGFloat = 4
+
+        /// Top padding for page content to clear the slide indicator
+        /// Accounts for: indicator top padding (24) + indicator height (6) + spacing below (24) = 54
+        static let pageContentTop: CGFloat = 60
     }
 
     // MARK: - Padding
