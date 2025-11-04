@@ -16,24 +16,27 @@ struct MainContainerView: View {
             // Swipeable pages
             TabView(selection: $currentPage) {
                 // Page 0: Analytics
-                AnalyticsPage()
-                    .tag(0)
+                VStack(spacing: 0) {
+                    Spacer().frame(height: DesignTokens.Spacing.pageContentTop)
+                    AnalyticsPage()
+                }
+                .background(DesignTokens.Colors.background)
+                .tag(0)
 
-                // Page 1: Home
+                // Page 1: Home (no top spacing - keeps centered layout)
                 HomePage()
                     .tag(1)
 
                 // Page 2: Settings
-                SettingsPage()
-                    .tag(2)
+                VStack(spacing: 0) {
+                    Spacer().frame(height: DesignTokens.Spacing.pageContentTop)
+                    SettingsPage()
+                }
+                .background(DesignTokens.Colors.background)
+                .tag(2)
             }
             .tabViewStyle(.page(indexDisplayMode: .never))
             .ignoresSafeArea()
-            .safeAreaInset(edge: .top, spacing: 0) {
-                // Spacer to push content below slide indicator
-                Color.clear
-                    .frame(height: DesignTokens.Spacing.pageContentTop)
-            }
 
             // Fixed UI elements overlaid on top
             VStack {

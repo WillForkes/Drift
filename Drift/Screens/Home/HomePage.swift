@@ -16,7 +16,7 @@ struct HomePage: View {
             DesignTokens.Colors.background
                 .ignoresSafeArea()
 
-            // Main Content - Image centered, text above (ignores top safe area to stay centered)
+            // Main Content - Image centered, text above
             VStack(spacing: DesignTokens.Spacing.xLarge) {
                 // Pill Badge with "drifting" text
                 PillBadge(text: "drifting")
@@ -37,7 +37,6 @@ struct HomePage: View {
             }
             .padding(.large)
             .offset(y: -30)
-            .ignoresSafeArea(.container, edges: .top)
 
             // Bottom Preset Slider - Fixed at bottom
             VStack {
