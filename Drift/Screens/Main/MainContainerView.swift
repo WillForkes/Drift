@@ -29,6 +29,11 @@ struct MainContainerView: View {
             }
             .tabViewStyle(.page(indexDisplayMode: .never))
             .ignoresSafeArea()
+            .safeAreaInset(edge: .top, spacing: 0) {
+                // Spacer to push content below slide indicator
+                Color.clear
+                    .frame(height: DesignTokens.Spacing.pageContentTop)
+            }
 
             // Fixed UI elements overlaid on top
             VStack {

@@ -32,7 +32,6 @@ struct AnalyticsPage: View {
                         .foregroundColor(DesignTokens.Colors.textPrimary)
                         .frame(maxWidth: .infinity, alignment: .leading)
                         .padding(.horizontal, DesignTokens.Padding.large)
-                        .padding(.top, DesignTokens.Spacing.xxLarge)
 
                     // Grid Layout (60% of available space)
                     HStack(spacing: DesignTokens.Spacing.xLarge) {

@@ -13,9 +13,15 @@ struct SettingsPage: View {
             DesignTokens.Colors.background
                 .ignoresSafeArea()
 
-            Text("Settings")
-                .heading1()
-                .foregroundColor(DesignTokens.Colors.textPrimary)
+            VStack {
+                Text("Settings")
+                    .heading1()
+                    .foregroundColor(DesignTokens.Colors.textPrimary)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .padding(.horizontal, DesignTokens.Padding.large)
+
+                Spacer()
+            }
         }
     }
 }
