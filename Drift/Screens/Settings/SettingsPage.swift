@@ -20,6 +20,8 @@ struct SettingsPage: View {
         PresetMode(name: "Sleep", appsSelected: 5, assignedTo: "Bedroom"),
         PresetMode(name: "Gym", appsSelected: 31, assignedTo: "Bedroom")
     ]
+    
+    @State private var presentedPreset: FocusPreset?
 
     var body: some View {
         ZStack {
@@ -50,9 +52,12 @@ struct SettingsPage: View {
                             .frame(maxWidth: .infinity, alignment: .leading)
                             .padding(.horizontal, DesignTokens.Padding.large)
 
-                        ForEach(mockPresets, id: \.name) { preset in
-                            PresetModeCard(preset: preset)
-                                .padding(.horizontal, DesignTokens.Padding.large)
+                        ForEach(Array(mockPresets.enumerated()), id: \.offset) { index, preset in
+                            PresetModeCard(
+                                preset: preset,
+                                presentedPreset: $presentedPreset
+                            )
+                            .padding(.horizontal, DesignTokens.Padding.large)
                         }
                     }
 
@@ -81,10 +86,13 @@ struct SettingsPage: View {
                 }
             }
         }
+        .sheet(item: $presentedPreset) { preset in
+            PresetEditSheet(preset: preset, isPresented: .constant(true))
+        }
     }
 }
 
-// MARK: - Supporting Views
+/// MARK: - Supporting Views
 
 struct DriftCard: View {
     let drift: DriftDevice
@@ -144,6 +152,7 @@ struct DriftCard: View {
 
 struct PresetModeCard: View {
     let preset: PresetMode
+    @Binding var presentedPreset: FocusPreset?
     
     var body: some View {
         VStack(alignment: .leading, spacing: DesignTokens.Spacing.xLarge) {
@@ -169,8 +178,9 @@ struct PresetModeCard: View {
                 Spacer()
                 
                 DriftButton(title: "Edit", icon: "pencil", style: .pill) {
-                    // Edit action placeholder
-                    print("Edit \(preset.name)")
+                    // Edit action - open sheet
+                    let focusPreset = FocusPreset(id: preset.name.lowercased(), name: preset.name)
+                    presentedPreset = focusPreset
                 }
             }
         }
