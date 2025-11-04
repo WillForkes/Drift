@@ -29,14 +29,15 @@ struct OnboardingFlow: View {
                     WelcomePage()
                         .tag(0)
                     
-                    SyncingPage()
+                    TapToStartPage()
                         .tag(1)
                     
-                    SyncedWelcomePage()
+                    SyncingPage()
                         .tag(2)
                     
-                    TapToStartPage()
+                    SyncedWelcomePage()
                         .tag(3)
+                    
                 }
                 .tabViewStyle(PageTabViewStyle(indexDisplayMode: .never))
                 .disabled(true) // Disable swiping as requested
@@ -96,7 +97,6 @@ struct OnboardingFlow: View {
 }
 
 // MARK: - Individual Pages
-
 struct WelcomePage: View {
     var body: some View {
         VStack(spacing: DesignTokens.Spacing.xxxLarge) {
@@ -108,7 +108,7 @@ struct WelcomePage: View {
                     .foregroundColor(DesignTokens.Colors.textPrimary)
                 
                 Text("drift")
-                    .heading1()
+                    .headingXL()
                     .foregroundColor(DesignTokens.Colors.primary)
             }
             
@@ -135,25 +135,27 @@ struct SyncedWelcomePage: View {
             Spacer()
             
             VStack(spacing: DesignTokens.Spacing.large) {
-                Text("Synced! Welcome to")
+                Text("Synced!")
                     .heading1()
                     .foregroundColor(DesignTokens.Colors.textPrimary)
                     .multilineTextAlignment(.center)
                 
-                Text("drift")
-                    .heading1()
-                    .font(.system(size: 48, weight: .bold, design: .default))
-                    .foregroundColor(DesignTokens.Colors.primary)
+                Text("Let's start focusing.")
+                    .heading2()
+                    .foregroundColor(DesignTokens.Colors.subtext)
             }
             
             Spacer()
             
-            // Drift device mockup
-            DriftDeviceMockup()
+            // Drift device image
+            Image("above")
+                .resizable()
+                .scaledToFill()
+                .frame(width: 200, height: 200)
             
             Spacer()
             
-            DriftButton(title: "Get Started", style: .pill) {
+            DriftButton(title: "Get Started", style: .primary) {
                 print("Get Started tapped")
             }
             .padding(.bottom, 50)
@@ -169,20 +171,37 @@ struct SyncingPage: View {
             
             Text("Syncing...")
                 .heading1()
-                .font(.system(size: 32, weight: .regular, design: .default))
-                .foregroundColor(.white)
+                .foregroundColor(DesignTokens.Colors.whiteText)
             
             Spacer()
             
-            // Drift device mockup
-            DriftDeviceMockup()
+            // Drift device image
+            Image("above")
+                .resizable()
+                .scaledToFill()
+                .frame(width: 200, height: 200)
             
             Spacer()
             
             VStack(spacing: DesignTokens.Spacing.large) {
-                SyncStatusRow(text: "NFC Chip valid", status: .complete)
-                SyncStatusRow(text: "Authorizing", status: .inProgress)
-                SyncStatusRow(text: "Finishing up...", status: .pending)
+                // Sync status examples
+                PillBadge(
+                    text: "NFC Chip valid",
+                    icon: .systemImage(name: "checkmark", color: .green, size: 14),
+                    style: .light
+                )
+                
+                PillBadge(
+                    text: "Authorizing",
+                    icon: .circle(color: .yellow, size: 12),
+                    style: .transparent
+                )
+                
+                PillBadge(
+                    text: "Finishing up...",
+                    icon: .systemImage(name: "arrow.clockwise", color: .white.opacity(0.7), size: 12),
+                    style: .transparent
+                )
             }
             .padding(.bottom, 50)
         }
@@ -195,29 +214,38 @@ struct TapToStartPage: View {
         VStack(spacing: DesignTokens.Spacing.xxxLarge) {
             Spacer()
             
-            Text("To get started, tap your phone onto drift")
-                .heading1()
-                .foregroundColor(DesignTokens.Colors.textPrimary)
-                .multilineTextAlignment(.center)
-                .padding(.horizontal, 40)
+            VStack(spacing: DesignTokens.Spacing.medium) {
+                Text("Let's Get Started")
+                    .heading1()
+                    .foregroundColor(DesignTokens.Colors.textPrimary)
+                    .multilineTextAlignment(.center)
+                    .padding(.horizontal, 40)
+                Text("Start by tapping your phone onto drift")
+                    .heading2()
+                    .foregroundColor(DesignTokens.Colors.textPrimary)
+                    .multilineTextAlignment(.center)
+                    .padding(.horizontal, 40)
+            }
+            
             
             Spacer()
             
             // Drift device in perspective view
-            DriftDevicePerspective()
+            Image("above")
+                .resizable()
+                .scaledToFill()
+                .frame(width: 200, height: 200)
             
             Spacer()
             
             VStack(spacing: DesignTokens.Spacing.xLarge) {
-                HStack(spacing: DesignTokens.Spacing.medium) {
-                    Circle()
-                        .fill(DesignTokens.Colors.primary)
-                        .frame(width: 8, height: 8)
-                    
-                    Text("Waiting for tap...")
-                        .bodySmall()
-                        .foregroundColor(DesignTokens.Colors.textPrimary)
-                }
+                PillBadge(
+                    text: "Waiting for tap",
+                    icon: .circle(color: .red, size: 12),
+                    style: .light
+                )
+                
+                Spacer()
                 
                 Button(action: {
                     print("I don't have a drift tapped")
@@ -225,11 +253,11 @@ struct TapToStartPage: View {
                     HStack(spacing: DesignTokens.Spacing.medium) {
                         Text("I don't have a drift")
                             .bodySmall()
-                            .foregroundColor(DesignTokens.Colors.textPrimary.opacity(0.6))
+                            .foregroundColor(DesignTokens.Colors.extraSubtext)
                         
                         Image(systemName: "questionmark.circle")
                             .font(.system(size: DesignTokens.Typography.Size.bodySmall))
-                            .foregroundColor(DesignTokens.Colors.textPrimary.opacity(0.6))
+                            .foregroundColor(DesignTokens.Colors.extraSubtext)
                     }
                 }
             }
@@ -239,142 +267,7 @@ struct TapToStartPage: View {
     }
 }
 
-// MARK: - Supporting Views
 
-struct DriftDeviceMockup: View {
-    var body: some View {
-        ZStack {
-            // Shadow
-            RoundedRectangle(cornerRadius: 16)
-                .fill(Color.black.opacity(0.3))
-                .frame(width: 140, height: 140)
-                .offset(x: 8, y: 8)
-            
-            // Main device
-            RoundedRectangle(cornerRadius: 16)
-                .fill(
-                    LinearGradient(
-                        gradient: Gradient(colors: [
-                            Color(red: 0.8, green: 0.6, blue: 0.4),
-                            Color(red: 0.7, green: 0.5, blue: 0.3)
-                        ]),
-                        startPoint: .topLeading,
-                        endPoint: .bottomTrailing
-                    )
-                )
-                .frame(width: 140, height: 140)
-            
-            // Inner border
-            RoundedRectangle(cornerRadius: 12)
-                .stroke(Color.black.opacity(0.2), lineWidth: 2)
-                .frame(width: 120, height: 120)
-            
-            // Drift text
-            Text("drift")
-                .bodySmall()
-                .fontWeight(.bold)
-                .foregroundColor(.black)
-        }
-    }
-}
-
-struct DriftDevicePerspective: View {
-    var body: some View {
-        ZStack {
-            // Shadow
-            RoundedRectangle(cornerRadius: 20)
-                .fill(Color.black.opacity(0.3))
-                .frame(width: 180, height: 140)
-                .offset(x: 10, y: 10)
-                .rotation3DEffect(
-                    .degrees(-15),
-                    axis: (x: 1, y: 0, z: 0)
-                )
-            
-            // Main device
-            RoundedRectangle(cornerRadius: 20)
-                .fill(
-                    LinearGradient(
-                        gradient: Gradient(colors: [
-                            Color(red: 0.8, green: 0.6, blue: 0.4),
-                            Color(red: 0.7, green: 0.5, blue: 0.3)
-                        ]),
-                        startPoint: .topLeading,
-                        endPoint: .bottomTrailing
-                    )
-                )
-                .frame(width: 180, height: 140)
-                .rotation3DEffect(
-                    .degrees(-15),
-                    axis: (x: 1, y: 0, z: 0)
-                )
-            
-            // Top edge highlight
-            RoundedRectangle(cornerRadius: 20)
-                .fill(Color.white.opacity(0.3))
-                .frame(width: 180, height: 8)
-                .offset(y: -66)
-                .rotation3DEffect(
-                    .degrees(-15),
-                    axis: (x: 1, y: 0, z: 0)
-                )
-            
-            // Drift text
-            Text("drift")
-                .body()
-                .fontWeight(.bold)
-                .foregroundColor(.black)
-                .rotation3DEffect(
-                    .degrees(-15),
-                    axis: (x: 1, y: 0, z: 0)
-                )
-                .offset(y: -5)
-        }
-    }
-}
-
-struct SyncStatusRow: View {
-    let text: String
-    let status: SyncStatus
-    
-    enum SyncStatus {
-        case complete
-        case inProgress
-        case pending
-    }
-    
-    var body: some View {
-        HStack(spacing: DesignTokens.Spacing.medium) {
-            statusIcon
-            
-            Text(text)
-                .bodySmall()
-                .foregroundColor(.white)
-        }
-        .padding(.horizontal, 20)
-        .padding(.vertical, 12)
-        .background(Color.white.opacity(0.2))
-        .cornerRadius(25)
-    }
-    
-    @ViewBuilder
-    private var statusIcon: some View {
-        switch status {
-        case .complete:
-            Image(systemName: "checkmark")
-                .font(.system(size: 14, weight: .bold))
-                .foregroundColor(.green)
-        case .inProgress:
-            Circle()
-                .fill(Color.yellow)
-                .frame(width: 12, height: 12)
-        case .pending:
-            Image(systemName: "arrow.clockwise")
-                .font(.system(size: 12))
-                .foregroundColor(.white.opacity(0.7))
-        }
-    }
-}
 
 #Preview {
     OnboardingFlow()

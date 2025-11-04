@@ -25,7 +25,7 @@ enum DesignTokens {
     // MARK: - Radii
     enum Radii {
         static let radiusStandard: CGFloat = 16
-        static let radiusSmall: CGFloat = 8
+        static let radiusSmall: CGFloat = 12
     }
     
     // MARK: - Typography
@@ -34,6 +34,7 @@ enum DesignTokens {
         static let fontFamily = "Futura PT"
 
         enum Size {
+            static let headingXL: CGFloat = 48
             static let heading1: CGFloat = 28
             static let heading2: CGFloat = 22
             static let body: CGFloat = 20
@@ -41,6 +42,7 @@ enum DesignTokens {
         }
 
         enum Tracking {
+            static let headingXL: CGFloat = -0.06
             static let heading1: CGFloat = -0.04
             static let heading2: CGFloat = -0.02
             static let body: CGFloat = 0

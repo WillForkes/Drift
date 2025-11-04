@@ -97,9 +97,9 @@ enum DriftButtonStyle {
     var cornerRadius: CGFloat {
         switch self {
         case .primary, .secondary:
-            return DesignTokens.Radii.radiusStandard
+            return DesignTokens.Radii.radiusSmall
         case .pill, .pillSecondary:
-            return 20
+            return DesignTokens.Radii.radiusStandard
         }
     }
     
@@ -159,11 +159,11 @@ enum DriftButtonStyle {
             print("Secondary tapped")
         }
         
-        DriftButton(title: "Delete", icon: "xmark", style: .pill) {
+        DriftButton(title: "Pill button", icon: "xmark", style: .pill) {
             print("Delete tapped")
         }
         
-        DriftButton(title: "Edit", icon: "pencil", style: .pillSecondary) {
+        DriftButton(title: "Pill Secondary", icon: "pencil", style: .pillSecondary) {
             print("Edit tapped")
         }
         
