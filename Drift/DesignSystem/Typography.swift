@@ -13,6 +13,7 @@ struct HeadingXLModifier: ViewModifier {
     func body(content: Content) -> some View {
         content
             .font(.custom(DesignTokens.Typography.fontFamily, size: DesignTokens.Typography.Size.headingXL))
+            .fontWeight(.semibold)
             .tracking(DesignTokens.Typography.Tracking.headingXL)
             .lineSpacing(DesignTokens.Typography.Size.headingXL * (DesignTokens.Typography.LineHeight.heading - 1))
     }

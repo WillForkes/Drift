@@ -9,36 +9,41 @@ import SwiftUI
 
 struct SyncedWelcomePage: View {
     var body: some View {
-        VStack(spacing: DesignTokens.Spacing.xxxLarge) {
-            Spacer()
+        GeometryReader { geometry in
+            ZStack {
+                VStack(spacing: 0) {
+                    // Heading Section - Fixed 80px from top
+                    VStack(spacing: DesignTokens.Spacing.medium) {
+                        Text("Synced!")
+                            .heading1()
+                            .foregroundColor(DesignTokens.Colors.textPrimary)
+                            .multilineTextAlignment(.center)
 
-            VStack(spacing: DesignTokens.Spacing.large) {
-                Text("Synced!")
-                    .heading1()
-                    .foregroundColor(DesignTokens.Colors.textPrimary)
-                    .multilineTextAlignment(.center)
+                        Text("Let's start focusing.")
+                            .heading2()
+                            .foregroundColor(DesignTokens.Colors.subtext)
+                    }
+                    .padding(.top, 80)
+                    .frame(maxWidth: .infinity)
 
-                Text("Let's start focusing.")
-                    .heading2()
-                    .foregroundColor(DesignTokens.Colors.subtext)
+                    Spacer()
+                }
+
+                // Image - Absolute vertical center (dead center)
+                Image("above")
+                    .resizable()
+                    .scaledToFill()
+                    .frame(width: 200, height: 200)
+                    .position(x: geometry.size.width / 2, y: geometry.size.height / 2)
+
+                // Get Started button - positioned below center image
+                DriftButton(title: "Get Started", style: .primary) {
+                    print("Get Started tapped")
+                }
+                .position(x: geometry.size.width / 2, y: (geometry.size.height / 2) + 100 + 70)
             }
-
-            Spacer()
-
-            // Drift device image
-            Image("above")
-                .resizable()
-                .scaledToFill()
-                .frame(width: 200, height: 200)
-
-            Spacer()
-
-            DriftButton(title: "Get Started", style: .primary) {
-                print("Get Started tapped")
-            }
-            .padding(.bottom, 50)
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
         }
-        .frame(maxWidth: .infinity, maxHeight: .infinity)
     }
 }
 
