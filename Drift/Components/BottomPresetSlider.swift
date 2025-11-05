@@ -6,9 +6,16 @@
 //
 
 import SwiftUI
+import FamilyControls
 
 struct BottomPresetSlider: View {
     @State private var scrollPosition: Int? = 0
+    @State private var showNameAlert = false
+    @State private var newPresetName = ""
+    @State private var showPresetSheet = false
+    @State private var editingPreset: FocusPreset?
+    @StateObject private var presetManager = PresetManager.shared
+
     let presets = ["Work", "Sleep", "Gym", "Poo", "Add"]
 
     var body: some View {
@@ -30,20 +37,23 @@ struct BottomPresetSlider: View {
                     HStack(spacing: DesignTokens.Spacing.large) {
                         ForEach(Array(presets.enumerated()), id: \.offset) { index, preset in
                             if preset == "Add" {
-                                AddPresetCard()
-                                    .containerRelativeFrame(.horizontal, count: 1, spacing: DesignTokens.Spacing.large)
-                                    .scrollTransition { content, phase in
-                                        content
-                                            .scaleEffect(phase.isIdentity ? 1.0 : 0.75)
-                                            .opacity(phase.isIdentity ? 1.0 : 0.3)
-                                    }
-                                    .shadow(
-                                        color: DesignTokens.Shadow.color,
-                                        radius: DesignTokens.Shadow.radius,
-                                        x: DesignTokens.Shadow.x,
-                                        y: DesignTokens.Shadow.y
-                                    )
-                                    .id(index)
+                                Button(action: { showNameAlert = true }) {
+                                    AddPresetCard()
+                                }
+                                .buttonStyle(.plain)
+                                .containerRelativeFrame(.horizontal, count: 1, spacing: DesignTokens.Spacing.large)
+                                .scrollTransition { content, phase in
+                                    content
+                                        .scaleEffect(phase.isIdentity ? 1.0 : 0.75)
+                                        .opacity(phase.isIdentity ? 1.0 : 0.3)
+                                }
+                                .shadow(
+                                    color: DesignTokens.Shadow.color,
+                                    radius: DesignTokens.Shadow.radius,
+                                    x: DesignTokens.Shadow.x,
+                                    y: DesignTokens.Shadow.y
+                                )
+                                .id(index)
                             } else {
                                 PresetCard(title: preset)
                                     .containerRelativeFrame(.horizontal, count: 1, spacing: DesignTokens.Spacing.large)
@@ -93,6 +103,42 @@ struct BottomPresetSlider: View {
             }
         }
         .frame(height: 80)
+        .alert("New Mode", isPresented: $showNameAlert) {
+            TextField("Mode name", text: $newPresetName)
+            Button("Cancel", role: .cancel) {
+                newPresetName = ""
+            }
+            Button("Create") {
+                createPreset()
+            }
+        } message: {
+            Text("Enter a name for your new focus mode")
+        }
+        .sheet(isPresented: $showPresetSheet) {
+            if let preset = editingPreset,
+               let index = presetManager.presets.firstIndex(where: { $0.id == preset.id }) {
+                PresetEditSheet(
+                    preset: Binding(
+                        get: { presetManager.presets[index] },
+                        set: { presetManager.presets[index] = $0 }
+                    ),
+                    isPresented: $showPresetSheet
+                )
+            }
+        }
+    }
+
+    private func createPreset() {
+        guard !newPresetName.isEmpty else { return }
+
+        do {
+            let preset = try presetManager.createPreset(name: newPresetName, selection: FamilyActivitySelection(), blocksAllApps: false)
+            editingPreset = preset
+            showPresetSheet = true
+            newPresetName = ""
+        } catch {
+            print("❌ [BottomPresetSlider] Error creating preset: \(error)")
+        }
     }
 }
 

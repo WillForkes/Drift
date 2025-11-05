@@ -10,7 +10,8 @@ import SwiftUI
 struct SettingsPage: View {
     @StateObject private var driftManager = DriftTagManager.shared
     @StateObject private var presetManager = PresetManager.shared
-    @State private var presentedPreset: FocusPreset?
+    @State private var editingPreset: FocusPreset?
+    @State private var showPresetSheet = false
 
     var body: some View {
         ZStack {
@@ -65,7 +66,8 @@ struct SettingsPage: View {
                                     preset: preset,
                                     appCountText: getAppCountText(for: preset),
                                     assignedToText: getDriftCount(for: preset.id),
-                                    presentedPreset: $presentedPreset
+                                    editingPreset: $editingPreset,
+                                    showSheet: $showPresetSheet
                                 )
                                 .padding(.horizontal, DesignTokens.Padding.large)
                             }
@@ -117,8 +119,17 @@ struct SettingsPage: View {
                 }
             }
         }
-        .sheet(item: $presentedPreset) { preset in
-            PresetEditSheet(preset: preset, isPresented: .constant(true))
+        .sheet(isPresented: $showPresetSheet) {
+            if let preset = editingPreset,
+               let index = presetManager.presets.firstIndex(where: { $0.id == preset.id }) {
+                PresetEditSheet(
+                    preset: Binding(
+                        get: { presetManager.presets[index] },
+                        set: { presetManager.presets[index] = $0 }
+                    ),
+                    isPresented: $showPresetSheet
+                )
+            }
         }
     }
 
@@ -223,7 +234,8 @@ struct PresetModeCard: View {
     let preset: FocusPreset
     let appCountText: String
     let assignedToText: String
-    @Binding var presentedPreset: FocusPreset?
+    @Binding var editingPreset: FocusPreset?
+    @Binding var showSheet: Bool
 
     var body: some View {
         VStack(alignment: .leading, spacing: DesignTokens.Spacing.xLarge) {
@@ -249,7 +261,8 @@ struct PresetModeCard: View {
                 Spacer()
 
                 DriftButton(title: "Edit", icon: "pencil", style: .pill) {
-                    presentedPreset = preset
+                    editingPreset = preset
+                    showSheet = true
                 }
             }
         }
