@@ -10,6 +10,7 @@ import SwiftUI
 struct OnboardingFlow: View {
     let onComplete: () -> Void
     @State private var currentPage = 0
+    @State private var detectedTagId: String?
     private let totalPages = 4
 
     init(onComplete: @escaping () -> Void) {
@@ -34,18 +35,27 @@ struct OnboardingFlow: View {
                     WelcomePage()
                         .tag(0)
 
-                    TapToStartPage()
+                    TapToStartPage(onTagDetected: { tagId in
+                        print("✅ [Onboarding] Tag detected: \(tagId)")
+                        detectedTagId = tagId
+                        // Automatically advance to syncing page
+                        withAnimation {
+                            currentPage = 2
+                        }
+                    })
                         .tag(1)
 
                     SyncingPage()
                         .tag(2)
 
-                    SyncedWelcomePage(onComplete: onComplete)
+                    SyncedWelcomePage(onComplete: {
+                        print("✅ [Onboarding] Completed - entering app")
+                        onComplete()
+                    })
                         .tag(3)
                 }
                 .tabViewStyle(PageTabViewStyle(indexDisplayMode: .never))
-//                UNCOMMENT WHEN FUNCTIONALITY EXISTS
-//                .disabled(currentPage != 0) // Only allow swiping on first page
+                .disabled(currentPage != 0 && currentPage != 3) // Only allow swiping on first and last pages
 
                 Spacer()
             }

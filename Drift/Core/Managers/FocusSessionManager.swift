@@ -192,4 +192,26 @@ class FocusSessionManager: ObservableObject {
             UserDefaults.standard.set(data, forKey: Constants.currentPresetKey)
         }
     }
+
+    // MARK: - Debug/Reset
+
+    /// Clear all session data and reset to defaults (for development/testing)
+    func resetAllData() {
+        // Stop any active session
+        if isSessionActive {
+            stopSession()
+        }
+
+        // Clear app blocking
+        removeAppBlocking()
+
+        // Reset to default presets
+        presets = FocusPreset.defaultPresets
+        currentPreset = presets.first
+
+        // Clear UserDefaults
+        UserDefaults.standard.removeObject(forKey: Constants.sessionActiveKey)
+        UserDefaults.standard.removeObject(forKey: Constants.presetsKey)
+        UserDefaults.standard.removeObject(forKey: Constants.currentPresetKey)
+    }
 }

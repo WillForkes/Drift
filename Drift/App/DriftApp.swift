@@ -21,6 +21,9 @@ struct DriftApp: App {
                     .onOpenURL { url in
                         handleUniversalLink(url)
                     }
+                    .onReceive(NotificationCenter.default.publisher(for: .hardResetRequested)) { _ in
+                        performHardReset()
+                    }
             } else {
                 OnboardingFlow(onComplete: {
                     hasCompletedOnboarding = true
@@ -78,10 +81,30 @@ struct DriftApp: App {
             sessionManager.toggleSession()
         }
     }
+
+    /// Perform hard reset of all app data (for development/testing)
+    private func performHardReset() {
+        print("🗑️ [Debug] Hard reset - clearing all data")
+
+        // Clear all manager data
+        sessionManager.resetAllData()
+        tagManager.resetAllData()
+        parentalControls.resetAllData()
+        AnalyticsManager.shared.resetAllData()
+
+        // Explicitly remove onboarding flag from UserDefaults
+        UserDefaults.standard.removeObject(forKey: "drift.onboarding.completed")
+
+        // Reset the @AppStorage property to trigger view update
+        hasCompletedOnboarding = false
+
+        print("✅ [Debug] Reset complete")
+    }
 }
 
 extension Notification.Name {
     static let nfcStopRequested = Notification.Name("nfcStopRequested")
     static let nfcTagNeedsSetup = Notification.Name("nfcTagNeedsSetup")
     static let nfcTagMissingId = Notification.Name("nfcTagMissingId")
+    static let hardResetRequested = Notification.Name("hardResetRequested")
 }

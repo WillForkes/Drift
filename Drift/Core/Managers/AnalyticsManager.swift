@@ -206,4 +206,14 @@ class AnalyticsManager: ObservableObject {
 
         sessions = loadedSessions
     }
+
+    // MARK: - Debug/Reset
+
+    /// Clear all analytics data (for development/testing)
+    func resetAllData() {
+        currentSession = nil
+        sessions = []
+        UserDefaults.standard.removeObject(forKey: Constants.sessionsKey)
+        UserDefaults.standard.removeObject(forKey: Constants.lastSessionDateKey)
+    }
 }

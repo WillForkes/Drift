@@ -85,4 +85,12 @@ class DriftTagManager: ObservableObject {
         }
         tags = loadedTags
     }
+
+    // MARK: - Debug/Reset
+
+    /// Clear all registered tags (for development/testing)
+    func resetAllData() {
+        tags = []
+        UserDefaults.standard.removeObject(forKey: Constants.tagsKey)
+    }
 }

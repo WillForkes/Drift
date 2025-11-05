@@ -13,16 +13,15 @@ struct SettingsPage: View {
         DriftDevice(id: "0x13304", name: "Living Room", preset: "All", isSynced: true),
         DriftDevice(id: "0x13304", name: "Bedroom", preset: "All", isSynced: true)
     ]
-    
+
     // Mock data for presets/modes
     let mockPresets = [
         PresetMode(name: "Work", appsSelected: 31, assignedTo: "Bedroom"),
         PresetMode(name: "Sleep", appsSelected: 5, assignedTo: "Bedroom"),
         PresetMode(name: "Gym", appsSelected: 31, assignedTo: "Bedroom")
     ]
-    
+
     @State private var presentedPreset: FocusPreset?
-    @AppStorage("drift.onboarding.completed") private var hasCompletedOnboarding = false
 
     var body: some View {
         ZStack {
@@ -91,10 +90,11 @@ struct SettingsPage: View {
                             .padding(.horizontal, DesignTokens.Padding.large)
 
                         VStack(spacing: DesignTokens.Spacing.large) {
-                            SettingsRow(title: "Reset Onboarding", icon: "arrow.counterclockwise")
-                                .onTapGesture {
-                                    hasCompletedOnboarding = false
-                                }
+                            SettingsRow(
+                                title: "Hard Reset (Clear All Data)",
+                                icon: "exclamationmark.triangle.fill",
+                                action: performHardReset
+                            )
                         }
                         .padding(.horizontal, DesignTokens.Padding.large)
                     }
@@ -109,6 +109,13 @@ struct SettingsPage: View {
         .sheet(item: $presentedPreset) { preset in
             PresetEditSheet(preset: preset, isPresented: .constant(true))
         }
+    }
+
+    // MARK: - Debug Methods
+
+    private func performHardReset() {
+        // Post notification to trigger app-level hard reset
+        NotificationCenter.default.post(name: .hardResetRequested, object: nil)
     }
 }
 
@@ -152,8 +159,7 @@ struct DriftCard: View {
                 Spacer()
                 
                 DriftButton(title: "Delete", icon: "xmark", style: .pill) {
-                    // Delete action placeholder
-                    print("Delete \(drift.name)")
+                    // TODO: Implement delete drift functionality
                 }
             }
         }
@@ -220,7 +226,8 @@ struct PresetModeCard: View {
 struct SettingsRow: View {
     let title: String
     let icon: String
-    
+    var action: (() -> Void)? = nil
+
     var body: some View {
         HStack(spacing: DesignTokens.Spacing.xLarge) {
             Image(systemName: icon)
@@ -248,8 +255,12 @@ struct SettingsRow: View {
             y: DesignTokens.Shadow.y
         )
         .onTapGesture {
-            // Settings row tap placeholder
-            print("\(title) tapped")
+            if let action = action {
+                action()
+            } else {
+                // Settings row tap placeholder
+                print("\(title) tapped")
+            }
         }
     }
 }
