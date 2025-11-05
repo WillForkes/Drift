@@ -74,15 +74,6 @@ struct OnboardingFlow: View {
                             }
                         )
                         .tag(2)
-                    } else {
-                        // Fallback if no tag ID (shouldn't happen)
-                        SyncingPage(
-                            tagId: "",
-                            driftName: $driftName,
-                            onSuccess: {},
-                            onError: { _ in }
-                        )
-                        .tag(2)
                     }
 
                     SyncedWelcomePage(onComplete: {
@@ -92,7 +83,10 @@ struct OnboardingFlow: View {
                         .tag(3)
                 }
                 .tabViewStyle(PageTabViewStyle(indexDisplayMode: .never))
-                .disabled(currentPage != 0 && currentPage != 3) // Only allow swiping on first and last pages
+                .highPriorityGesture(
+                    // Block swipe gestures on pages 1, 2, and 3 (only allow on page 0)
+                    currentPage != 0 ? DragGesture() : nil
+                )
 
                 Spacer()
             }

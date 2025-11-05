@@ -84,8 +84,15 @@ extension NFCReaderManager: NFCNDEFReaderSessionDelegate {
                     print("⏱️ [NFC] Scan timed out")
                     errorMessage = "Scanning timed out. Please try again."
                 default:
-                    print("❌ [NFC] Error: \(nfcError.code.rawValue)")
-                    errorMessage = "NFC scanning error. Please try again."
+                    // Check if it's a 200-level code (success states)
+                    let errorCode = nfcError.code.rawValue
+                    if errorCode >= 200 && errorCode < 300 {
+                        // 200-level codes are success states, not errors
+                        errorMessage = nil
+                    } else {
+                        print("❌ [NFC] Error: \(errorCode)")
+                        errorMessage = "NFC scanning error. Please try again."
+                    }
                 }
             }
         }

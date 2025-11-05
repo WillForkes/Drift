@@ -32,19 +32,7 @@ struct SyncingPage: View {
                 // Non-naming states: Use absolute positioning
                 if syncState != .namingTag {
                     VStack(spacing: 0) {
-                        // Heading Section - Fixed 80px from top
-                        VStack(spacing: DesignTokens.Spacing.medium) {
-                            Text(headingText)
-                                .heading1()
-                                .foregroundColor(DesignTokens.Colors.whiteText)
-
-                            Text(subheadingText)
-                                .heading2()
-                                .foregroundColor(DesignTokens.Colors.whiteText)
-                        }
-                        .padding(.top, 80)
-                        .frame(maxWidth: .infinity)
-
+                        headingView
                         Spacer()
                     }
 
@@ -61,19 +49,7 @@ struct SyncingPage: View {
                 } else {
                     // Naming state: Use flexible layout for keyboard handling
                     VStack(spacing: 0) {
-                        // Heading Section - Fixed 80px from top
-                        VStack(spacing: DesignTokens.Spacing.medium) {
-                            Text(headingText)
-                                .heading1()
-                                .foregroundColor(DesignTokens.Colors.whiteText)
-
-                            Text(subheadingText)
-                                .heading2()
-                                .foregroundColor(DesignTokens.Colors.whiteText)
-                        }
-                        .padding(.top, 80)
-                        .frame(maxWidth: .infinity)
-
+                        headingView
                         Spacer()
 
                         // Naming form - in normal flow
@@ -92,6 +68,21 @@ struct SyncingPage: View {
     }
 
     // MARK: - Content Views
+
+    private var headingView: some View {
+        VStack(spacing: DesignTokens.Spacing.medium) {
+            Text(headingText)
+                .heading1()
+                .foregroundColor(DesignTokens.Colors.whiteText)
+
+            Text(subheadingText)
+                .heading2()
+                .foregroundColor(DesignTokens.Colors.whiteText)
+        }
+        .padding(.top, 80)
+        .frame(maxWidth: .infinity)
+    }
+
     @ViewBuilder
     private var contentView: some View {
         switch syncState {
@@ -108,20 +99,20 @@ struct SyncingPage: View {
         VStack(spacing: DesignTokens.Spacing.large) {
             PillBadge(
                 text: "NFC Chip valid",
-                icon: badgeIcon(for: .validating),
-                style: .light
+                icon: badgeIcon(for: SyncState.validating),
+                style: badgeStyle(for: SyncState.validating)
             )
 
             PillBadge(
                 text: "Setting up...",
-                icon: badgeIcon(for: .authorizing),
-                style: .transparent
+                icon: badgeIcon(for: SyncState.authorizing),
+                style: badgeStyle(for: SyncState.authorizing)
             )
 
             PillBadge(
                 text: "Finishing up...",
-                icon: badgeIcon(for: .finishing),
-                style: .transparent
+                icon: badgeIcon(for: SyncState.finishing),
+                style: badgeStyle(for: SyncState.finishing)
             )
         }
     }
@@ -221,28 +212,31 @@ struct SyncingPage: View {
     }
 
     private func badgeIcon(for step: SyncState) -> PillIcon {
-        switch (syncState, step) {
-        case (.validating, .validating):
-            return .systemImage(name: "arrow.clockwise", color: .black, size: 14)
-        case (.authorizing, .validating), (.namingTag, .validating), (.finishing, .validating), (.success, .validating):
-            return .systemImage(name: "checkmark", color: .green, size: 14)
+        let isCompleted = isStepCompleted(step)
+        let isActive = syncState == step
 
-        case (.authorizing, .authorizing):
-            return .systemImage(name: "arrow.clockwise", color: .black, size: 12)
-        case (.namingTag, .authorizing), (.finishing, .authorizing), (.success, .authorizing):
-            return .systemImage(name: "checkmark", color: .green, size: 12)
-        case (_, .authorizing):
-            return .systemImage(name: "arrow.clockwise", color: .black, size: 12)
-        case (.finishing, .finishing):
-            return .systemImage(name: "arrow.clockwise", color: .black, size: 12)
-        case (.success, .finishing):
-            return .systemImage(name: "checkmark", color: .green, size: 12)
-            
-        case (_, .finishing):
-            return .systemImage(name: "arrow.clockwise", color: .black, size: 12)
-        default:
-            return .systemImage(name: "arrow.clockwise", color: .black, size: 12)
+        let iconSize: CGFloat = step == .validating ? 14 : 12
+
+        if isCompleted {
+            return .systemImage(name: "checkmark", color: .green, size: iconSize)
+        } else if isActive {
+            return .systemImage(name: "arrow.clockwise", color: .black, size: iconSize)
+        } else {
+            return .systemImage(name: "arrow.clockwise", color: .black, size: iconSize)
         }
+    }
+
+    private func isStepCompleted(_ step: SyncState) -> Bool {
+        let progression: [SyncState] = [.validating, .authorizing, .finishing]
+        guard let currentIndex = progression.firstIndex(where: { $0 == syncState }),
+              let stepIndex = progression.firstIndex(where: { $0 == step }) else {
+            return false
+        }
+        return currentIndex > stepIndex || syncState == .namingTag || syncState == .success
+    }
+
+    private func badgeStyle(for step: SyncState) -> PillStyle {
+        return isStepCompleted(step) ? .light : .transparent
     }
 
     // MARK: - Sync Logic
@@ -250,10 +244,8 @@ struct SyncingPage: View {
     private func performSync() {
         Task {
             do {
-                // Step 1: Validate tag
+                // DO ALL VALIDATION UPFRONT (no delays)
                 print("🔄 [Sync] Validating tag...")
-                syncState = .validating
-                try await Task.sleep(nanoseconds: 1_000_000_000) // 0.5s
 
                 // Check if tag ID is valid
                 guard !tagId.isEmpty else {
@@ -265,13 +257,27 @@ struct SyncingPage: View {
                     throw SyncError.alreadyRegistered
                 }
 
-                // Step 2: Authorize (simulate API call or Screen Time check)
-                print("🔄 [Sync] Authorizing...")
+                print("✅ [Sync] Validation complete - starting animations")
+
+                // NOW ANIMATE THROUGH STATES (purely for UX)
+                // Step 1: Show validating animation (badge 1 loading)
+                syncState = .validating
+                try await Task.sleep(nanoseconds: 1_000_000_000) // 1s
+
+                // Step 2: Show authorizing animation (badge 1 ✓, badge 2 loading)
                 syncState = .authorizing
                 try await Task.sleep(nanoseconds: 1_000_000_000) // 1s
 
-                // Step 3: Prompt user to name their drift
-                print("📝 [Sync] Waiting for drift name...")
+                // Step 3: Show finishing animation (badge 1 ✓, badge 2 ✓, badge 3 loading)
+                syncState = .finishing
+                try await Task.sleep(nanoseconds: 1_000_000_000) // 1s
+
+                // Step 4: Show success briefly (all 3 badges ✓)
+                syncState = .success
+                try await Task.sleep(nanoseconds: 500_000_000) // 0.5s
+
+                // Step 5: All badges complete, prompt user to name their drift
+                print("📝 [Sync] Ready for naming")
                 syncState = .namingTag
 
             } catch {
@@ -283,28 +289,19 @@ struct SyncingPage: View {
     private func registerTag() {
         Task {
             do {
-                // Step 4: Finish registration
-                print("🔄 [Sync] Finishing registration...")
-                syncState = .finishing
-                try await Task.sleep(nanoseconds: 500_000_000) // 0.5s
-
-                // No preset assigned yet
+                // Do actual registration (stay on naming screen)
                 let presetId = ""
-
-                // Register tag with current timestamp (trim whitespace)
                 let trimmedName = driftName.trimmingCharacters(in: .whitespacesAndNewlines)
+
                 tagManager.registerTag(
                     id: tagId,
                     label: trimmedName,
                     presetId: presetId
                 )
 
-                print("✅ [Sync] Tag registered: \(tagId) as '\(trimmedName)' (no preset yet)")
+                print("✅ [Sync] Tag registered: \(tagId) as '\(trimmedName)'")
 
-                // Show success
-                syncState = .success
-                try await Task.sleep(nanoseconds: 500_000_000) // Show success for 0.5s
-
+                // Complete without changing UI
                 onSuccess()
 
             } catch {
