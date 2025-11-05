@@ -22,6 +22,7 @@ struct SettingsPage: View {
     ]
     
     @State private var presentedPreset: FocusPreset?
+    @AppStorage("drift.onboarding.completed") private var hasCompletedOnboarding = false
 
     var body: some View {
         ZStack {
@@ -79,6 +80,25 @@ struct SettingsPage: View {
                         }
                         .padding(.horizontal, DesignTokens.Padding.large)
                     }
+
+                    // Debug Section (only in DEBUG builds)
+                    #if DEBUG
+                    VStack(spacing: DesignTokens.Spacing.xLarge) {
+                        Text("Debug")
+                            .heading1()
+                            .foregroundColor(DesignTokens.Colors.textPrimary)
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                            .padding(.horizontal, DesignTokens.Padding.large)
+
+                        VStack(spacing: DesignTokens.Spacing.large) {
+                            SettingsRow(title: "Reset Onboarding", icon: "arrow.counterclockwise")
+                                .onTapGesture {
+                                    hasCompletedOnboarding = false
+                                }
+                        }
+                        .padding(.horizontal, DesignTokens.Padding.large)
+                    }
+                    #endif
 
                     // Bottom spacing
                     Spacer()

@@ -12,13 +12,20 @@ struct DriftApp: App {
     @StateObject private var sessionManager = FocusSessionManager.shared
     @StateObject private var parentalControls = ParentalControlsManager.shared
     @StateObject private var tagManager = DriftTagManager.shared
+    @AppStorage("drift.onboarding.completed") private var hasCompletedOnboarding = false
 
     var body: some Scene {
         WindowGroup {
-            MainContainerView()
-                .onOpenURL { url in
-                    handleUniversalLink(url)
-                }
+            if hasCompletedOnboarding {
+                MainContainerView()
+                    .onOpenURL { url in
+                        handleUniversalLink(url)
+                    }
+            } else {
+                OnboardingFlow(onComplete: {
+                    hasCompletedOnboarding = true
+                })
+            }
         }
     }
 

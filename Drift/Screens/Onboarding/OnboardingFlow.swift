@@ -8,8 +8,13 @@
 import SwiftUI
 
 struct OnboardingFlow: View {
+    let onComplete: () -> Void
     @State private var currentPage = 0
     private let totalPages = 4
+
+    init(onComplete: @escaping () -> Void) {
+        self.onComplete = onComplete
+    }
 
     var body: some View {
         ZStack {
@@ -35,7 +40,7 @@ struct OnboardingFlow: View {
                     SyncingPage()
                         .tag(2)
 
-                    SyncedWelcomePage()
+                    SyncedWelcomePage(onComplete: onComplete)
                         .tag(3)
                 }
                 .tabViewStyle(PageTabViewStyle(indexDisplayMode: .never))
@@ -58,5 +63,7 @@ struct OnboardingFlow: View {
 }
 
 #Preview {
-    OnboardingFlow()
+    OnboardingFlow(onComplete: {
+        print("Onboarding completed")
+    })
 }

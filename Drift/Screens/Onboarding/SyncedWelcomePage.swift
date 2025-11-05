@@ -8,6 +8,12 @@
 import SwiftUI
 
 struct SyncedWelcomePage: View {
+    let onComplete: () -> Void
+
+    init(onComplete: @escaping () -> Void) {
+        self.onComplete = onComplete
+    }
+
     var body: some View {
         GeometryReader { geometry in
             ZStack {
@@ -38,7 +44,7 @@ struct SyncedWelcomePage: View {
 
                 // Get Started button - positioned below center image
                 DriftButton(title: "Get Started", style: .primary) {
-                    print("Get Started tapped")
+                    onComplete()
                 }
                 .position(x: geometry.size.width / 2, y: (geometry.size.height / 2) + 100 + 70)
             }
@@ -48,5 +54,7 @@ struct SyncedWelcomePage: View {
 }
 
 #Preview {
-    SyncedWelcomePage()
+    SyncedWelcomePage(onComplete: {
+        print("Onboarding completed")
+    })
 }
