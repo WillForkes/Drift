@@ -67,12 +67,9 @@ Drift/
 │   │   │   └── AnalyticsPage.swift             # Analytics page with 2x2 stats grid
 │   │   ├── Settings/
 │   │   │   └── SettingsPage.swift              # Settings page (design in progress)
-│   │   ├── ParentalControls/
-│   │   │   ├── ParentalControlsSetupView.swift # Passcode setup flow
-│   │   │   └── PasscodeEntryView.swift         # 4-digit PIN entry
-│   │   └── Tags/
-│   │       ├── RegisteredTagsView.swift        # Manage registered NFC tags
-│   │       └── TagSetupView.swift              # Register new NFC tags
+│   │   └── ParentalControls/
+│   │       ├── ParentalControlsSetupView.swift # Passcode setup flow
+│   │       └── PasscodeEntryView.swift         # 4-digit PIN entry
 │   │
 │   ├── Components/
 │   │   ├── PillBadge.swift                     # Status indicator badge

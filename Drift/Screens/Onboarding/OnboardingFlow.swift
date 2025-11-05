@@ -50,6 +50,12 @@ struct OnboardingFlow: View {
                                 }
                             }
                         },
+                        onCancelled: {
+                            print("ℹ️ [Onboarding] User cancelled NFC scan - returning to welcome")
+                            withAnimation {
+                                currentPage = 0
+                            }
+                        },
                         errorMessage: syncError
                     ).tag(1)
 

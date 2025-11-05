@@ -33,7 +33,6 @@ class FocusSessionManager: ObservableObject {
     }
 
     @Published private(set) var isAuthorized: Bool = false
-    @Published var presets: [FocusPreset] = []
     @Published var currentPreset: FocusPreset?
 
     // MARK: - Private Properties
@@ -43,7 +42,6 @@ class FocusSessionManager: ObservableObject {
     // MARK: - Constants
     private enum Constants {
         static let sessionActiveKey = "drift.session.active"
-        static let presetsKey = "drift.presets"
         static let currentPresetKey = "drift.current.preset"
     }
 
@@ -52,9 +50,8 @@ class FocusSessionManager: ObservableObject {
         // Restore session state from UserDefaults
         self.isSessionActive = UserDefaults.standard.bool(forKey: Constants.sessionActiveKey)
 
-        // Load presets after isSessionActive is initialized
-        self.presets = Self.loadPresetsStatic()
-        self.currentPreset = Self.loadCurrentPresetStatic(from: self.presets)
+        // Load current preset
+        self.currentPreset = Self.loadCurrentPresetStatic()
 
         // Check authorization status
         checkAuthorization()
@@ -101,31 +98,6 @@ class FocusSessionManager: ObservableObject {
         }
     }
 
-    /// Update a preset's app selection
-    func updatePreset(_ preset: FocusPreset, selection: FamilyActivitySelection) {
-        var updatedPreset = preset
-        updatedPreset.selection = selection
-
-        if let index = presets.firstIndex(where: { $0.id == preset.id }) {
-            presets[index] = updatedPreset
-        }
-
-        savePresets()
-
-        // If this is the current preset and session is active, apply changes
-        if currentPreset?.id == preset.id {
-            currentPreset = updatedPreset
-            if isSessionActive {
-                applyAppBlocking()
-            }
-        }
-    }
-
-    /// Get a preset by ID
-    func getPreset(id: String) -> FocusPreset? {
-        return presets.first(where: { $0.id == id })
-    }
-
     // MARK: - Private Methods
 
     private func checkAuthorization() {
@@ -163,28 +135,13 @@ class FocusSessionManager: ObservableObject {
         store.shield.webDomains = nil
     }
 
-    private static func loadPresetsStatic() -> [FocusPreset] {
-        guard let data = UserDefaults.standard.data(forKey: Constants.presetsKey),
-              let presets = try? JSONDecoder().decode([FocusPreset].self, from: data) else {
-            // Return default presets if none saved
-            return FocusPreset.defaultPresets
-        }
-        return presets
-    }
-
-    private static func loadCurrentPresetStatic(from presets: [FocusPreset]) -> FocusPreset? {
+    private static func loadCurrentPresetStatic() -> FocusPreset? {
         guard let data = UserDefaults.standard.data(forKey: Constants.currentPresetKey),
               let preset = try? JSONDecoder().decode(FocusPreset.self, from: data) else {
-            // Default to first preset if none saved
-            return presets.first
+            // Default to first preset from PresetManager if none saved
+            return PresetManager.shared.presets.first
         }
         return preset
-    }
-
-    private func savePresets() {
-        if let data = try? JSONEncoder().encode(presets) {
-            UserDefaults.standard.set(data, forKey: Constants.presetsKey)
-        }
     }
 
     private func saveCurrentPreset(_ preset: FocusPreset) {
@@ -205,13 +162,11 @@ class FocusSessionManager: ObservableObject {
         // Clear app blocking
         removeAppBlocking()
 
-        // Reset to default presets
-        presets = FocusPreset.defaultPresets
-        currentPreset = presets.first
+        // Reset current preset to first available
+        currentPreset = PresetManager.shared.presets.first
 
         // Clear UserDefaults
         UserDefaults.standard.removeObject(forKey: Constants.sessionActiveKey)
-        UserDefaults.standard.removeObject(forKey: Constants.presetsKey)
         UserDefaults.standard.removeObject(forKey: Constants.currentPresetKey)
     }
 }
