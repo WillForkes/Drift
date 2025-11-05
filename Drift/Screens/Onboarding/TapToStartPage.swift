@@ -10,9 +10,19 @@ import SwiftUI
 struct TapToStartPage: View {
     @StateObject private var nfcReader = NFCReaderManager.shared
     let onTagDetected: (String) -> Void
+    let onCancelled: () -> Void
+    let errorMessage: String?
 
-    init(onTagDetected: @escaping (String) -> Void = { _ in }) {
+    @State private var showError: Bool = false
+
+    init(
+        onTagDetected: @escaping (String) -> Void = { _ in },
+        onCancelled: @escaping () -> Void = {},
+        errorMessage: String? = nil
+    ) {
         self.onTagDetected = onTagDetected
+        self.onCancelled = onCancelled
+        self.errorMessage = errorMessage
     }
 
     var body: some View {
@@ -76,6 +86,15 @@ struct TapToStartPage: View {
             .frame(maxWidth: .infinity, maxHeight: .infinity)
             .onAppear {
                 nfcReader.startScanning()
+                // Show error if coming from sync failure
+                if errorMessage != nil {
+                    showError = true
+                    // Auto-dismiss after 3 seconds
+                    Task {
+                        try? await Task.sleep(nanoseconds: 3_000_000_000)
+                        showError = false
+                    }
+                }
             }
             .onDisappear {
                 nfcReader.stopScanning()
@@ -83,6 +102,14 @@ struct TapToStartPage: View {
             .onChange(of: nfcReader.detectedTagId) { newTagId in
                 if let tagId = newTagId {
                     onTagDetected(tagId)
+                }
+            }
+            .onChange(of: nfcReader.isScanning) { isScanning in
+                // Detect user cancellation
+                // If scanning stopped but no tag detected and no error, user cancelled
+                if !isScanning && nfcReader.detectedTagId == nil && nfcReader.errorMessage == nil {
+                    print("ℹ️ [TapToStart] User cancelled NFC scan")
+                    onCancelled()
                 }
             }
             .onChange(of: nfcReader.errorMessage) { error in
@@ -93,10 +120,27 @@ struct TapToStartPage: View {
             .overlay(
                 // Error message overlay
                 Group {
-                    if let errorMessage = nfcReader.errorMessage {
+                    // Show sync error from parent (with auto-dismiss)
+                    if let error = errorMessage, showError {
                         VStack {
                             Spacer()
-                            Text(errorMessage)
+                            Text(error)
+                                .bodySmall()
+                                .foregroundColor(.red)
+                                .multilineTextAlignment(.center)
+                                .padding()
+                                .background(Color.white.opacity(0.9))
+                                .cornerRadius(DesignTokens.Radii.radiusStandard)
+                                .padding()
+                                .padding(.bottom, 120)
+                        }
+                        .transition(.move(edge: .bottom).combined(with: .opacity))
+                    }
+                    // Show NFC error from manager
+                    else if let nfcError = nfcReader.errorMessage {
+                        VStack {
+                            Spacer()
+                            Text(nfcError)
                                 .bodySmall()
                                 .foregroundColor(.red)
                                 .multilineTextAlignment(.center)

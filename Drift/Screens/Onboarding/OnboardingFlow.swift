@@ -11,6 +11,8 @@ struct OnboardingFlow: View {
     let onComplete: () -> Void
     @State private var currentPage = 0
     @State private var detectedTagId: String?
+    @State private var driftName: String = ""
+    @State private var syncError: String?
     private let totalPages = 4
 
     init(onComplete: @escaping () -> Void) {
@@ -35,18 +37,53 @@ struct OnboardingFlow: View {
                     WelcomePage()
                         .tag(0)
 
-                    TapToStartPage(onTagDetected: { tagId in
-                        print("✅ [Onboarding] Tag detected: \(tagId)")
-                        detectedTagId = tagId
-                        // Automatically advance to syncing page
-                        withAnimation {
-                            currentPage = 2
-                        }
-                    })
-                        .tag(1)
+                    TapToStartPage(
+                        onTagDetected: { tagId in
+                            print("✅ [Onboarding] Tag detected: \(tagId)")
+                            detectedTagId = tagId
+                            syncError = nil // Clear any previous errors
+                            // Wait 3 seconds for NFC dialog to dismiss before showing syncing page
+                            Task {
+                                try? await Task.sleep(nanoseconds: 3_000_000_000)
+                                withAnimation {
+                                    currentPage = 2
+                                }
+                            }
+                        },
+                        errorMessage: syncError
+                    ).tag(1)
 
-                    SyncingPage()
+                    if let tagId = detectedTagId {
+                        SyncingPage(
+                            tagId: tagId,
+                            driftName: $driftName,
+                            onSuccess: {
+                                print("✅ [Onboarding] Sync successful")
+                                // Advance to synced welcome page
+                                withAnimation {
+                                    currentPage = 3
+                                }
+                            },
+                            onError: { error in
+                                print("❌ [Onboarding] Sync error: \(error)")
+                                syncError = error
+                                // Navigate back to tap to start page
+                                withAnimation {
+                                    currentPage = 1
+                                }
+                            }
+                        )
                         .tag(2)
+                    } else {
+                        // Fallback if no tag ID (shouldn't happen)
+                        SyncingPage(
+                            tagId: "",
+                            driftName: $driftName,
+                            onSuccess: {},
+                            onError: { _ in }
+                        )
+                        .tag(2)
+                    }
 
                     SyncedWelcomePage(onComplete: {
                         print("✅ [Onboarding] Completed - entering app")

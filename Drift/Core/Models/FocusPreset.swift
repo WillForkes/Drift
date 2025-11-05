@@ -22,12 +22,8 @@ struct FocusPreset: Codable, Identifiable, Equatable {
         self.blocksAllApps = blocksAllApps
     }
 
-    // Default presets
-    static let socialMedia = FocusPreset(id: "social-media", name: "Social Media")
-    static let work = FocusPreset(id: "work", name: "Work")
-    static let all = FocusPreset(id: "all", name: "All", blocksAllApps: true)
-
-    static let defaultPresets: [FocusPreset] = [.socialMedia, .work, .all]
+    // Default presets - empty to require user setup
+    static let defaultPresets: [FocusPreset] = []
 
     // Check if preset has apps configured
     var isConfigured: Bool {

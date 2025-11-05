@@ -356,7 +356,7 @@ struct RoundedCorner: Shape {
 
 #Preview {
     PresetEditSheet(
-        preset: FocusPreset.work,
+        preset: FocusPreset(id: "testing", name: "Testing"),
         isPresented: .constant(true)
     )
 }
