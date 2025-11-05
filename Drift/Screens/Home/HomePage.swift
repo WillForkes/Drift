@@ -19,7 +19,7 @@ struct HomePage: View {
             // Main Content - Image centered, text above
             VStack(spacing: DesignTokens.Spacing.xLarge) {
                 // Pill Badge with "drifting" text
-                PillBadge(text: "drifting")
+                PillBadge(text: "Drift Name")
 
                 // Heading text
                 Text("Tap drift to activate")
