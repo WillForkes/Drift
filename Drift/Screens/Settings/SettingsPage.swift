@@ -8,19 +8,8 @@
 import SwiftUI
 
 struct SettingsPage: View {
-    // Mock data for drifts
-    let mockDrifts = [
-        DriftDevice(id: "0x13304", name: "Living Room", preset: "All", isSynced: true),
-        DriftDevice(id: "0x13304", name: "Bedroom", preset: "All", isSynced: true)
-    ]
-
-    // Mock data for presets/modes
-    let mockPresets = [
-        PresetMode(name: "Work", appsSelected: 31, assignedTo: "Bedroom"),
-        PresetMode(name: "Sleep", appsSelected: 5, assignedTo: "Bedroom"),
-        PresetMode(name: "Gym", appsSelected: 31, assignedTo: "Bedroom")
-    ]
-
+    @StateObject private var driftManager = DriftTagManager.shared
+    @StateObject private var presetManager = PresetManager.shared
     @State private var presentedPreset: FocusPreset?
 
     var body: some View {
@@ -38,9 +27,22 @@ struct SettingsPage: View {
                             .frame(maxWidth: .infinity, alignment: .leading)
                             .padding(.horizontal, DesignTokens.Padding.large)
 
-                        ForEach(mockDrifts, id: \.id) { drift in
-                            DriftCard(drift: drift)
+                        if driftManager.tags.isEmpty {
+                            Text("No drifts")
+                                .body()
+                                .subtextColor()
                                 .padding(.horizontal, DesignTokens.Padding.large)
+                        } else {
+                            ForEach(driftManager.tags) { tag in
+                                DriftCard(
+                                    tag: tag,
+                                    presetName: getPresetName(for: tag.presetId),
+                                    onDelete: {
+                                        driftManager.deleteTag(id: tag.id)
+                                    }
+                                )
+                                .padding(.horizontal, DesignTokens.Padding.large)
+                            }
                         }
                     }
 
@@ -52,12 +54,21 @@ struct SettingsPage: View {
                             .frame(maxWidth: .infinity, alignment: .leading)
                             .padding(.horizontal, DesignTokens.Padding.large)
 
-                        ForEach(Array(mockPresets.enumerated()), id: \.offset) { index, preset in
-                            PresetModeCard(
-                                preset: preset,
-                                presentedPreset: $presentedPreset
-                            )
-                            .padding(.horizontal, DesignTokens.Padding.large)
+                        if presetManager.presets.isEmpty {
+                            Text("No modes")
+                                .body()
+                                .subtextColor()
+                                .padding(.horizontal, DesignTokens.Padding.large)
+                        } else {
+                            ForEach(presetManager.presets) { preset in
+                                PresetModeCard(
+                                    preset: preset,
+                                    appCountText: getAppCountText(for: preset),
+                                    assignedToText: getDriftCount(for: preset.id),
+                                    presentedPreset: $presentedPreset
+                                )
+                                .padding(.horizontal, DesignTokens.Padding.large)
+                            }
                         }
                     }
 
@@ -111,6 +122,36 @@ struct SettingsPage: View {
         }
     }
 
+    // MARK: - Helper Functions
+
+    private func getPresetName(for presetId: String) -> String {
+        guard !presetId.isEmpty,
+              let preset = presetManager.getPreset(id: presetId) else {
+            return "None"
+        }
+        return preset.name
+    }
+
+    private func getDriftCount(for presetId: String) -> String {
+        let count = driftManager.tags.filter { $0.presetId == presetId }.count
+        if count == 0 {
+            return "Not assigned"
+        } else if count == 1 {
+            return "1 drift"
+        } else {
+            return "\(count) drifts"
+        }
+    }
+
+    private func getAppCountText(for preset: FocusPreset) -> String {
+        if preset.blocksAllApps {
+            return "All apps"
+        } else {
+            let count = preset.selection.applicationTokens.count
+            return "\(count) apps"
+        }
+    }
+
     // MARK: - Debug Methods
 
     private func performHardReset() {
@@ -122,44 +163,46 @@ struct SettingsPage: View {
 /// MARK: - Supporting Views
 
 struct DriftCard: View {
-    let drift: DriftDevice
-    
+    let tag: DriftTag
+    let presetName: String
+    let onDelete: () -> Void
+
     var body: some View {
         VStack(alignment: .leading, spacing: DesignTokens.Spacing.xLarge) {
             // Header with name and ID
             HStack {
-                Text(drift.name)
+                Text(tag.label)
                     .heading2()
                     .foregroundColor(DesignTokens.Colors.textPrimary)
-                
+
                 Spacer()
-                
-                Text("ID: \(drift.id)")
+
+                Text("ID: \(tag.id)")
                     .bodySmall()
                     .extraSubtextColor()
             }
-            
+
             // Preset info
-            Text("Preset: \(drift.preset)")
+            Text("Preset: \(presetName)")
                 .body()
                 .subtextColor()
-            
+
             // Sync status and delete button
             HStack {
                 HStack(spacing: DesignTokens.Spacing.medium) {
                     Circle()
-                        .fill(drift.isSynced ? Color.green : Color.red)
+                        .fill(Color.green)
                         .frame(width: 8, height: 8)
-                    
-                    Text(drift.isSynced ? "Synced" : "Not Synced")
+
+                    Text("Synced")
                         .bodySmall()
                         .subtextColor()
                 }
-                
+
                 Spacer()
-                
+
                 DriftButton(title: "Delete", icon: "xmark", style: .pill) {
-                    // TODO: Implement delete drift functionality
+                    onDelete()
                 }
             }
         }
@@ -177,9 +220,11 @@ struct DriftCard: View {
 }
 
 struct PresetModeCard: View {
-    let preset: PresetMode
+    let preset: FocusPreset
+    let appCountText: String
+    let assignedToText: String
     @Binding var presentedPreset: FocusPreset?
-    
+
     var body: some View {
         VStack(alignment: .leading, spacing: DesignTokens.Spacing.xLarge) {
             // Header with name and apps count
@@ -187,26 +232,24 @@ struct PresetModeCard: View {
                 Text(preset.name)
                     .heading2()
                     .foregroundColor(DesignTokens.Colors.textPrimary)
-                
+
                 Spacer()
-                
-                Text("\(preset.appsSelected) Apps Selected")
+
+                Text(appCountText)
                     .bodySmall()
                     .extraSubtextColor()
             }
-            
+
             // Assignment info and edit button
             HStack {
-                Text("Assigned to: \(preset.assignedTo)")
+                Text("Assigned to: \(assignedToText)")
                     .body()
                     .subtextColor()
-                
+
                 Spacer()
-                
+
                 DriftButton(title: "Edit", icon: "pencil", style: .pill) {
-                    // Edit action - open sheet
-                    let focusPreset = FocusPreset(id: preset.name.lowercased(), name: preset.name)
-                    presentedPreset = focusPreset
+                    presentedPreset = preset
                 }
             }
         }
@@ -263,21 +306,6 @@ struct SettingsRow: View {
             }
         }
     }
-}
-
-// MARK: - Data Models
-
-struct DriftDevice {
-    let id: String
-    let name: String
-    let preset: String
-    let isSynced: Bool
-}
-
-struct PresetMode {
-    let name: String
-    let appsSelected: Int
-    let assignedTo: String
 }
 
 #Preview {
