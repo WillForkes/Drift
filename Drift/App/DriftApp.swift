@@ -22,8 +22,8 @@ struct DriftApp: App {
                 MainContainerView()
                     .onOpenURL { url in
                         print("🔗 [DriftApp] onOpenURL called with: \(url.absoluteString)")
-                        print("🔗 [DriftApp] Host: \(url.host ?? "nil"), Path: \(url.path)")
-                        handleUniversalLink(url)
+                        print("🔗 [DriftApp] Scheme: \(url.scheme ?? "nil"), Host: \(url.host ?? "nil"), Path: \(url.path)")
+                        handleURL(url)
                     }
                     .onReceive(NotificationCenter.default.publisher(for: .hardResetRequested)) { _ in
                         performHardReset()
@@ -36,21 +36,52 @@ struct DriftApp: App {
         }
     }
 
-    /// Handle Universal Links from NFC tags
-    private func handleUniversalLink(_ url: URL) {
-        // Expected URL format: https://links.get-drift.app/focus?id=0001
-        guard url.host == "links.get-drift.app",
-              url.path == "/focus" else {
+    /// Handle both Universal Links (https://) and Custom URL Schemes (drift://)
+    private func handleURL(_ url: URL) {
+        let tagId: String?
+
+        // Handle custom URL scheme: drift://focus?id=0001
+        if url.scheme == "drift" {
+            print("📱 [DriftApp] Handling custom URL scheme")
+            guard url.host == "focus" || url.path == "/focus" else {
+                print("❌ [DriftApp] Invalid drift:// URL - expected focus path")
+                return
+            }
+
+            // Parse tag ID from query parameters
+            guard let components = URLComponents(url: url, resolvingAgainstBaseURL: false),
+                  let id = components.queryItems?.first(where: { $0.name == "id" })?.value else {
+                print("❌ [DriftApp] No ID parameter in drift:// URL")
+                NotificationCenter.default.post(name: .nfcTagMissingId, object: nil)
+                return
+            }
+            tagId = id
+        }
+        // Handle universal link: https://links.get-drift.app/focus?id=0001
+        else if url.scheme == "https" {
+            print("🌐 [DriftApp] Handling universal link")
+            guard url.host == "links.get-drift.app",
+                  url.path == "/focus" else {
+                print("❌ [DriftApp] Invalid universal link - expected links.get-drift.app/focus")
+                return
+            }
+
+            // Parse tag ID from URL
+            guard let components = URLComponents(url: url, resolvingAgainstBaseURL: false),
+                  let id = components.queryItems?.first(where: { $0.name == "id" })?.value else {
+                print("❌ [DriftApp] No ID parameter in universal link")
+                NotificationCenter.default.post(name: .nfcTagMissingId, object: nil)
+                return
+            }
+            tagId = id
+        } else {
+            print("❌ [DriftApp] Unsupported URL scheme: \(url.scheme ?? "nil")")
             return
         }
 
-        // Parse tag ID from URL
-        guard let components = URLComponents(url: url, resolvingAgainstBaseURL: false),
-              let tagId = components.queryItems?.first(where: { $0.name == "id" })?.value else {
-            // No ID parameter - show error
-            NotificationCenter.default.post(name: .nfcTagMissingId, object: nil)
-            return
-        }
+        // Handle the tag detection
+        guard let tagId = tagId else { return }
+        print("✅ [DriftApp] Parsed tag ID: \(tagId)")
 
         Task { @MainActor in
             // Check if tag is registered

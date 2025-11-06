@@ -2,6 +2,19 @@
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
+	<key>CFBundleURLTypes</key>
+	<array>
+		<dict>
+			<key>CFBundleTypeRole</key>
+			<string>Editor</string>
+			<key>CFBundleURLName</key>
+			<string>com.williamforkes.drift</string>
+			<key>CFBundleURLSchemes</key>
+			<array>
+				<string>drift</string>
+			</array>
+		</dict>
+	</array>
 	<key>NFCReaderUsageDescription</key>
 	<string>Drift uses NFC to detect and sync with your Drift devices for focus sessions.</string>
 	<key>com.apple.developer.nfc.readersession.formats</key>

@@ -15,6 +15,7 @@ struct SyncingPage: View {
 
     @State private var syncState: SyncState = .validating
     @StateObject private var tagManager = DriftTagManager.shared
+    @StateObject private var sessionManager = FocusSessionManager.shared
     @FocusState private var isTextFieldFocused: Bool
 
     enum SyncState: Equatable {
@@ -235,6 +236,11 @@ struct SyncingPage: View {
     private func performSync() {
         Task {
             do {
+                // REQUEST SCREEN TIME AUTHORIZATION FIRST
+                print("🔐 [Sync] Requesting Screen Time authorization...")
+                try await sessionManager.requestAuthorization()
+                print("✅ [Sync] Screen Time authorization granted")
+
                 // DO ALL VALIDATION UPFRONT (no delays)
                 print("🔄 [Sync] Validating tag...")
 
