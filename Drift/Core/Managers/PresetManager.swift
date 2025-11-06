@@ -18,7 +18,9 @@ class PresetManager: ObservableObject {
     private enum Constants {
         static let presetsKey = "drift.presets"
         static let maxNameLength = 30
+        static let selectionPrefix = "drift.preset.selection."
     }
+
 
     private init() {
         loadPresets()
@@ -37,6 +39,10 @@ class PresetManager: ObservableObject {
             blocksAllApps: blocksAllApps
         )
 
+        // Store selection separately
+        saveSelection(for: preset.id, selection: selection)
+
+        // Add to presets array and save metadata
         presets.append(preset)
         savePresets()
 
@@ -50,7 +56,12 @@ class PresetManager: ObservableObject {
             throw PresetError.presetNotFound
         }
 
-        // Validate name if provided
+        // Update selection separately if provided
+        if let newSelection = selection {
+            saveSelection(for: id, selection: newSelection)
+        }
+
+        // Validate and update name if provided
         if let newName = name {
             try validateName(newName, excludingId: id)
             presets[index] = FocusPreset(
@@ -90,8 +101,9 @@ class PresetManager: ObservableObject {
         // Reassign drifts using this preset
         DriftTagManager.shared.reassignPreset(from: id, to: reassignToId)
 
-        // Remove preset
+        // Remove preset and its selection
         presets.removeAll(where: { $0.id == id })
+        UserDefaults.standard.removeObject(forKey: Constants.selectionPrefix + id)
         savePresets()
 
         print("✅ [PresetManager] Deleted preset: \(id)")
@@ -130,17 +142,81 @@ class PresetManager: ObservableObject {
     // MARK: - Persistence
 
     private func savePresets() {
-        if let data = try? JSONEncoder().encode(presets) {
+        do {
+            let data = try JSONEncoder().encode(presets)
             UserDefaults.standard.set(data, forKey: Constants.presetsKey)
+            print("✅ [PresetManager] Saved \(presets.count) preset(s) to UserDefaults")
+
+            // Log app counts for debugging
+            for preset in presets {
+                let appCount = preset.selection.applicationTokens.count
+                let categoryCount = preset.selection.categoryTokens.count
+                print("   - \(preset.name): \(appCount) apps, \(categoryCount) categories")
+            }
+        } catch {
+            print("❌ [PresetManager] Failed to encode presets: \(error)")
         }
     }
 
     private func loadPresets() {
-        guard let data = UserDefaults.standard.data(forKey: Constants.presetsKey),
-              let loadedPresets = try? JSONDecoder().decode([FocusPreset].self, from: data) else {
+        guard let data = UserDefaults.standard.data(forKey: Constants.presetsKey) else {
+            print("ℹ️ [PresetManager] No saved presets found")
             return
         }
-        presets = loadedPresets
+
+        do {
+            var loadedPresets = try JSONDecoder().decode([FocusPreset].self, from: data)
+
+            // Load selections separately for each preset
+            for i in 0..<loadedPresets.count {
+                let id = loadedPresets[i].id
+                if let selection = loadSelection(for: id) {
+                    loadedPresets[i] = FocusPreset(
+                        id: id,
+                        name: loadedPresets[i].name,
+                        selection: selection,
+                        blocksAllApps: loadedPresets[i].blocksAllApps
+                    )
+                }
+            }
+
+            presets = loadedPresets
+
+            print("✅ [PresetManager] Loaded \(presets.count) preset(s) from UserDefaults")
+
+            // Log app counts for debugging
+            for preset in presets {
+                let appCount = preset.selection.applicationTokens.count
+                let categoryCount = preset.selection.categoryTokens.count
+                print("   - \(preset.name): \(appCount) apps, \(categoryCount) categories")
+            }
+        } catch {
+            print("❌ [PresetManager] Failed to decode presets: \(error)")
+        }
+    }
+
+    // MARK: - FamilyActivitySelection Storage
+    // Store selections using UserDefaults (supports FamilyActivitySelection via property wrapper)
+
+    private func saveSelection(for presetId: String, selection: FamilyActivitySelection) {
+        let key = Constants.selectionPrefix + presetId
+        // Use UserDefaults to store the selection - this works with FamilyActivitySelection
+        UserDefaults.standard.set(try? NSKeyedArchiver.archivedData(withRootObject: selection, requiringSecureCoding: false), forKey: key)
+        print("💾 [PresetManager] Saved selection for preset \(presetId): \(selection.applicationTokens.count) apps, \(selection.categoryTokens.count) categories")
+    }
+
+    private func loadSelection(for presetId: String) -> FamilyActivitySelection? {
+        let key = Constants.selectionPrefix + presetId
+        guard let data = UserDefaults.standard.data(forKey: key) else {
+            return nil
+        }
+
+        guard let selection = try? NSKeyedUnarchiver.unarchiveTopLevelObjectWithData(data) as? FamilyActivitySelection else {
+            return nil
+        }
+
+        print("📂 [PresetManager] Loaded selection for preset \(presetId): \(selection.applicationTokens.count) apps, \(selection.categoryTokens.count) categories")
+        return selection
     }
 
     // MARK: - Debug/Reset

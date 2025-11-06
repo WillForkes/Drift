@@ -83,6 +83,7 @@ struct TapToStartPage: View {
                         HStack(spacing: DesignTokens.Spacing.medium) {
                             Text("I don't have a drift")
                                 .bodySmall()
+                                .underline()
                                 .foregroundColor(DesignTokens.Colors.extraSubtext)
 
                             Image(systemName: "questionmark.circle")
@@ -91,6 +92,7 @@ struct TapToStartPage: View {
                         }
                     }
                     .padding(.bottom, 50)
+                    .background(Color(.clear))
                 }
             }
             .frame(maxWidth: .infinity, maxHeight: .infinity)

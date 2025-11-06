@@ -10,7 +10,7 @@ import SwiftUI
 struct SettingsPage: View {
     @StateObject private var driftManager = DriftTagManager.shared
     @StateObject private var presetManager = PresetManager.shared
-    @State private var editingPreset: FocusPreset?
+    @State private var editingPresetId: String?
     @State private var showPresetSheet = false
 
     var body: some View {
@@ -66,7 +66,7 @@ struct SettingsPage: View {
                                     preset: preset,
                                     appCountText: getAppCountText(for: preset),
                                     assignedToText: getDriftCount(for: preset.id),
-                                    editingPreset: $editingPreset,
+                                    editingPresetId: $editingPresetId,
                                     showSheet: $showPresetSheet
                                 )
                                 .padding(.horizontal, DesignTokens.Padding.large)
@@ -120,8 +120,8 @@ struct SettingsPage: View {
             }
         }
         .sheet(isPresented: $showPresetSheet) {
-            if let preset = editingPreset,
-               let index = presetManager.presets.firstIndex(where: { $0.id == preset.id }) {
+            if let presetId = editingPresetId,
+               let index = presetManager.presets.firstIndex(where: { $0.id == presetId }) {
                 PresetEditSheet(
                     preset: Binding(
                         get: { presetManager.presets[index] },
@@ -129,6 +129,37 @@ struct SettingsPage: View {
                     ),
                     isPresented: $showPresetSheet
                 )
+            } else {
+                // Fallback error view for debugging
+                ZStack {
+                    DesignTokens.Colors.background
+                        .ignoresSafeArea()
+
+                    VStack(spacing: DesignTokens.Spacing.xLarge) {
+                        Image(systemName: "exclamationmark.triangle.fill")
+                            .font(.system(size: 48))
+                            .foregroundColor(DesignTokens.Colors.primary)
+
+                        Text("Error Loading Preset")
+                            .heading1()
+                            .foregroundColor(DesignTokens.Colors.textPrimary)
+
+                        Text("Could not find the preset to edit")
+                            .body()
+                            .subtextColor()
+
+                        DriftButton(title: "Close", style: .pill) {
+                            showPresetSheet = false
+                            editingPresetId = nil
+                        }
+                    }
+                    .padding(DesignTokens.Padding.large)
+                }
+                .onAppear {
+                    print("❌ [SettingsPage] Sheet presented but preset not found")
+                    print("   editingPresetId: \(editingPresetId ?? "nil")")
+                    print("   Available presets: \(presetManager.presets.map { $0.id })")
+                }
             }
         }
     }
@@ -157,9 +188,23 @@ struct SettingsPage: View {
     private func getAppCountText(for preset: FocusPreset) -> String {
         if preset.blocksAllApps {
             return "All apps"
+        }
+
+        let appCount = preset.selection.applicationTokens.count
+        let categoryCount = preset.selection.categoryTokens.count
+
+        if appCount > 0 && categoryCount > 0 {
+            let appText = appCount == 1 ? "app" : "apps"
+            let categoryText = categoryCount == 1 ? "category" : "categories"
+            return "\(appCount) \(appText), \(categoryCount) \(categoryText)"
+        } else if categoryCount > 0 {
+            let categoryText = categoryCount == 1 ? "category" : "categories"
+            return "\(categoryCount) \(categoryText)"
+        } else if appCount > 0 {
+            let appText = appCount == 1 ? "app" : "apps"
+            return "\(appCount) \(appText)"
         } else {
-            let count = preset.selection.applicationTokens.count
-            return "\(count) apps"
+            return "No apps"
         }
     }
 
@@ -234,7 +279,7 @@ struct PresetModeCard: View {
     let preset: FocusPreset
     let appCountText: String
     let assignedToText: String
-    @Binding var editingPreset: FocusPreset?
+    @Binding var editingPresetId: String?
     @Binding var showSheet: Bool
 
     var body: some View {
@@ -261,7 +306,7 @@ struct PresetModeCard: View {
                 Spacer()
 
                 DriftButton(title: "Edit", icon: "pencil", style: .pill) {
-                    editingPreset = preset
+                    editingPresetId = preset.id
                     showSheet = true
                 }
             }

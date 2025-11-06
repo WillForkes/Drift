@@ -26,8 +26,23 @@ struct PresetEditSheet: View {
         self._editingName = State(initialValue: preset.wrappedValue.name)
     }
 
-    var selectedCount: Int {
-        return preset.selection.applicationTokens.count
+    var selectedCountText: String {
+        let appCount = preset.selection.applicationTokens.count
+        let categoryCount = preset.selection.categoryTokens.count
+
+        if appCount > 0 && categoryCount > 0 {
+            let appText = appCount == 1 ? "app" : "apps"
+            let categoryText = categoryCount == 1 ? "category" : "categories"
+            return "\(appCount) \(appText), \(categoryCount) \(categoryText)"
+        } else if categoryCount > 0 {
+            let categoryText = categoryCount == 1 ? "category" : "categories"
+            return "\(categoryCount) \(categoryText)"
+        } else if appCount > 0 {
+            let appText = appCount == 1 ? "app" : "apps"
+            return "\(appCount) \(appText)"
+        } else {
+            return "No apps selected"
+        }
     }
 
     var assignedDriftName: String {
@@ -76,7 +91,7 @@ struct PresetEditSheet: View {
                             // Device Assignment Card
                             DeviceAssignmentCard(
                                 driftName: assignedDriftName,
-                                selectedCount: selectedCount
+                                selectedCountText: selectedCountText
                             )
                             .padding(.horizontal, DesignTokens.Padding.large)
                         }
@@ -95,6 +110,7 @@ struct PresetEditSheet: View {
 
                             // FamilyActivityPicker
                             FamilyActivityPicker(selection: $preset.selection)
+                                .preferredColorScheme(.light)
                                 .frame(height: 400)
                                 .padding(.horizontal, DesignTokens.Padding.large)
 
@@ -118,6 +134,11 @@ struct PresetEditSheet: View {
 
     private func savePreset() {
         do {
+            print("📝 [PresetEditSheet] Saving preset: \(editingName)")
+            print("   Apps selected: \(preset.selection.applicationTokens.count)")
+            print("   Categories selected: \(preset.selection.categoryTokens.count)")
+            print("   Web domains selected: \(preset.selection.webDomainTokens.count)")
+
             // Update name if changed
             if editingName != preset.name {
                 try presetManager.renamePreset(id: preset.id, newName: editingName)
@@ -140,6 +161,7 @@ struct PresetEditSheet: View {
             isPresented = false
 
         } catch {
+            print("❌ [PresetEditSheet] Error saving preset: \(error)")
             errorMessage = error.localizedDescription
             showError = true
         }
@@ -150,7 +172,7 @@ struct PresetEditSheet: View {
 
 struct DeviceAssignmentCard: View {
     let driftName: String
-    let selectedCount: Int
+    let selectedCountText: String
 
     var body: some View {
         HStack {
@@ -160,7 +182,7 @@ struct DeviceAssignmentCard: View {
 
             Spacer()
 
-            Text("\(selectedCount) Selected Apps")
+            Text(selectedCountText)
                 .bodySmall()
                 .extraSubtextColor()
         }

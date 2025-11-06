@@ -9,14 +9,32 @@ import SwiftUI
 import FamilyControls
 
 struct BottomPresetSlider: View {
-    @State private var scrollPosition: Int? = 0
+    @State private var scrollPosition: String?
     @State private var showNameAlert = false
     @State private var newPresetName = ""
     @State private var showPresetSheet = false
     @State private var editingPreset: FocusPreset?
     @StateObject private var presetManager = PresetManager.shared
 
-    let presets = ["Work", "Sleep", "Gym", "Poo", "Add"]
+    var displayItems: [DisplayItem] {
+        var items = presetManager.presets.map { DisplayItem.preset($0) }
+        items.append(.add)
+        return items
+    }
+
+    enum DisplayItem: Identifiable {
+        case preset(FocusPreset)
+        case add
+
+        var id: String {
+            switch self {
+            case .preset(let preset):
+                return preset.id
+            case .add:
+                return "add"
+            }
+        }
+    }
 
     var body: some View {
         GeometryReader { geometry in
@@ -35,8 +53,9 @@ struct BottomPresetSlider: View {
                 // Scrollable carousel
                 ScrollView(.horizontal, showsIndicators: false) {
                     HStack(spacing: DesignTokens.Spacing.large) {
-                        ForEach(Array(presets.enumerated()), id: \.offset) { index, preset in
-                            if preset == "Add" {
+                        ForEach(displayItems) { item in
+                            switch item {
+                            case .add:
                                 Button(action: { showNameAlert = true }) {
                                     AddPresetCard()
                                 }
@@ -53,9 +72,10 @@ struct BottomPresetSlider: View {
                                     x: DesignTokens.Shadow.x,
                                     y: DesignTokens.Shadow.y
                                 )
-                                .id(index)
-                            } else {
-                                PresetCard(title: preset)
+                                .id(item.id)
+
+                            case .preset(let preset):
+                                PresetCard(title: preset.name)
                                     .containerRelativeFrame(.horizontal, count: 1, spacing: DesignTokens.Spacing.large)
                                     .scrollTransition { content, phase in
                                         content
@@ -68,7 +88,7 @@ struct BottomPresetSlider: View {
                                         x: DesignTokens.Shadow.x,
                                         y: DesignTokens.Shadow.y
                                     )
-                                    .id(index)
+                                    .id(item.id)
                             }
                         }
                     }
@@ -76,6 +96,14 @@ struct BottomPresetSlider: View {
                 }
                 .scrollTargetBehavior(.viewAligned)
                 .scrollPosition(id: $scrollPosition)
+                .onChange(of: scrollPosition) { oldValue, newValue in
+                    // Don't process selection if user scrolled to the "add" card
+                    guard newValue != "add" else {
+                        print("ℹ️ [BottomPresetSlider] Scrolled to Add card - no preset selection")
+                        return
+                    }
+                    handlePresetSelection(newValue)
+                }
                 .safeAreaPadding(.horizontal, (geometry.size.width * 0.8) / 2 - 40)
                 .frame(width: geometry.size.width * 0.8)
                 .mask(
@@ -103,6 +131,16 @@ struct BottomPresetSlider: View {
             }
         }
         .frame(height: 80)
+        .onAppear {
+            // Initialize scroll position to first preset or stored selection
+            if let storedPresetId = UserDefaults.standard.string(forKey: "currentSelectedPresetId"),
+               presetManager.getPreset(id: storedPresetId) != nil {
+                scrollPosition = storedPresetId
+            } else if let firstPreset = presetManager.presets.first {
+                scrollPosition = firstPreset.id
+                UserDefaults.standard.set(firstPreset.id, forKey: "currentSelectedPresetId")
+            }
+        }
         .alert("New Mode", isPresented: $showNameAlert) {
             TextField("Mode name", text: $newPresetName)
             Button("Cancel", role: .cancel) {
@@ -136,9 +174,26 @@ struct BottomPresetSlider: View {
             editingPreset = preset
             showPresetSheet = true
             newPresetName = ""
+
+            // Scroll to the newly created preset
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+                scrollPosition = preset.id
+            }
         } catch {
             print("❌ [BottomPresetSlider] Error creating preset: \(error)")
         }
+    }
+
+    private func handlePresetSelection(_ presetId: String?) {
+        guard let presetId = presetId,
+              presetId != "add",
+              presetManager.getPreset(id: presetId) != nil else {
+            return
+        }
+
+        // Store the selected preset ID in UserDefaults for app-wide access
+        UserDefaults.standard.set(presetId, forKey: "currentSelectedPresetId")
+        print("✅ [BottomPresetSlider] Selected preset: \(presetId)")
     }
 }
 
