@@ -8,7 +8,33 @@
 import SwiftUI
 
 struct HomePage: View {
+    @ObservedObject private var sessionManager = FocusSessionManager.shared
+    @ObservedObject private var nfcReader = NFCReaderManager.shared
+    @ObservedObject private var driftManager = DriftTagManager.shared
+    @ObservedObject private var coordinator = NFCFocusCoordinator.shared
+
+    @State private var showError = false
+    @State private var errorMessage = ""
+
     let imageSize = UIScreen.main.bounds.width * 0.6
+
+    private var driftName: String {
+        if let driftTagId = sessionManager.activeDriftTagId,
+           let drift = driftManager.getTag(by: driftTagId) {
+            return drift.label
+        }
+        return "Drift Name"
+    }
+
+    private var headingText: String {
+        if sessionManager.isSessionActive {
+            return "Session Active"
+        } else if nfcReader.isScanning {
+            return "Hold drift near phone"
+        } else {
+            return "Tap drift to activate"
+        }
+    }
 
     var body: some View {
         ZStack {
@@ -18,22 +44,28 @@ struct HomePage: View {
 
             // Main Content - Image centered, text above
             VStack(spacing: DesignTokens.Spacing.xLarge) {
-                // Pill Badge with "drifting" text
-                PillBadge(text: "Drift Name")
+                // Pill Badge with drift name
+                PillBadge(text: driftName)
 
                 // Heading text
-                Text("Tap drift to activate")
+                Text(headingText)
                     .heading1()
                     .foregroundColor(DesignTokens.Colors.textPrimary)
 
                 Spacer()
                     .frame(height: DesignTokens.Spacing.xxxLarge)
 
-                // Square Image - Centered
+                // Square Image - Centered and tappable
                 Image("above")
                     .resizable()
                     .scaledToFill()
                     .frame(width: imageSize, height: imageSize)
+                    .opacity(nfcReader.isScanning ? 0.6 : 1.0)
+                    .scaleEffect(nfcReader.isScanning ? 0.95 : 1.0)
+                    .animation(.easeInOut(duration: 0.2), value: nfcReader.isScanning)
+                    .onTapGesture {
+                        startManualNFCScan()
+                    }
             }
             .padding(.large)
             .offset(y: -30)
@@ -43,6 +75,53 @@ struct HomePage: View {
                 Spacer()
                 BottomPresetSlider()
             }
+        }
+        .alert("Error", isPresented: $showError) {
+            Button("OK", role: .cancel) { }
+        } message: {
+            Text(errorMessage)
+        }
+    }
+
+    // MARK: - Methods
+
+    private func startManualNFCScan() {
+        print("📱 [HomePage] Starting manual NFC scan")
+
+        nfcReader.startScanning { result in
+            switch result {
+            case .success(let tagId):
+                print("✅ [HomePage] Tag detected: \(tagId)")
+                handleTagDetection(tagId: tagId)
+
+            case .failure(let error):
+                print("❌ [HomePage] Scan failed: \(error.localizedDescription)")
+                // Don't show error for user cancellation
+                if case .userCancelled = error {
+                    return
+                }
+                errorMessage = error.localizedDescription
+                showError = true
+            }
+        }
+    }
+
+    private func handleTagDetection(tagId: String) {
+        let result = coordinator.handleTagDetection(tagId: tagId)
+
+        switch result {
+        case .success(let action):
+            switch action {
+            case .started(let driftName, let presetName):
+                print("▶️ [HomePage] Session started: \(driftName) - \(presetName)")
+
+            case .stopped:
+                print("⏹️ [HomePage] Session stopped")
+            }
+
+        case .failure(let error):
+            errorMessage = error.localizedDescription
+            showError = true
         }
     }
 }

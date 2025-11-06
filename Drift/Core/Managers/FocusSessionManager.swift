@@ -28,11 +28,14 @@ class FocusSessionManager: ObservableObject {
                 removeAppBlocking()
                 // Stop analytics tracking
                 AnalyticsManager.shared.stopSession()
+                // Clear active drift tag when stopping
+                activeDriftTagId = nil
             }
         }
     }
 
     @Published private(set) var isAuthorized: Bool = false
+    @Published var activeDriftTagId: String?
 
     // MARK: - Private Properties
     private let store = ManagedSettingsStore()
@@ -72,6 +75,13 @@ class FocusSessionManager: ObservableObject {
     /// Start a focus session
     func startSession() {
         guard !isSessionActive else { return }
+        isSessionActive = true
+    }
+
+    /// Start a focus session with a specific drift tag
+    func startSession(withDriftTagId driftTagId: String) {
+        guard !isSessionActive else { return }
+        activeDriftTagId = driftTagId
         isSessionActive = true
     }
 

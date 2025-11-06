@@ -13,6 +13,7 @@ struct DriftApp: App {
     @StateObject private var presetManager = PresetManager.shared
     @StateObject private var parentalControls = ParentalControlsManager.shared
     @StateObject private var tagManager = DriftTagManager.shared
+    @StateObject private var coordinator = NFCFocusCoordinator.shared
     @AppStorage("drift.onboarding.completed") private var hasCompletedOnboarding = false
 
     var body: some Scene {
@@ -62,24 +63,22 @@ struct DriftApp: App {
     }
 
     private func handleRegisteredTag(_ tag: DriftTag) {
-        // Get the preset for this tag
-        guard let preset = presetManager.presets.first(where: { $0.id == tag.presetId }) else {
-            // Preset not found - use first available preset
-            if let firstPreset = presetManager.presets.first {
-                sessionManager.selectPreset(firstPreset)
-            }
-            return
-        }
+        // Use coordinator to handle session toggle
+        let result = coordinator.handleTagDetection(tagId: tag.id)
 
-        // If stopping session and parental controls enabled, post notification
-        if sessionManager.isSessionActive && parentalControls.isEnabled {
-            NotificationCenter.default.post(name: .nfcStopRequested, object: nil)
-        } else {
-            // Switch to tag's preset and toggle session
-            if !sessionManager.isSessionActive {
-                sessionManager.selectPreset(preset)
+        switch result {
+        case .success(let action):
+            switch action {
+            case .started(let driftName, let presetName):
+                print("▶️ [DriftApp] Session started from universal link: \(driftName) - \(presetName)")
+
+            case .stopped:
+                print("⏹️ [DriftApp] Session stopped from universal link")
             }
-            sessionManager.toggleSession()
+
+        case .failure(let error):
+            print("❌ [DriftApp] Failed to handle tag: \(error.localizedDescription)")
+            // Could post a notification here to show error in UI if needed
         }
     }
 

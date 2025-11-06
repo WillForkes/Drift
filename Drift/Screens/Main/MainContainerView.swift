@@ -9,6 +9,7 @@ import SwiftUI
 
 /// Main container view with swipeable pages
 struct MainContainerView: View {
+    @ObservedObject private var coordinator = NFCFocusCoordinator.shared
     @State private var currentPage: Int = 1 // Start on Home page (middle)
 
     var body: some View {
@@ -34,6 +35,10 @@ struct MainContainerView: View {
                 }
                 .background(DesignTokens.Colors.background)
                 .tag(2)
+
+                // Page 3: Active Session
+                ActiveSessionScreen()
+                    .tag(3)
             }
             .tabViewStyle(.page(indexDisplayMode: .never))
             .ignoresSafeArea()
@@ -48,6 +53,17 @@ struct MainContainerView: View {
                 Spacer()
             }
             .allowsHitTesting(false)
+        }
+        .onChange(of: coordinator.shouldShowActiveSession) { oldValue, newValue in
+            withAnimation {
+                if newValue {
+                    // Navigate to Active Session screen
+                    currentPage = 3
+                } else {
+                    // Navigate back to Home
+                    currentPage = 1
+                }
+            }
         }
     }
 }
