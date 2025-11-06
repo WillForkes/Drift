@@ -21,7 +21,7 @@ struct PresetEditSheet: View {
     @State private var showError = false
     @State private var errorMessage = ""
 
-    init(presetId: String, onDismiss: @escaping () -> Void = {}) {
+    init(presetId: String, onDismiss: @escaping () -> Void) {
         self.presetId = presetId
         self.onDismiss = onDismiss
     }
@@ -148,8 +148,8 @@ struct PresetEditSheet: View {
             )
 
             print("✅ [PresetEditSheet] Saved preset: \(editingName)")
-            dismiss()
             onDismiss()
+            dismiss()
 
         } catch {
             errorMessage = error.localizedDescription
@@ -177,19 +177,6 @@ struct DeviceAssignmentCard: View {
                 .extraSubtextColor()
         }
         .padding(DesignTokens.Padding.large)
-        .background(DesignTokens.Colors.whiteText)
-        .cornerRadius(DesignTokens.Radii.radiusStandard)
-        .shadow(
-            color: DesignTokens.Shadow.color,
-            radius: DesignTokens.Shadow.radius,
-            x: DesignTokens.Shadow.x,
-            y: DesignTokens.Shadow.y
-        )
+        .cardBackground()
     }
-}
-
-#Preview {
-    PresetEditSheet(
-        presetId: "testing",
-    )
 }

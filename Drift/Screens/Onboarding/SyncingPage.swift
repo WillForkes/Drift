@@ -99,20 +99,20 @@ struct SyncingPage: View {
         VStack(spacing: DesignTokens.Spacing.large) {
             PillBadge(
                 text: "NFC Chip valid",
-                icon: badgeIcon(for: SyncState.validating),
-                style: badgeStyle(for: SyncState.validating)
+                iconColor: badgeIconColor(for: SyncState.validating),
+                iconSize: 8
             )
 
             PillBadge(
                 text: "Setting up...",
-                icon: badgeIcon(for: SyncState.authorizing),
-                style: badgeStyle(for: SyncState.authorizing)
+                iconColor: badgeIconColor(for: SyncState.authorizing),
+                iconSize: 8
             )
 
             PillBadge(
                 text: "Finishing up...",
-                icon: badgeIcon(for: SyncState.finishing),
-                style: badgeStyle(for: SyncState.finishing)
+                iconColor: badgeIconColor(for: SyncState.finishing),
+                iconSize: 8
             )
         }
     }
@@ -211,18 +211,13 @@ struct SyncingPage: View {
         }
     }
 
-    private func badgeIcon(for step: SyncState) -> PillIcon {
+    private func badgeIconColor(for step: SyncState) -> Color {
         let isCompleted = isStepCompleted(step)
-        let isActive = syncState == step
-
-        let iconSize: CGFloat = step == .validating ? 14 : 12
 
         if isCompleted {
-            return .systemImage(name: "checkmark", color: .green, size: iconSize)
-        } else if isActive {
-            return .systemImage(name: "arrow.clockwise", color: .black, size: iconSize)
+            return .green
         } else {
-            return .systemImage(name: "arrow.clockwise", color: .black, size: iconSize)
+            return Color.yellow
         }
     }
 
@@ -233,10 +228,6 @@ struct SyncingPage: View {
             return false
         }
         return currentIndex > stepIndex || syncState == .namingTag || syncState == .success
-    }
-
-    private func badgeStyle(for step: SyncState) -> PillStyle {
-        return isStepCompleted(step) ? .light : .transparent
     }
 
     // MARK: - Sync Logic

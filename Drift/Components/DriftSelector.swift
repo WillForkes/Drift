@@ -62,10 +62,15 @@ struct DriftSelector: View {
     // MARK: - Dropdown Menu
 
     private var dropdownMenu: some View {
-        VStack(alignment: .leading, spacing: 0) {
-            // Spacer to position below pill badge
-            Spacer()
-                .frame(height: 50) // Approximate pill badge height + spacing
+        ZStack(alignment: .top) {
+            // Dismiss background
+            Color.black.opacity(0.001)
+                .ignoresSafeArea()
+                .onTapGesture {
+                    withAnimation(.easeInOut(duration: 0.2)) {
+                        showDropdown = false
+                    }
+                }
 
             // Dropdown list
             VStack(alignment: .leading, spacing: 0) {
@@ -81,28 +86,8 @@ struct DriftSelector: View {
                 x: DesignTokens.Shadow.x,
                 y: DesignTokens.Shadow.y
             )
-            .overlay(
-                // Dismiss on tap outside
-                Color.clear
-                    .contentShape(Rectangle())
-                    .onTapGesture {
-                        withAnimation(.easeInOut(duration: 0.2)) {
-                            showDropdown = false
-                        }
-                    }
-            )
-
-            Spacer()
+            .padding(.top, 50)
         }
-        .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .background(
-            Color.black.opacity(0.001) // Invisible but tappable background
-                .onTapGesture {
-                    withAnimation(.easeInOut(duration: 0.2)) {
-                        showDropdown = false
-                    }
-                }
-        )
     }
 
     // MARK: - Dropdown Item

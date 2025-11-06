@@ -93,14 +93,7 @@ struct AnalyticsPage: View {
                     }
                     .frame(maxWidth: .infinity, maxHeight: .infinity)
                     .padding(DesignTokens.Padding.large)
-                    .background(DesignTokens.Colors.whiteText)
-                    .cornerRadius(DesignTokens.Radii.radiusStandard)
-                    .shadow(
-                        color: DesignTokens.Shadow.color,
-                        radius: DesignTokens.Shadow.radius,
-                        x: DesignTokens.Shadow.x,
-                        y: DesignTokens.Shadow.y
-                    )
+                    .cardBackground()
                     .padding(.horizontal, DesignTokens.Padding.large)
                     .padding(.bottom, DesignTokens.Spacing.xxLarge)
 

@@ -67,12 +67,7 @@ struct BottomPresetSlider: View {
                                         .scaleEffect(phase.isIdentity ? 1.0 : 0.75)
                                         .opacity(phase.isIdentity ? 1.0 : 0.3)
                                 }
-                                .shadow(
-                                    color: DesignTokens.Shadow.color,
-                                    radius: DesignTokens.Shadow.radius,
-                                    x: DesignTokens.Shadow.x,
-                                    y: DesignTokens.Shadow.y
-                                )
+                                .cardShadow()
                                 .id(item.id)
 
                             case .preset(let preset):
@@ -86,12 +81,7 @@ struct BottomPresetSlider: View {
                                         .scaleEffect(phase.isIdentity ? 1.0 : 0.75)
                                         .opacity(phase.isIdentity ? 1.0 : 0.3)
                                 }
-                                .shadow(
-                                    color: DesignTokens.Shadow.color,
-                                    radius: DesignTokens.Shadow.radius,
-                                    x: DesignTokens.Shadow.x,
-                                    y: DesignTokens.Shadow.y
-                                )
+                                .cardShadow()
                                 .id(item.id)
                             }
                         }
@@ -147,16 +137,6 @@ struct BottomPresetSlider: View {
             }
         }
         .frame(height: 80)
-        .onAppear {
-            // Initialize scroll position to current preset or first preset
-            if let currentId = presetManager.currentPresetId,
-               presetManager.getPreset(id: currentId) != nil {
-                scrollPosition = currentId
-            } else if let firstPreset = presetManager.presets.first {
-                scrollPosition = firstPreset.id
-                presetManager.setCurrentPreset(firstPreset.id)
-            }
-        }
         .alert("New Mode", isPresented: $showNameAlert) {
             TextField("Mode name", text: $newPresetName)
             Button("Cancel", role: .cancel) {
@@ -266,10 +246,5 @@ struct AddPresetCard: View {
 
 #Preview {
     @Previewable @State var selectedDriftId: String? = nil
-
-    VStack {
-        Spacer()
-        BottomPresetSlider(selectedDriftId: $selectedDriftId)
-    }
-    .background(DesignTokens.Colors.background)
+    BottomPresetSlider(selectedDriftId: $selectedDriftId)
 }

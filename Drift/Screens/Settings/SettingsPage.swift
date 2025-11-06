@@ -202,14 +202,7 @@ struct DriftCard: View {
         }
         .padding(DesignTokens.Padding.large)
         .frame(maxWidth: .infinity, alignment: .leading)
-        .background(DesignTokens.Colors.whiteText)
-        .cornerRadius(DesignTokens.Radii.radiusStandard)
-        .shadow(
-            color: DesignTokens.Shadow.color,
-            radius: DesignTokens.Shadow.radius,
-            x: DesignTokens.Shadow.x,
-            y: DesignTokens.Shadow.y
-        )
+        .cardBackground()
     }
 }
 
@@ -249,14 +242,7 @@ struct PresetModeCard: View {
         }
         .padding(DesignTokens.Padding.large)
         .frame(maxWidth: .infinity, alignment: .leading)
-        .background(DesignTokens.Colors.whiteText)
-        .cornerRadius(DesignTokens.Radii.radiusStandard)
-        .shadow(
-            color: DesignTokens.Shadow.color,
-            radius: DesignTokens.Shadow.radius,
-            x: DesignTokens.Shadow.x,
-            y: DesignTokens.Shadow.y
-        )
+        .cardBackground()
     }
 }
 
@@ -283,14 +269,7 @@ struct SettingsRow: View {
                 .extraSubtextColor()
         }
         .padding(DesignTokens.Padding.large)
-        .background(DesignTokens.Colors.whiteText)
-        .cornerRadius(DesignTokens.Radii.radiusStandard)
-        .shadow(
-            color: DesignTokens.Shadow.color,
-            radius: DesignTokens.Shadow.radius,
-            x: DesignTokens.Shadow.x,
-            y: DesignTokens.Shadow.y
-        )
+        .cardBackground()
         .onTapGesture {
             if let action = action {
                 action()

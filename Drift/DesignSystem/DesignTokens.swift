@@ -116,3 +116,25 @@ extension Color {
         )
     }
 }
+
+// MARK: - View Extensions
+
+extension View {
+    /// Applies standard card shadow
+    func cardShadow() -> some View {
+        self.shadow(
+            color: DesignTokens.Shadow.color,
+            radius: DesignTokens.Shadow.radius,
+            x: DesignTokens.Shadow.x,
+            y: DesignTokens.Shadow.y
+        )
+    }
+
+    /// Applies standard card background with white color, corner radius, and shadow
+    func cardBackground() -> some View {
+        self
+            .background(DesignTokens.Colors.whiteText)
+            .cornerRadius(DesignTokens.Radii.radiusStandard)
+            .cardShadow()
+    }
+}
