@@ -7,6 +7,13 @@
 
 import SwiftUI
 
+// MARK: - Preset Identifier
+
+/// Identifiable wrapper for preset ID to use with item-based sheet presentation
+struct PresetIdentifier: Identifiable {
+    let id: String
+}
+
 // MARK: - FocusPreset Display Utilities
 
 extension FocusPreset {

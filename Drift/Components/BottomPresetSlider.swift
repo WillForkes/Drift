@@ -12,8 +12,7 @@ struct BottomPresetSlider: View {
     @State private var scrollPosition: String?
     @State private var showNameAlert = false
     @State private var newPresetName = ""
-    @State private var showPresetSheet = false
-    @State private var editingPresetId: String?
+    @State private var editingPresetId: PresetIdentifier?
     @StateObject private var presetManager = PresetManager.shared
 
     var displayItems: [DisplayItem] {
@@ -152,13 +151,12 @@ struct BottomPresetSlider: View {
         } message: {
             Text("Enter a name for your new focus mode")
         }
-        .sheet(isPresented: $showPresetSheet) {
-            if let presetId = editingPresetId {
-                PresetEditSheet(
-                    presetId: presetId,
-                    isPresented: $showPresetSheet
-                )
-            }
+        .sheet(item: $editingPresetId) { identifier in
+            PresetEditSheet(
+                presetId: identifier.id,
+                isPresented: .constant(false),
+                onDismiss: { editingPresetId = nil }
+            )
         }
     }
 
@@ -167,8 +165,7 @@ struct BottomPresetSlider: View {
 
         do {
             let preset = try presetManager.createPreset(name: newPresetName, selection: FamilyActivitySelection(), blocksAllApps: false)
-            editingPresetId = preset.id
-            showPresetSheet = true
+            editingPresetId = PresetIdentifier(id: preset.id)
             newPresetName = ""
 
             // Scroll to the newly created preset

@@ -10,8 +10,7 @@ import SwiftUI
 struct SettingsPage: View {
     @StateObject private var driftManager = DriftTagManager.shared
     @StateObject private var presetManager = PresetManager.shared
-    @State private var editingPresetId: String?
-    @State private var showPresetSheet = false
+    @State private var editingPresetId: PresetIdentifier?
 
     var body: some View {
         ZStack {
@@ -66,8 +65,7 @@ struct SettingsPage: View {
                                     preset: preset,
                                     appCountText: preset.appCountText,
                                     assignedToText: getDriftCount(for: preset.id),
-                                    editingPresetId: $editingPresetId,
-                                    showSheet: $showPresetSheet
+                                    editingPresetId: $editingPresetId
                                 )
                                 .padding(.horizontal, DesignTokens.Padding.large)
                             }
@@ -119,13 +117,12 @@ struct SettingsPage: View {
                 }
             }
         }
-        .sheet(isPresented: $showPresetSheet) {
-            if let presetId = editingPresetId {
-                PresetEditSheet(
-                    presetId: presetId,
-                    isPresented: $showPresetSheet
-                )
-            }
+        .sheet(item: $editingPresetId) { identifier in
+            PresetEditSheet(
+                presetId: identifier.id,
+                isPresented: .constant(false),
+                onDismiss: { editingPresetId = nil }
+            )
         }
     }
 
@@ -221,8 +218,7 @@ struct PresetModeCard: View {
     let preset: FocusPreset
     let appCountText: String
     let assignedToText: String
-    @Binding var editingPresetId: String?
-    @Binding var showSheet: Bool
+    @Binding var editingPresetId: PresetIdentifier?
 
     var body: some View {
         VStack(alignment: .leading, spacing: DesignTokens.Spacing.xLarge) {
@@ -248,8 +244,7 @@ struct PresetModeCard: View {
                 Spacer()
 
                 DriftButton(title: "Edit", icon: "pencil", style: .pill) {
-                    editingPresetId = preset.id
-                    showSheet = true
+                    editingPresetId = PresetIdentifier(id: preset.id)
                 }
             }
         }

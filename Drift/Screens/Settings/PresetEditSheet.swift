@@ -11,19 +11,21 @@ import FamilyControls
 struct PresetEditSheet: View {
     let presetId: String
     @Binding var isPresented: Bool
+    let onDismiss: () -> Void
 
     @StateObject private var presetManager = PresetManager.shared
     @StateObject private var driftManager = DriftTagManager.shared
+    @Environment(\.dismiss) private var dismiss
 
     @State private var editingName: String = ""
     @State private var editingSelection: FamilyActivitySelection = FamilyActivitySelection()
     @State private var showError = false
     @State private var errorMessage = ""
-    @State private var isLoaded = false
 
-    init(presetId: String, isPresented: Binding<Bool>) {
+    init(presetId: String, isPresented: Binding<Bool>, onDismiss: @escaping () -> Void = {}) {
         self.presetId = presetId
         self._isPresented = isPresented
+        self.onDismiss = onDismiss
     }
 
     var assignedDriftName: String {
@@ -58,15 +60,14 @@ struct PresetEditSheet: View {
             DesignTokens.Colors.background
                 .ignoresSafeArea()
 
-            if isLoaded {
-                VStack(spacing: 0) {
-                    // Handle bar
-                    RoundedRectangle(cornerRadius: 2.5)
-                        .fill(Color.black)
-                        .frame(width: 36, height: 5)
-                        .padding(.top, 8)
+            VStack(spacing: 0) {
+                // Handle bar
+                RoundedRectangle(cornerRadius: 2.5)
+                    .fill(Color.black)
+                    .frame(width: 36, height: 5)
+                    .padding(.top, 8)
 
-                    ScrollView {
+                ScrollView {
                     VStack(spacing: DesignTokens.Spacing.xxxLarge) {
                         // Header Section
                         VStack(spacing: DesignTokens.Spacing.xLarge) {
@@ -123,7 +124,6 @@ struct PresetEditSheet: View {
                     .padding(.top, DesignTokens.Spacing.xLarge)
                 }
             }
-            }
         }
         .presentationDetents([.large])
         .presentationDragIndicator(.hidden)
@@ -138,12 +138,9 @@ struct PresetEditSheet: View {
     }
 
     private func loadPreset() {
-        guard !isLoaded else { return }
-
         if let preset = presetManager.getPreset(id: presetId) {
             editingName = preset.name
             editingSelection = preset.selection
-            isLoaded = true
             print("✅ [PresetEditSheet] Loaded preset: \(preset.name)")
         } else {
             print("❌ [PresetEditSheet] Failed to load preset with ID: \(presetId)")
@@ -162,7 +159,8 @@ struct PresetEditSheet: View {
             )
 
             print("✅ [PresetEditSheet] Saved preset: \(editingName)")
-            isPresented = false
+            dismiss()
+            onDismiss()
 
         } catch {
             errorMessage = error.localizedDescription
