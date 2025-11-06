@@ -13,7 +13,7 @@ struct BottomPresetSlider: View {
     @State private var showNameAlert = false
     @State private var newPresetName = ""
     @State private var editingPresetId: PresetIdentifier?
-    @StateObject private var presetManager = PresetManager.shared
+    @ObservedObject private var presetManager = PresetManager.shared
 
     var displayItems: [DisplayItem] {
         var items = presetManager.presets.map { DisplayItem.preset($0) }
@@ -154,7 +154,6 @@ struct BottomPresetSlider: View {
         .sheet(item: $editingPresetId) { identifier in
             PresetEditSheet(
                 presetId: identifier.id,
-                isPresented: .constant(false),
                 onDismiss: { editingPresetId = nil }
             )
         }
@@ -179,7 +178,6 @@ struct BottomPresetSlider: View {
 
     private func handlePresetSelection(_ presetId: String?) {
         guard let presetId = presetId,
-              presetId != "add",
               presetManager.getPreset(id: presetId) != nil else {
             return
         }

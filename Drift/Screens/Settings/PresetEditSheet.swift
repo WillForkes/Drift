@@ -10,11 +10,10 @@ import FamilyControls
 
 struct PresetEditSheet: View {
     let presetId: String
-    @Binding var isPresented: Bool
     let onDismiss: () -> Void
 
-    @StateObject private var presetManager = PresetManager.shared
-    @StateObject private var driftManager = DriftTagManager.shared
+    @ObservedObject private var presetManager = PresetManager.shared
+    @ObservedObject private var driftManager = DriftTagManager.shared
     @Environment(\.dismiss) private var dismiss
 
     @State private var editingName: String = ""
@@ -22,9 +21,8 @@ struct PresetEditSheet: View {
     @State private var showError = false
     @State private var errorMessage = ""
 
-    init(presetId: String, isPresented: Binding<Bool>, onDismiss: @escaping () -> Void = {}) {
+    init(presetId: String, onDismiss: @escaping () -> Void = {}) {
         self.presetId = presetId
-        self._isPresented = isPresented
         self.onDismiss = onDismiss
     }
 
@@ -37,22 +35,13 @@ struct PresetEditSheet: View {
     }
 
     var selectedCountText: String {
-        let appCount = editingSelection.applicationTokens.count
-        let categoryCount = editingSelection.categoryTokens.count
-
-        if appCount > 0 && categoryCount > 0 {
-            let appText = appCount == 1 ? "app" : "apps"
-            let categoryText = categoryCount == 1 ? "category" : "categories"
-            return "\(appCount) \(appText), \(categoryCount) \(categoryText)"
-        } else if categoryCount > 0 {
-            let categoryText = categoryCount == 1 ? "category" : "categories"
-            return "\(categoryCount) \(categoryText)"
-        } else if appCount > 0 {
-            let appText = appCount == 1 ? "app" : "apps"
-            return "\(appCount) \(appText)"
-        } else {
-            return "No apps"
-        }
+        // Use the shared extension method by creating a temporary preset
+        FocusPreset(
+            id: presetId,
+            name: editingName,
+            selection: editingSelection,
+            blocksAllApps: false
+        ).appCountText
     }
     
     var body: some View {
@@ -202,6 +191,5 @@ struct DeviceAssignmentCard: View {
 #Preview {
     PresetEditSheet(
         presetId: "testing",
-        isPresented: .constant(true)
     )
 }

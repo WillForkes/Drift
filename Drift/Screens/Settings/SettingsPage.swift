@@ -8,8 +8,8 @@
 import SwiftUI
 
 struct SettingsPage: View {
-    @StateObject private var driftManager = DriftTagManager.shared
-    @StateObject private var presetManager = PresetManager.shared
+    @ObservedObject private var driftManager = DriftTagManager.shared
+    @ObservedObject private var presetManager = PresetManager.shared
     @State private var editingPresetId: PresetIdentifier?
 
     var body: some View {
@@ -120,7 +120,6 @@ struct SettingsPage: View {
         .sheet(item: $editingPresetId) { identifier in
             PresetEditSheet(
                 presetId: identifier.id,
-                isPresented: .constant(false),
                 onDismiss: { editingPresetId = nil }
             )
         }

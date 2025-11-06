@@ -17,6 +17,8 @@ class PresetManager: ObservableObject {
     @Published var presets: [FocusPreset] = []
     @Published var currentPresetId: String?
 
+    private var cachedCurrentPreset: FocusPreset?
+
     private enum Constants {
         static let presetsKey = "drift.presets"
         static let selectionPrefix = "drift.preset.selection."
@@ -79,6 +81,12 @@ class PresetManager: ObservableObject {
         }
 
         savePresets()
+
+        // Update cache if this is the current preset
+        if id == currentPresetId {
+            cachedCurrentPreset = presets[index]
+        }
+
         print("✅ [PresetManager] Updated preset: \(id)")
     }
 
@@ -89,8 +97,7 @@ class PresetManager: ObservableObject {
         }
 
         // Reassign drifts using this preset
-        let remainingPresets = presets.filter { $0.id != id }
-        let reassignToId = remainingPresets.first?.id
+        let reassignToId = presets.first(where: { $0.id != id })?.id
         DriftTagManager.shared.reassignPreset(from: id, to: reassignToId)
 
         // Remove preset and its selection
@@ -101,6 +108,7 @@ class PresetManager: ObservableObject {
         // Clear current preset if deleted
         if currentPresetId == id {
             currentPresetId = presets.first?.id
+            cachedCurrentPreset = presets.first
             saveCurrentPresetId()
         }
 
@@ -114,13 +122,26 @@ class PresetManager: ObservableObject {
 
     /// Get the currently selected preset
     var currentPreset: FocusPreset? {
-        guard let id = currentPresetId else { return nil }
-        return getPreset(id: id)
+        guard let id = currentPresetId else {
+            cachedCurrentPreset = nil
+            return nil
+        }
+
+        // Return cached preset if ID matches
+        if cachedCurrentPreset?.id == id {
+            return cachedCurrentPreset
+        }
+
+        // Otherwise, fetch and cache
+        cachedCurrentPreset = getPreset(id: id)
+        return cachedCurrentPreset
     }
 
     /// Set the current preset
     func setCurrentPreset(_ presetId: String?) {
         currentPresetId = presetId
+        // Update cache immediately
+        cachedCurrentPreset = presetId.flatMap { getPreset(id: $0) }
         saveCurrentPresetId()
         print("✅ [PresetManager] Current preset set to: \(presetId ?? "none")")
     }
@@ -169,14 +190,8 @@ class PresetManager: ObservableObject {
 
             // Load selections separately for each preset
             for i in 0..<loadedPresets.count {
-                let id = loadedPresets[i].id
-                if let selection = loadSelection(for: id) {
-                    loadedPresets[i] = FocusPreset(
-                        id: id,
-                        name: loadedPresets[i].name,
-                        selection: selection,
-                        blocksAllApps: loadedPresets[i].blocksAllApps
-                    )
+                if let selection = loadSelection(for: loadedPresets[i].id) {
+                    loadedPresets[i].selection = selection
                 }
             }
 
