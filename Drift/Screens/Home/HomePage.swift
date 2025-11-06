@@ -30,8 +30,6 @@ struct HomePage: View {
     private var headingText: String {
         if sessionManager.isSessionActive {
             return "Session Active"
-        } else if nfcReader.isScanning {
-            return "Hold drift near phone"
         } else {
             return "Tap drift to activate"
         }
