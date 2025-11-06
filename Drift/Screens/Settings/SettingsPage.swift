@@ -64,7 +64,7 @@ struct SettingsPage: View {
                             ForEach(presetManager.presets) { preset in
                                 PresetModeCard(
                                     preset: preset,
-                                    appCountText: getAppCountText(for: preset),
+                                    appCountText: preset.appCountText,
                                     assignedToText: getDriftCount(for: preset.id),
                                     editingPresetId: $editingPresetId,
                                     showSheet: $showPresetSheet
@@ -120,46 +120,11 @@ struct SettingsPage: View {
             }
         }
         .sheet(isPresented: $showPresetSheet) {
-            if let presetId = editingPresetId,
-               let index = presetManager.presets.firstIndex(where: { $0.id == presetId }) {
+            if let presetId = editingPresetId {
                 PresetEditSheet(
-                    preset: Binding(
-                        get: { presetManager.presets[index] },
-                        set: { presetManager.presets[index] = $0 }
-                    ),
+                    presetId: presetId,
                     isPresented: $showPresetSheet
                 )
-            } else {
-                // Fallback error view for debugging
-                ZStack {
-                    DesignTokens.Colors.background
-                        .ignoresSafeArea()
-
-                    VStack(spacing: DesignTokens.Spacing.xLarge) {
-                        Image(systemName: "exclamationmark.triangle.fill")
-                            .font(.system(size: 48))
-                            .foregroundColor(DesignTokens.Colors.primary)
-
-                        Text("Error Loading Preset")
-                            .heading1()
-                            .foregroundColor(DesignTokens.Colors.textPrimary)
-
-                        Text("Could not find the preset to edit")
-                            .body()
-                            .subtextColor()
-
-                        DriftButton(title: "Close", style: .pill) {
-                            showPresetSheet = false
-                            editingPresetId = nil
-                        }
-                    }
-                    .padding(DesignTokens.Padding.large)
-                }
-                .onAppear {
-                    print("❌ [SettingsPage] Sheet presented but preset not found")
-                    print("   editingPresetId: \(editingPresetId ?? "nil")")
-                    print("   Available presets: \(presetManager.presets.map { $0.id })")
-                }
             }
         }
     }
@@ -182,29 +147,6 @@ struct SettingsPage: View {
             return "1 drift"
         } else {
             return "\(count) drifts"
-        }
-    }
-
-    private func getAppCountText(for preset: FocusPreset) -> String {
-        if preset.blocksAllApps {
-            return "All apps"
-        }
-
-        let appCount = preset.selection.applicationTokens.count
-        let categoryCount = preset.selection.categoryTokens.count
-
-        if appCount > 0 && categoryCount > 0 {
-            let appText = appCount == 1 ? "app" : "apps"
-            let categoryText = categoryCount == 1 ? "category" : "categories"
-            return "\(appCount) \(appText), \(categoryCount) \(categoryText)"
-        } else if categoryCount > 0 {
-            let categoryText = categoryCount == 1 ? "category" : "categories"
-            return "\(categoryCount) \(categoryText)"
-        } else if appCount > 0 {
-            let appText = appCount == 1 ? "app" : "apps"
-            return "\(appCount) \(appText)"
-        } else {
-            return "No apps"
         }
     }
 

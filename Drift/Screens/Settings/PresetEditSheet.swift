@@ -9,26 +9,34 @@ import SwiftUI
 import FamilyControls
 
 struct PresetEditSheet: View {
-    @Binding var preset: FocusPreset
+    let presetId: String
     @Binding var isPresented: Bool
 
     @StateObject private var presetManager = PresetManager.shared
     @StateObject private var driftManager = DriftTagManager.shared
 
-    @State private var editingName: String
+    @State private var editingName: String = ""
+    @State private var editingSelection: FamilyActivitySelection = FamilyActivitySelection()
     @State private var showError = false
     @State private var errorMessage = ""
-    @State private var includeMode: Bool = true // For future use
+    @State private var isLoaded = false
 
-    init(preset: Binding<FocusPreset>, isPresented: Binding<Bool>) {
-        self._preset = preset
+    init(presetId: String, isPresented: Binding<Bool>) {
+        self.presetId = presetId
         self._isPresented = isPresented
-        self._editingName = State(initialValue: preset.wrappedValue.name)
+    }
+
+    var assignedDriftName: String {
+        let drifts = driftManager.tags.filter { $0.presetId == presetId }
+        if let firstDrift = drifts.first {
+            return firstDrift.label
+        }
+        return "Not assigned"
     }
 
     var selectedCountText: String {
-        let appCount = preset.selection.applicationTokens.count
-        let categoryCount = preset.selection.categoryTokens.count
+        let appCount = editingSelection.applicationTokens.count
+        let categoryCount = editingSelection.categoryTokens.count
 
         if appCount > 0 && categoryCount > 0 {
             let appText = appCount == 1 ? "app" : "apps"
@@ -41,31 +49,24 @@ struct PresetEditSheet: View {
             let appText = appCount == 1 ? "app" : "apps"
             return "\(appCount) \(appText)"
         } else {
-            return "No apps selected"
+            return "No apps"
         }
-    }
-
-    var assignedDriftName: String {
-        let drifts = driftManager.tags.filter { $0.presetId == preset.id }
-        if let firstDrift = drifts.first {
-            return firstDrift.label
-        }
-        return "Not assigned"
     }
     
     var body: some View {
         ZStack {
             DesignTokens.Colors.background
                 .ignoresSafeArea()
-            
-            VStack(spacing: 0) {
-                // Handle bar
-                RoundedRectangle(cornerRadius: 2.5)
-                    .fill(Color.black)
-                    .frame(width: 36, height: 5)
-                    .padding(.top, 8)
-                
-                ScrollView {
+
+            if isLoaded {
+                VStack(spacing: 0) {
+                    // Handle bar
+                    RoundedRectangle(cornerRadius: 2.5)
+                        .fill(Color.black)
+                        .frame(width: 36, height: 5)
+                        .padding(.top, 8)
+
+                    ScrollView {
                     VStack(spacing: DesignTokens.Spacing.xxxLarge) {
                         // Header Section
                         VStack(spacing: DesignTokens.Spacing.xLarge) {
@@ -109,7 +110,7 @@ struct PresetEditSheet: View {
                             .padding(.horizontal, DesignTokens.Padding.large)
 
                             // FamilyActivityPicker
-                            FamilyActivityPicker(selection: $preset.selection)
+                            FamilyActivityPicker(selection: $editingSelection)
                                 .preferredColorScheme(.light)
                                 .frame(height: 400)
                                 .padding(.horizontal, DesignTokens.Padding.large)
@@ -122,6 +123,7 @@ struct PresetEditSheet: View {
                     .padding(.top, DesignTokens.Spacing.xLarge)
                 }
             }
+            }
         }
         .presentationDetents([.large])
         .presentationDragIndicator(.hidden)
@@ -130,38 +132,39 @@ struct PresetEditSheet: View {
         } message: {
             Text(errorMessage)
         }
+        .onAppear {
+            loadPreset()
+        }
+    }
+
+    private func loadPreset() {
+        guard !isLoaded else { return }
+
+        if let preset = presetManager.getPreset(id: presetId) {
+            editingName = preset.name
+            editingSelection = preset.selection
+            isLoaded = true
+            print("✅ [PresetEditSheet] Loaded preset: \(preset.name)")
+        } else {
+            print("❌ [PresetEditSheet] Failed to load preset with ID: \(presetId)")
+            errorMessage = "Preset not found"
+            showError = true
+        }
     }
 
     private func savePreset() {
         do {
-            print("📝 [PresetEditSheet] Saving preset: \(editingName)")
-            print("   Apps selected: \(preset.selection.applicationTokens.count)")
-            print("   Categories selected: \(preset.selection.categoryTokens.count)")
-            print("   Web domains selected: \(preset.selection.webDomainTokens.count)")
-
-            // Update name if changed
-            if editingName != preset.name {
-                try presetManager.renamePreset(id: preset.id, newName: editingName)
-                preset = FocusPreset(
-                    id: preset.id,
-                    name: editingName,
-                    selection: preset.selection,
-                    blocksAllApps: preset.blocksAllApps
-                )
-            }
-
-            // Update selection (already bound to preset.selection, so it's automatically updated)
+            // Update preset with both name and selection
             try presetManager.updatePreset(
-                id: preset.id,
+                id: presetId,
                 name: editingName,
-                selection: preset.selection
+                selection: editingSelection
             )
 
             print("✅ [PresetEditSheet] Saved preset: \(editingName)")
             isPresented = false
 
         } catch {
-            print("❌ [PresetEditSheet] Error saving preset: \(error)")
             errorMessage = error.localizedDescription
             showError = true
         }
@@ -198,31 +201,9 @@ struct DeviceAssignmentCard: View {
     }
 }
 
-// MARK: - Extensions
-
-extension View {
-    func cornerRadius(_ radius: CGFloat, corners: UIRectCorner) -> some View {
-        clipShape(RoundedCorner(radius: radius, corners: corners))
-    }
-}
-
-struct RoundedCorner: Shape {
-    var radius: CGFloat = .infinity
-    var corners: UIRectCorner = .allCorners
-
-    func path(in rect: CGRect) -> Path {
-        let path = UIBezierPath(
-            roundedRect: rect,
-            byRoundingCorners: corners,
-            cornerRadii: CGSize(width: radius, height: radius)
-        )
-        return Path(path.cgPath)
-    }
-}
-
 #Preview {
     PresetEditSheet(
-        preset: .constant(FocusPreset(id: "testing", name: "Testing")),
+        presetId: "testing",
         isPresented: .constant(true)
     )
 }

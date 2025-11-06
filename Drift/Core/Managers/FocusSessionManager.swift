@@ -33,25 +33,25 @@ class FocusSessionManager: ObservableObject {
     }
 
     @Published private(set) var isAuthorized: Bool = false
-    @Published var currentPreset: FocusPreset?
 
     // MARK: - Private Properties
     private let store = ManagedSettingsStore()
     private let authCenter = AuthorizationCenter.shared
 
+    // Current preset comes from PresetManager
+    var currentPreset: FocusPreset? {
+        return PresetManager.shared.currentPreset
+    }
+
     // MARK: - Constants
     private enum Constants {
         static let sessionActiveKey = "drift.session.active"
-        static let currentPresetKey = "drift.current.preset"
     }
 
     // MARK: - Initialization
     private init() {
         // Restore session state from UserDefaults
         self.isSessionActive = UserDefaults.standard.bool(forKey: Constants.sessionActiveKey)
-
-        // Load current preset
-        self.currentPreset = Self.loadCurrentPresetStatic()
 
         // Check authorization status
         checkAuthorization()
@@ -89,8 +89,7 @@ class FocusSessionManager: ObservableObject {
 
     /// Select a preset to use for sessions
     func selectPreset(_ preset: FocusPreset) {
-        currentPreset = preset
-        saveCurrentPreset(preset)
+        PresetManager.shared.setCurrentPreset(preset.id)
 
         // If session is active, immediately apply new blocking rules
         if isSessionActive {
@@ -135,20 +134,6 @@ class FocusSessionManager: ObservableObject {
         store.shield.webDomains = nil
     }
 
-    private static func loadCurrentPresetStatic() -> FocusPreset? {
-        guard let data = UserDefaults.standard.data(forKey: Constants.currentPresetKey),
-              let preset = try? JSONDecoder().decode(FocusPreset.self, from: data) else {
-            // Default to first preset from PresetManager if none saved
-            return PresetManager.shared.presets.first
-        }
-        return preset
-    }
-
-    private func saveCurrentPreset(_ preset: FocusPreset) {
-        if let data = try? JSONEncoder().encode(preset) {
-            UserDefaults.standard.set(data, forKey: Constants.currentPresetKey)
-        }
-    }
 
     // MARK: - Debug/Reset
 
@@ -163,10 +148,9 @@ class FocusSessionManager: ObservableObject {
         removeAppBlocking()
 
         // Reset current preset to first available
-        currentPreset = PresetManager.shared.presets.first
+        PresetManager.shared.setCurrentPreset(PresetManager.shared.presets.first?.id)
 
         // Clear UserDefaults
         UserDefaults.standard.removeObject(forKey: Constants.sessionActiveKey)
-        UserDefaults.standard.removeObject(forKey: Constants.currentPresetKey)
     }
 }

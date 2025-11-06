@@ -13,7 +13,7 @@ struct BottomPresetSlider: View {
     @State private var showNameAlert = false
     @State private var newPresetName = ""
     @State private var showPresetSheet = false
-    @State private var editingPreset: FocusPreset?
+    @State private var editingPresetId: String?
     @StateObject private var presetManager = PresetManager.shared
 
     var displayItems: [DisplayItem] {
@@ -132,13 +132,13 @@ struct BottomPresetSlider: View {
         }
         .frame(height: 80)
         .onAppear {
-            // Initialize scroll position to first preset or stored selection
-            if let storedPresetId = UserDefaults.standard.string(forKey: "currentSelectedPresetId"),
-               presetManager.getPreset(id: storedPresetId) != nil {
-                scrollPosition = storedPresetId
+            // Initialize scroll position to current preset or first preset
+            if let currentId = presetManager.currentPresetId,
+               presetManager.getPreset(id: currentId) != nil {
+                scrollPosition = currentId
             } else if let firstPreset = presetManager.presets.first {
                 scrollPosition = firstPreset.id
-                UserDefaults.standard.set(firstPreset.id, forKey: "currentSelectedPresetId")
+                presetManager.setCurrentPreset(firstPreset.id)
             }
         }
         .alert("New Mode", isPresented: $showNameAlert) {
@@ -153,13 +153,9 @@ struct BottomPresetSlider: View {
             Text("Enter a name for your new focus mode")
         }
         .sheet(isPresented: $showPresetSheet) {
-            if let preset = editingPreset,
-               let index = presetManager.presets.firstIndex(where: { $0.id == preset.id }) {
+            if let presetId = editingPresetId {
                 PresetEditSheet(
-                    preset: Binding(
-                        get: { presetManager.presets[index] },
-                        set: { presetManager.presets[index] = $0 }
-                    ),
+                    presetId: presetId,
                     isPresented: $showPresetSheet
                 )
             }
@@ -171,7 +167,7 @@ struct BottomPresetSlider: View {
 
         do {
             let preset = try presetManager.createPreset(name: newPresetName, selection: FamilyActivitySelection(), blocksAllApps: false)
-            editingPreset = preset
+            editingPresetId = preset.id
             showPresetSheet = true
             newPresetName = ""
 
@@ -191,9 +187,8 @@ struct BottomPresetSlider: View {
             return
         }
 
-        // Store the selected preset ID in UserDefaults for app-wide access
-        UserDefaults.standard.set(presetId, forKey: "currentSelectedPresetId")
-        print("✅ [BottomPresetSlider] Selected preset: \(presetId)")
+        // Update current preset via PresetManager
+        presetManager.setCurrentPreset(presetId)
     }
 }
 
