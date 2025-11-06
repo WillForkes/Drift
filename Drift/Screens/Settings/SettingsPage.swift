@@ -11,6 +11,7 @@ struct SettingsPage: View {
     @ObservedObject private var driftManager = DriftTagManager.shared
     @ObservedObject private var presetManager = PresetManager.shared
     @State private var editingPresetId: PresetIdentifier?
+    @State private var showAddDriftSheet = false
 
     var body: some View {
         ZStack {
@@ -21,11 +22,18 @@ struct SettingsPage: View {
                 VStack(spacing: DesignTokens.Spacing.xxxLarge) {
                     // Your drift's Section
                     VStack(spacing: DesignTokens.Spacing.xLarge) {
-                        Text("Your drift's")
-                            .heading1()
-                            .foregroundColor(DesignTokens.Colors.textPrimary)
-                            .frame(maxWidth: .infinity, alignment: .leading)
-                            .padding(.horizontal, DesignTokens.Padding.large)
+                        HStack {
+                            Text("Your drift's")
+                                .heading1()
+                                .foregroundColor(DesignTokens.Colors.textPrimary)
+
+                            Spacer()
+
+                            DriftButton(title: "New Drift", icon: "plus", style: .pill) {
+                                showAddDriftSheet = true
+                            }
+                        }
+                        .padding(.horizontal, DesignTokens.Padding.large)
 
                         if driftManager.tags.isEmpty {
                             Text("No drifts")
@@ -122,6 +130,11 @@ struct SettingsPage: View {
                 presetId: identifier.id,
                 onDismiss: { editingPresetId = nil }
             )
+        }
+        .sheet(isPresented: $showAddDriftSheet) {
+            OnboardingFlow(isAddingAnotherDrift: true) {
+                showAddDriftSheet = false
+            }
         }
     }
 

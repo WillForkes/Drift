@@ -21,6 +21,8 @@ struct DriftApp: App {
             if hasCompletedOnboarding {
                 MainContainerView()
                     .onOpenURL { url in
+                        print("🔗 [DriftApp] onOpenURL called with: \(url.absoluteString)")
+                        print("🔗 [DriftApp] Host: \(url.host ?? "nil"), Path: \(url.path)")
                         handleUniversalLink(url)
                     }
                     .onReceive(NotificationCenter.default.publisher(for: .hardResetRequested)) { _ in
@@ -36,8 +38,8 @@ struct DriftApp: App {
 
     /// Handle Universal Links from NFC tags
     private func handleUniversalLink(_ url: URL) {
-        // Expected URL format: https://get-drift.app/focus?id=1234
-        guard url.host == "get-drift.app",
+        // Expected URL format: https://links.get-drift.app/focus?id=0001
+        guard url.host == "links.get-drift.app",
               url.path == "/focus" else {
             return
         }
