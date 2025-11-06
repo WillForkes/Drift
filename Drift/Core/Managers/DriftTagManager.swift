@@ -54,6 +54,18 @@ class DriftTagManager: ObservableObject {
         saveTags()
     }
 
+    /// Update the preset linked to a drift
+    func updateDriftPreset(driftId: String, presetId: String) {
+        guard let index = tags.firstIndex(where: { $0.id == driftId }) else {
+            print("⚠️ [DriftTagManager] Cannot update preset - drift not found: \(driftId)")
+            return
+        }
+
+        tags[index].presetId = presetId
+        saveTags()
+        print("✅ [DriftTagManager] Updated drift '\(tags[index].label)' to preset: \(presetId)")
+    }
+
     /// Delete a tag
     func deleteTag(id: String) {
         tags.removeAll(where: { $0.id == id })

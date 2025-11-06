@@ -9,11 +9,13 @@ import SwiftUI
 import FamilyControls
 
 struct BottomPresetSlider: View {
+    @Binding var selectedDriftId: String?
     @State private var scrollPosition: String?
     @State private var showNameAlert = false
     @State private var newPresetName = ""
     @State private var editingPresetId: PresetIdentifier?
     @ObservedObject private var presetManager = PresetManager.shared
+    @ObservedObject private var driftManager = DriftTagManager.shared
 
     var displayItems: [DisplayItem] {
         var items = presetManager.presets.map { DisplayItem.preset($0) }
@@ -74,20 +76,23 @@ struct BottomPresetSlider: View {
                                 .id(item.id)
 
                             case .preset(let preset):
-                                PresetCard(title: preset.name)
-                                    .containerRelativeFrame(.horizontal, count: 1, spacing: DesignTokens.Spacing.large)
-                                    .scrollTransition { content, phase in
-                                        content
-                                            .scaleEffect(phase.isIdentity ? 1.0 : 0.75)
-                                            .opacity(phase.isIdentity ? 1.0 : 0.3)
-                                    }
-                                    .shadow(
-                                        color: DesignTokens.Shadow.color,
-                                        radius: DesignTokens.Shadow.radius,
-                                        x: DesignTokens.Shadow.x,
-                                        y: DesignTokens.Shadow.y
-                                    )
-                                    .id(item.id)
+                                PresetCard(
+                                    title: preset.name,
+                                    isActive: isPresetActive(preset)
+                                )
+                                .containerRelativeFrame(.horizontal, count: 1, spacing: DesignTokens.Spacing.large)
+                                .scrollTransition { content, phase in
+                                    content
+                                        .scaleEffect(phase.isIdentity ? 1.0 : 0.75)
+                                        .opacity(phase.isIdentity ? 1.0 : 0.3)
+                                }
+                                .shadow(
+                                    color: DesignTokens.Shadow.color,
+                                    radius: DesignTokens.Shadow.radius,
+                                    x: DesignTokens.Shadow.x,
+                                    y: DesignTokens.Shadow.y
+                                )
+                                .id(item.id)
                             }
                         }
                     }
@@ -102,6 +107,18 @@ struct BottomPresetSlider: View {
                         return
                     }
                     handlePresetSelection(newValue)
+                }
+                .onChange(of: selectedDriftId) { oldValue, newValue in
+                    // When drift selection changes, auto-scroll to that drift's preset
+                    guard let driftId = newValue,
+                          let drift = driftManager.getTag(by: driftId),
+                          presetManager.getPreset(id: drift.presetId) != nil else {
+                        return
+                    }
+
+                    withAnimation(.easeInOut(duration: 0.3)) {
+                        scrollPosition = drift.presetId
+                    }
                 }
                 .safeAreaPadding(.horizontal, (geometry.size.width * 0.8) / 2 - 40)
                 .frame(width: geometry.size.width * 0.8)
@@ -184,6 +201,19 @@ struct BottomPresetSlider: View {
 
         // Update current preset via PresetManager
         presetManager.setCurrentPreset(presetId)
+
+        // Auto-link this preset to the selected drift
+        if let driftId = selectedDriftId {
+            driftManager.updateDriftPreset(driftId: driftId, presetId: presetId)
+        }
+    }
+
+    private func isPresetActive(_ preset: FocusPreset) -> Bool {
+        guard let driftId = selectedDriftId,
+              let drift = driftManager.getTag(by: driftId) else {
+            return false
+        }
+        return drift.presetId == preset.id
     }
 }
 
@@ -191,6 +221,7 @@ struct BottomPresetSlider: View {
 
 struct PresetCard: View {
     let title: String
+    let isActive: Bool
 
     var body: some View {
         ZStack {
@@ -201,6 +232,15 @@ struct PresetCard: View {
             Text(title)
                 .bodySmall()
                 .foregroundColor(DesignTokens.Colors.textPrimary)
+        }
+        .overlay(alignment: .topTrailing) {
+            // Green circle indicator for active preset
+            if isActive {
+                Circle()
+                    .fill(Color.green)
+                    .frame(width: 8, height: 8)
+                    .offset(x: -6, y: 6)
+            }
         }
     }
 }
@@ -225,5 +265,11 @@ struct AddPresetCard: View {
 }
 
 #Preview {
-    BottomPresetSlider()
+    @Previewable @State var selectedDriftId: String? = nil
+
+    VStack {
+        Spacer()
+        BottomPresetSlider(selectedDriftId: $selectedDriftId)
+    }
+    .background(DesignTokens.Colors.background)
 }

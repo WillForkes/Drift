@@ -45,6 +45,13 @@ class NFCFocusCoordinator: ObservableObject {
             return .failure(.tagNotFound)
         }
 
+        // Check if drift has been linked to a preset
+        guard !drift.presetId.isEmpty else {
+            print("❌ [NFCFocusCoordinator] Drift has not been linked to a preset")
+            haptics.error()
+            return .failure(.presetNotLinked(driftName: drift.label))
+        }
+
         // Get associated preset
         guard let preset = presetManager.getPreset(id: drift.presetId) else {
             print("❌ [NFCFocusCoordinator] Preset not found for drift")
@@ -118,6 +125,7 @@ extension NFCFocusCoordinator {
     enum CoordinatorError: LocalizedError {
         case tagNotRegistered(tagId: String)
         case tagNotFound
+        case presetNotLinked(driftName: String)
         case presetNotFound
         case parentalControlsRequired
 
@@ -127,6 +135,8 @@ extension NFCFocusCoordinator {
                 return "Drift tag '\(tagId)' is not registered. Please set it up first."
             case .tagNotFound:
                 return "Could not find drift tag information."
+            case .presetNotLinked(let driftName):
+                return "Drift '\(driftName)' hasn't been linked to a focus mode yet. Please select a mode on the home screen first."
             case .presetNotFound:
                 return "Focus mode preset not found for this drift."
             case .parentalControlsRequired:

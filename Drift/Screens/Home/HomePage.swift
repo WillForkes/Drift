@@ -13,17 +13,18 @@ struct HomePage: View {
     @ObservedObject private var driftManager = DriftTagManager.shared
     @ObservedObject private var coordinator = NFCFocusCoordinator.shared
 
+    @State private var selectedDriftId: String?
     @State private var showError = false
     @State private var errorMessage = ""
 
     let imageSize = UIScreen.main.bounds.width * 0.6
 
     private var driftName: String {
-        if let driftTagId = sessionManager.activeDriftTagId,
-           let drift = driftManager.getTag(by: driftTagId) {
-            return drift.label
+        guard let id = selectedDriftId,
+              let drift = driftManager.getTag(by: id) else {
+            return "Drift Name"
         }
-        return "Drift Name"
+        return drift.label
     }
 
     private var headingText: String {
@@ -44,8 +45,8 @@ struct HomePage: View {
 
             // Main Content - Image centered, text above
             VStack(spacing: DesignTokens.Spacing.xLarge) {
-                // Pill Badge with drift name
-                PillBadge(text: driftName)
+                // Drift Selector
+                DriftSelector(selectedDriftId: $selectedDriftId)
 
                 // Heading text
                 Text(headingText)
@@ -73,13 +74,25 @@ struct HomePage: View {
             // Bottom Preset Slider - Fixed at bottom
             VStack {
                 Spacer()
-                BottomPresetSlider()
+                BottomPresetSlider(selectedDriftId: $selectedDriftId)
             }
         }
         .alert("Error", isPresented: $showError) {
             Button("OK", role: .cancel) { }
         } message: {
             Text(errorMessage)
+        }
+        .onAppear {
+            // Initialize selectedDriftId on first load
+            if selectedDriftId == nil {
+                // If only 1 drift, auto-select it
+                if driftManager.tags.count == 1 {
+                    selectedDriftId = driftManager.tags.first?.id
+                } else if let firstDrift = driftManager.tags.first {
+                    // Multiple drifts - select the first one by default
+                    selectedDriftId = firstDrift.id
+                }
+            }
         }
     }
 
