@@ -43,7 +43,6 @@ struct BodyModifier: ViewModifier {
             .font(.custom(DesignTokens.Typography.fontFamily, size: DesignTokens.Typography.Size.body))
             .tracking(DesignTokens.Typography.Tracking.body)
             .lineSpacing(DesignTokens.Typography.Size.body * (DesignTokens.Typography.LineHeight.body - 1))
-            .foregroundColor(DesignTokens.Colors.textPrimary)
     }
 }
 
@@ -53,7 +52,6 @@ struct BodySmallModifier: ViewModifier {
             .font(.custom(DesignTokens.Typography.fontFamily, size: DesignTokens.Typography.Size.bodySmall))
             .tracking(DesignTokens.Typography.Tracking.bodySmall)
             .lineSpacing(DesignTokens.Typography.Size.bodySmall * (DesignTokens.Typography.LineHeight.bodySmall - 1))
-            .foregroundColor(DesignTokens.Colors.textPrimary)
     }
 }
 

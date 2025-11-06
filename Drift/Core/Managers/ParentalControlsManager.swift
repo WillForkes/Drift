@@ -103,6 +103,13 @@ class ParentalControlsManager: ObservableObject {
         deleteFromKeychain(key: Constants.answerKey)
     }
 
+    // MARK: - Debug/Reset
+
+    /// Clear all parental controls data (for development/testing)
+    func resetAllData() {
+        disable()
+    }
+
     // MARK: - Keychain Helpers
 
     private func saveToKeychain(key: String, value: String) -> Bool {

@@ -2,6 +2,10 @@
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
+	<key>NFCReaderUsageDescription</key>
+	<string>Drift uses NFC to detect and sync with your Drift devices for focus sessions.</string>
+	<key>com.apple.developer.nfc.readersession.formats</key>
+	<string>NDEF</string>
 	<key>UIAppFonts</key>
 	<array>
 		<string>FuturaCyrillicBook.ttf</string>

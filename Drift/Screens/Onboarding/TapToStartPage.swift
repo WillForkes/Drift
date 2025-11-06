@@ -8,6 +8,25 @@
 import SwiftUI
 
 struct TapToStartPage: View {
+    @StateObject private var nfcReader = NFCReaderManager.shared
+    let onTagDetected: (String) -> Void
+    let onCancelled: () -> Void
+    let errorMessage: String?
+
+    @State private var showError: Bool = false
+    @State private var hasDetectedTag: Bool = false
+    @State private var hasStartedScanning: Bool = false
+
+    init(
+        onTagDetected: @escaping (String) -> Void = { _ in },
+        onCancelled: @escaping () -> Void = {},
+        errorMessage: String? = nil
+    ) {
+        self.onTagDetected = onTagDetected
+        self.onCancelled = onCancelled
+        self.errorMessage = errorMessage
+    }
+
     var body: some View {
         GeometryReader { geometry in
             ZStack {
@@ -38,13 +57,21 @@ struct TapToStartPage: View {
                     .frame(width: 200, height: 200)
                     .position(x: geometry.size.width / 2, y: geometry.size.height / 2)
 
-                // Pill badge - positioned below center image
-                PillBadge(
-                    text: "Waiting for tap",
-                    icon: .circle(color: .red, size: 12),
-                    style: .light
-                )
-                .position(x: geometry.size.width / 2, y: (geometry.size.height / 2) + 100 + 60)
+                // Scan button or pill badge - positioned below center image
+                if !hasStartedScanning {
+                    DriftButton(title: "Tap to Scan", style: .primary) {
+                        hasStartedScanning = true
+                        nfcReader.startScanning()
+                    }
+                    .position(x: geometry.size.width / 2, y: (geometry.size.height / 2) + 100 + 60)
+                } else {
+                    PillBadge(
+                        text: pillBadgeText,
+                        icon: pillBadgeIcon,
+                        style: .light
+                    )
+                    .position(x: geometry.size.width / 2, y: (geometry.size.height / 2) + 100 + 60)
+                }
 
                 // Bottom button - Fixed distance from bottom
                 VStack {
@@ -56,6 +83,7 @@ struct TapToStartPage: View {
                         HStack(spacing: DesignTokens.Spacing.medium) {
                             Text("I don't have a drift")
                                 .bodySmall()
+                                .underline()
                                 .foregroundColor(DesignTokens.Colors.extraSubtext)
 
                             Image(systemName: "questionmark.circle")
@@ -64,13 +92,109 @@ struct TapToStartPage: View {
                         }
                     }
                     .padding(.bottom, 50)
+                    .background(Color(.clear))
                 }
             }
             .frame(maxWidth: .infinity, maxHeight: .infinity)
+            .onAppear {
+                hasDetectedTag = false  // Reset flag for fresh scan
+                hasStartedScanning = false  // Reset scanning state
+                // Show error if coming from sync failure
+                if errorMessage != nil {
+                    showError = true
+                    // Auto-dismiss after 3 seconds
+                    Task {
+                        try? await Task.sleep(nanoseconds: 3_000_000_000)
+                        showError = false
+                    }
+                }
+            }
+            .onDisappear {
+                nfcReader.stopScanning()
+            }
+            .onChange(of: nfcReader.detectedTagId) { newTagId in
+                if let tagId = newTagId {
+                    hasDetectedTag = true  // Mark that we successfully detected a tag
+                    onTagDetected(tagId)
+                }
+            }
+            .onChange(of: nfcReader.isScanning) { isScanning in
+                // Detect user cancellation (only if they started scanning)
+                // If scanning stopped but no tag detected and no error, user cancelled
+                if hasStartedScanning && !isScanning && !hasDetectedTag && nfcReader.errorMessage == nil {
+                    print("ℹ️ [TapToStart] User cancelled NFC scan")
+                    onCancelled()
+                }
+            }
+            .overlay(
+                // Error message overlay
+                Group {
+                    if let error = displayError {
+                        VStack {
+                            Spacer()
+                            Text(error)
+                                .bodySmall()
+                                .foregroundColor(.red)
+                                .multilineTextAlignment(.center)
+                                .padding()
+                                .background(Color.white.opacity(0.9))
+                                .cornerRadius(DesignTokens.Radii.radiusStandard)
+                                .padding()
+                                .padding(.bottom, 120)
+                        }
+                        .transition(.move(edge: .bottom).combined(with: .opacity))
+                    }
+                }
+            )
+        }
+    }
+
+    // MARK: - Computed Properties
+
+    private enum ScanState {
+        case detected
+        case scanning
+        case waiting
+    }
+
+    private var scanState: ScanState {
+        if nfcReader.detectedTagId != nil {
+            return .detected
+        } else if nfcReader.isScanning {
+            return .scanning
+        } else {
+            return .waiting
+        }
+    }
+
+    private var displayError: String? {
+        if let error = errorMessage, showError {
+            return error
+        } else if let nfcError = nfcReader.errorMessage {
+            return nfcError
+        }
+        return nil
+    }
+
+    private var pillBadgeText: String {
+        switch scanState {
+        case .detected: return "Tap detected!"
+        case .scanning: return "Scanning..."
+        case .waiting: return "Waiting for tap"
+        }
+    }
+
+    private var pillBadgeIcon: PillIcon {
+        switch scanState {
+        case .detected: return .systemImage(name: "checkmark", color: .green, size: 12)
+        case .scanning: return .systemImage(name: "antenna.radiowaves.left.and.right", color: .blue, size: 12)
+        case .waiting: return .circle(color: .red, size: 12)
         }
     }
 }
 
 #Preview {
-    TapToStartPage()
+    TapToStartPage(onTagDetected: { tagId in
+        print("Tag detected: \(tagId)")
+    })
 }

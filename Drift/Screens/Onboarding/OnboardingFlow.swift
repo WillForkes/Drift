@@ -8,8 +8,16 @@
 import SwiftUI
 
 struct OnboardingFlow: View {
+    let onComplete: () -> Void
     @State private var currentPage = 0
+    @State private var detectedTagId: String?
+    @State private var driftName: String = ""
+    @State private var syncError: String?
     private let totalPages = 4
+
+    init(onComplete: @escaping () -> Void) {
+        self.onComplete = onComplete
+    }
 
     var body: some View {
         ZStack {
@@ -29,18 +37,62 @@ struct OnboardingFlow: View {
                     WelcomePage()
                         .tag(0)
 
-                    TapToStartPage()
-                        .tag(1)
+                    TapToStartPage(
+                        onTagDetected: { tagId in
+                            print("✅ [Onboarding] Tag detected: \(tagId)")
+                            detectedTagId = tagId
+                            syncError = nil // Clear any previous errors
+                            // Wait 3 seconds for NFC dialog to dismiss before showing syncing page
+                            Task {
+                                try? await Task.sleep(nanoseconds: 3_000_000_000)
+                                withAnimation {
+                                    currentPage = 2
+                                }
+                            }
+                        },
+                        onCancelled: {
+                            print("ℹ️ [Onboarding] User cancelled NFC scan - returning to welcome")
+                            withAnimation {
+                                currentPage = 0
+                            }
+                        },
+                        errorMessage: syncError
+                    ).tag(1)
 
-                    SyncingPage()
+                    if let tagId = detectedTagId {
+                        SyncingPage(
+                            tagId: tagId,
+                            driftName: $driftName,
+                            onSuccess: {
+                                print("✅ [Onboarding] Sync successful")
+                                // Advance to synced welcome page
+                                withAnimation {
+                                    currentPage = 3
+                                }
+                            },
+                            onError: { error in
+                                print("❌ [Onboarding] Sync error: \(error)")
+                                syncError = error
+                                // Navigate back to tap to start page
+                                withAnimation {
+                                    currentPage = 1
+                                }
+                            }
+                        )
                         .tag(2)
+                    }
 
-                    SyncedWelcomePage()
+                    SyncedWelcomePage(onComplete: {
+                        print("✅ [Onboarding] Completed - entering app")
+                        onComplete()
+                    })
                         .tag(3)
                 }
                 .tabViewStyle(PageTabViewStyle(indexDisplayMode: .never))
-//                UNCOMMENT WHEN FUNCTIONALITY EXISTS
-//                .disabled(currentPage != 0) // Only allow swiping on first page
+                .highPriorityGesture(
+                    // Block swipe gestures on pages 1, 2, and 3 (only allow on page 0)
+                    currentPage != 0 ? DragGesture() : nil
+                )
 
                 Spacer()
             }
@@ -58,5 +110,7 @@ struct OnboardingFlow: View {
 }
 
 #Preview {
-    OnboardingFlow()
+    OnboardingFlow(onComplete: {
+        print("Onboarding completed")
+    })
 }

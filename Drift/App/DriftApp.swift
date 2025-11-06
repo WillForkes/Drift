@@ -10,15 +10,26 @@ import SwiftUI
 @main
 struct DriftApp: App {
     @StateObject private var sessionManager = FocusSessionManager.shared
+    @StateObject private var presetManager = PresetManager.shared
     @StateObject private var parentalControls = ParentalControlsManager.shared
     @StateObject private var tagManager = DriftTagManager.shared
+    @AppStorage("drift.onboarding.completed") private var hasCompletedOnboarding = false
 
     var body: some Scene {
         WindowGroup {
-            MainContainerView()
-                .onOpenURL { url in
-                    handleUniversalLink(url)
-                }
+            if hasCompletedOnboarding {
+                MainContainerView()
+                    .onOpenURL { url in
+                        handleUniversalLink(url)
+                    }
+                    .onReceive(NotificationCenter.default.publisher(for: .hardResetRequested)) { _ in
+                        performHardReset()
+                    }
+            } else {
+                OnboardingFlow(onComplete: {
+                    hasCompletedOnboarding = true
+                })
+            }
         }
     }
 
@@ -52,9 +63,9 @@ struct DriftApp: App {
 
     private func handleRegisteredTag(_ tag: DriftTag) {
         // Get the preset for this tag
-        guard let preset = sessionManager.presets.first(where: { $0.id == tag.presetId }) else {
+        guard let preset = presetManager.presets.first(where: { $0.id == tag.presetId }) else {
             // Preset not found - use first available preset
-            if let firstPreset = sessionManager.presets.first {
+            if let firstPreset = presetManager.presets.first {
                 sessionManager.selectPreset(firstPreset)
             }
             return
@@ -71,10 +82,31 @@ struct DriftApp: App {
             sessionManager.toggleSession()
         }
     }
+
+    /// Perform hard reset of all app data (for development/testing)
+    private func performHardReset() {
+        print("🗑️ [Debug] Hard reset - clearing all data")
+
+        // Clear all manager data
+        sessionManager.resetAllData()
+        presetManager.resetAllData()
+        tagManager.resetAllData()
+        parentalControls.resetAllData()
+        AnalyticsManager.shared.resetAllData()
+
+        // Explicitly remove onboarding flag from UserDefaults
+        UserDefaults.standard.removeObject(forKey: "drift.onboarding.completed")
+
+        // Reset the @AppStorage property to trigger view update
+        hasCompletedOnboarding = false
+
+        print("✅ [Debug] Reset complete")
+    }
 }
 
 extension Notification.Name {
     static let nfcStopRequested = Notification.Name("nfcStopRequested")
     static let nfcTagNeedsSetup = Notification.Name("nfcTagNeedsSetup")
     static let nfcTagMissingId = Notification.Name("nfcTagMissingId")
+    static let hardResetRequested = Notification.Name("hardResetRequested")
 }

@@ -8,20 +8,9 @@
 import SwiftUI
 
 struct SettingsPage: View {
-    // Mock data for drifts
-    let mockDrifts = [
-        DriftDevice(id: "0x13304", name: "Living Room", preset: "All", isSynced: true),
-        DriftDevice(id: "0x13304", name: "Bedroom", preset: "All", isSynced: true)
-    ]
-    
-    // Mock data for presets/modes
-    let mockPresets = [
-        PresetMode(name: "Work", appsSelected: 31, assignedTo: "Bedroom"),
-        PresetMode(name: "Sleep", appsSelected: 5, assignedTo: "Bedroom"),
-        PresetMode(name: "Gym", appsSelected: 31, assignedTo: "Bedroom")
-    ]
-    
-    @State private var presentedPreset: FocusPreset?
+    @ObservedObject private var driftManager = DriftTagManager.shared
+    @ObservedObject private var presetManager = PresetManager.shared
+    @State private var editingPresetId: PresetIdentifier?
 
     var body: some View {
         ZStack {
@@ -38,9 +27,22 @@ struct SettingsPage: View {
                             .frame(maxWidth: .infinity, alignment: .leading)
                             .padding(.horizontal, DesignTokens.Padding.large)
 
-                        ForEach(mockDrifts, id: \.id) { drift in
-                            DriftCard(drift: drift)
+                        if driftManager.tags.isEmpty {
+                            Text("No drifts")
+                                .body()
+                                .subtextColor()
                                 .padding(.horizontal, DesignTokens.Padding.large)
+                        } else {
+                            ForEach(driftManager.tags) { tag in
+                                DriftCard(
+                                    tag: tag,
+                                    presetName: getPresetName(for: tag.presetId),
+                                    onDelete: {
+                                        driftManager.deleteTag(id: tag.id)
+                                    }
+                                )
+                                .padding(.horizontal, DesignTokens.Padding.large)
+                            }
                         }
                     }
 
@@ -52,12 +54,21 @@ struct SettingsPage: View {
                             .frame(maxWidth: .infinity, alignment: .leading)
                             .padding(.horizontal, DesignTokens.Padding.large)
 
-                        ForEach(Array(mockPresets.enumerated()), id: \.offset) { index, preset in
-                            PresetModeCard(
-                                preset: preset,
-                                presentedPreset: $presentedPreset
-                            )
-                            .padding(.horizontal, DesignTokens.Padding.large)
+                        if presetManager.presets.isEmpty {
+                            Text("No modes")
+                                .body()
+                                .subtextColor()
+                                .padding(.horizontal, DesignTokens.Padding.large)
+                        } else {
+                            ForEach(presetManager.presets) { preset in
+                                PresetModeCard(
+                                    preset: preset,
+                                    appCountText: preset.appCountText,
+                                    assignedToText: getDriftCount(for: preset.id),
+                                    editingPresetId: $editingPresetId
+                                )
+                                .padding(.horizontal, DesignTokens.Padding.large)
+                            }
                         }
                     }
 
@@ -80,60 +91,112 @@ struct SettingsPage: View {
                         .padding(.horizontal, DesignTokens.Padding.large)
                     }
 
+                    // Debug Section (only in DEBUG builds)
+                    #if DEBUG
+                    VStack(spacing: DesignTokens.Spacing.xLarge) {
+                        Text("Debug")
+                            .heading1()
+                            .foregroundColor(DesignTokens.Colors.textPrimary)
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                            .padding(.horizontal, DesignTokens.Padding.large)
+
+                        VStack(spacing: DesignTokens.Spacing.large) {
+                            SettingsRow(
+                                title: "Hard Reset (Clear All Data)",
+                                icon: "exclamationmark.triangle.fill",
+                                action: performHardReset
+                            )
+                        }
+                        .padding(.horizontal, DesignTokens.Padding.large)
+                    }
+                    #endif
+
                     // Bottom spacing
                     Spacer()
                         .frame(height: DesignTokens.Spacing.xxxLarge)
                 }
             }
         }
-        .sheet(item: $presentedPreset) { preset in
-            PresetEditSheet(preset: preset, isPresented: .constant(true))
+        .sheet(item: $editingPresetId) { identifier in
+            PresetEditSheet(
+                presetId: identifier.id,
+                onDismiss: { editingPresetId = nil }
+            )
         }
+    }
+
+    // MARK: - Helper Functions
+
+    private func getPresetName(for presetId: String) -> String {
+        guard !presetId.isEmpty,
+              let preset = presetManager.getPreset(id: presetId) else {
+            return "None"
+        }
+        return preset.name
+    }
+
+    private func getDriftCount(for presetId: String) -> String {
+        let count = driftManager.tags.filter { $0.presetId == presetId }.count
+        if count == 0 {
+            return "Not assigned"
+        } else if count == 1 {
+            return "1 drift"
+        } else {
+            return "\(count) drifts"
+        }
+    }
+
+    // MARK: - Debug Methods
+
+    private func performHardReset() {
+        // Post notification to trigger app-level hard reset
+        NotificationCenter.default.post(name: .hardResetRequested, object: nil)
     }
 }
 
 /// MARK: - Supporting Views
 
 struct DriftCard: View {
-    let drift: DriftDevice
-    
+    let tag: DriftTag
+    let presetName: String
+    let onDelete: () -> Void
+
     var body: some View {
         VStack(alignment: .leading, spacing: DesignTokens.Spacing.xLarge) {
             // Header with name and ID
             HStack {
-                Text(drift.name)
+                Text(tag.label)
                     .heading2()
                     .foregroundColor(DesignTokens.Colors.textPrimary)
-                
+
                 Spacer()
-                
-                Text("ID: \(drift.id)")
+
+                Text("ID: \(tag.id)")
                     .bodySmall()
                     .extraSubtextColor()
             }
-            
+
             // Preset info
-            Text("Preset: \(drift.preset)")
+            Text("Preset: \(presetName)")
                 .body()
                 .subtextColor()
-            
+
             // Sync status and delete button
             HStack {
                 HStack(spacing: DesignTokens.Spacing.medium) {
                     Circle()
-                        .fill(drift.isSynced ? Color.green : Color.red)
+                        .fill(Color.green)
                         .frame(width: 8, height: 8)
-                    
-                    Text(drift.isSynced ? "Synced" : "Not Synced")
+
+                    Text("Synced")
                         .bodySmall()
                         .subtextColor()
                 }
-                
+
                 Spacer()
-                
+
                 DriftButton(title: "Delete", icon: "xmark", style: .pill) {
-                    // Delete action placeholder
-                    print("Delete \(drift.name)")
+                    onDelete()
                 }
             }
         }
@@ -151,9 +214,11 @@ struct DriftCard: View {
 }
 
 struct PresetModeCard: View {
-    let preset: PresetMode
-    @Binding var presentedPreset: FocusPreset?
-    
+    let preset: FocusPreset
+    let appCountText: String
+    let assignedToText: String
+    @Binding var editingPresetId: PresetIdentifier?
+
     var body: some View {
         VStack(alignment: .leading, spacing: DesignTokens.Spacing.xLarge) {
             // Header with name and apps count
@@ -161,26 +226,24 @@ struct PresetModeCard: View {
                 Text(preset.name)
                     .heading2()
                     .foregroundColor(DesignTokens.Colors.textPrimary)
-                
+
                 Spacer()
-                
-                Text("\(preset.appsSelected) Apps Selected")
+
+                Text(appCountText)
                     .bodySmall()
                     .extraSubtextColor()
             }
-            
+
             // Assignment info and edit button
             HStack {
-                Text("Assigned to: \(preset.assignedTo)")
+                Text("Assigned to: \(assignedToText)")
                     .body()
                     .subtextColor()
-                
+
                 Spacer()
-                
+
                 DriftButton(title: "Edit", icon: "pencil", style: .pill) {
-                    // Edit action - open sheet
-                    let focusPreset = FocusPreset(id: preset.name.lowercased(), name: preset.name)
-                    presentedPreset = focusPreset
+                    editingPresetId = PresetIdentifier(id: preset.id)
                 }
             }
         }
@@ -200,7 +263,8 @@ struct PresetModeCard: View {
 struct SettingsRow: View {
     let title: String
     let icon: String
-    
+    var action: (() -> Void)? = nil
+
     var body: some View {
         HStack(spacing: DesignTokens.Spacing.xLarge) {
             Image(systemName: icon)
@@ -228,25 +292,14 @@ struct SettingsRow: View {
             y: DesignTokens.Shadow.y
         )
         .onTapGesture {
-            // Settings row tap placeholder
-            print("\(title) tapped")
+            if let action = action {
+                action()
+            } else {
+                // Settings row tap placeholder
+                print("\(title) tapped")
+            }
         }
     }
-}
-
-// MARK: - Data Models
-
-struct DriftDevice {
-    let id: String
-    let name: String
-    let preset: String
-    let isSynced: Bool
-}
-
-struct PresetMode {
-    let name: String
-    let appsSelected: Int
-    let assignedTo: String
 }
 
 #Preview {

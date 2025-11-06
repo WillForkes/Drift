@@ -70,6 +70,22 @@ class DriftTagManager: ObservableObject {
         return tags.contains(where: { $0.id == id })
     }
 
+    /// Reassign drifts from one preset to another (used when deleting presets)
+    func reassignPreset(from oldId: String, to newId: String?) {
+        var updated = false
+        for index in tags.indices {
+            if tags[index].presetId == oldId {
+                tags[index].presetId = newId ?? ""
+                updated = true
+            }
+        }
+
+        if updated {
+            saveTags()
+            print("✅ [DriftTagManager] Reassigned drifts from preset \(oldId) to \(newId ?? "none")")
+        }
+    }
+
     // MARK: - Persistence
 
     private func saveTags() {
@@ -84,5 +100,13 @@ class DriftTagManager: ObservableObject {
             return
         }
         tags = loadedTags
+    }
+
+    // MARK: - Debug/Reset
+
+    /// Clear all registered tags (for development/testing)
+    func resetAllData() {
+        tags = []
+        UserDefaults.standard.removeObject(forKey: Constants.tagsKey)
     }
 }

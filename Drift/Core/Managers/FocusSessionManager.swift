@@ -33,28 +33,25 @@ class FocusSessionManager: ObservableObject {
     }
 
     @Published private(set) var isAuthorized: Bool = false
-    @Published var presets: [FocusPreset] = []
-    @Published var currentPreset: FocusPreset?
 
     // MARK: - Private Properties
     private let store = ManagedSettingsStore()
     private let authCenter = AuthorizationCenter.shared
 
+    // Current preset comes from PresetManager
+    var currentPreset: FocusPreset? {
+        return PresetManager.shared.currentPreset
+    }
+
     // MARK: - Constants
     private enum Constants {
         static let sessionActiveKey = "drift.session.active"
-        static let presetsKey = "drift.presets"
-        static let currentPresetKey = "drift.current.preset"
     }
 
     // MARK: - Initialization
     private init() {
         // Restore session state from UserDefaults
         self.isSessionActive = UserDefaults.standard.bool(forKey: Constants.sessionActiveKey)
-
-        // Load presets after isSessionActive is initialized
-        self.presets = Self.loadPresetsStatic()
-        self.currentPreset = Self.loadCurrentPresetStatic(from: self.presets)
 
         // Check authorization status
         checkAuthorization()
@@ -92,38 +89,12 @@ class FocusSessionManager: ObservableObject {
 
     /// Select a preset to use for sessions
     func selectPreset(_ preset: FocusPreset) {
-        currentPreset = preset
-        saveCurrentPreset(preset)
+        PresetManager.shared.setCurrentPreset(preset.id)
 
         // If session is active, immediately apply new blocking rules
         if isSessionActive {
             applyAppBlocking()
         }
-    }
-
-    /// Update a preset's app selection
-    func updatePreset(_ preset: FocusPreset, selection: FamilyActivitySelection) {
-        var updatedPreset = preset
-        updatedPreset.selection = selection
-
-        if let index = presets.firstIndex(where: { $0.id == preset.id }) {
-            presets[index] = updatedPreset
-        }
-
-        savePresets()
-
-        // If this is the current preset and session is active, apply changes
-        if currentPreset?.id == preset.id {
-            currentPreset = updatedPreset
-            if isSessionActive {
-                applyAppBlocking()
-            }
-        }
-    }
-
-    /// Get a preset by ID
-    func getPreset(id: String) -> FocusPreset? {
-        return presets.first(where: { $0.id == id })
     }
 
     // MARK: - Private Methods
@@ -163,33 +134,23 @@ class FocusSessionManager: ObservableObject {
         store.shield.webDomains = nil
     }
 
-    private static func loadPresetsStatic() -> [FocusPreset] {
-        guard let data = UserDefaults.standard.data(forKey: Constants.presetsKey),
-              let presets = try? JSONDecoder().decode([FocusPreset].self, from: data) else {
-            // Return default presets if none saved
-            return FocusPreset.defaultPresets
-        }
-        return presets
-    }
 
-    private static func loadCurrentPresetStatic(from presets: [FocusPreset]) -> FocusPreset? {
-        guard let data = UserDefaults.standard.data(forKey: Constants.currentPresetKey),
-              let preset = try? JSONDecoder().decode(FocusPreset.self, from: data) else {
-            // Default to first preset if none saved
-            return presets.first
-        }
-        return preset
-    }
+    // MARK: - Debug/Reset
 
-    private func savePresets() {
-        if let data = try? JSONEncoder().encode(presets) {
-            UserDefaults.standard.set(data, forKey: Constants.presetsKey)
+    /// Clear all session data and reset to defaults (for development/testing)
+    func resetAllData() {
+        // Stop any active session
+        if isSessionActive {
+            stopSession()
         }
-    }
 
-    private func saveCurrentPreset(_ preset: FocusPreset) {
-        if let data = try? JSONEncoder().encode(preset) {
-            UserDefaults.standard.set(data, forKey: Constants.currentPresetKey)
-        }
+        // Clear app blocking
+        removeAppBlocking()
+
+        // Reset current preset to first available
+        PresetManager.shared.setCurrentPreset(PresetManager.shared.presets.first?.id)
+
+        // Clear UserDefaults
+        UserDefaults.standard.removeObject(forKey: Constants.sessionActiveKey)
     }
 }
