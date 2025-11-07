@@ -37,10 +37,12 @@ struct DriftWidgetLiveActivity: Widget {
                 Image("above_small")
                     .resizable()
                     .scaledToFit()
+                    .frame(width: 60)
             }
             .padding(DesignTokens.Padding.large)
             .activityBackgroundTint(DesignTokens.Colors.background)
             .activitySystemActionForegroundColor(Color.black)
+            .background(DesignTokens.Colors.background)
 
         } dynamicIsland: { context in
             DynamicIsland {
