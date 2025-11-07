@@ -9,6 +9,7 @@ import Foundation
 import Combine
 import FamilyControls
 import ManagedSettings
+import ActivityKit
 
 /// Manages focus session state and app blocking
 @MainActor
@@ -24,12 +25,16 @@ class FocusSessionManager: ObservableObject {
                 // Start analytics tracking
                 let presetName = currentPreset?.name ?? "Unknown"
                 AnalyticsManager.shared.startSession(presetName: presetName)
+                // Start Live Activity
+                startLiveActivity()
             } else {
                 removeAppBlocking()
                 // Stop analytics tracking
                 AnalyticsManager.shared.stopSession()
                 // Clear active drift tag when stopping
                 activeDriftTagId = nil
+                // End Live Activity
+                endLiveActivity()
             }
         }
     }
@@ -40,6 +45,7 @@ class FocusSessionManager: ObservableObject {
     // MARK: - Private Properties
     private let store = ManagedSettingsStore()
     private let authCenter = AuthorizationCenter.shared
+    private var currentActivity: Activity<DriftWidgetAttributes>?
 
     // Current preset comes from PresetManager
     var currentPreset: FocusPreset? {
@@ -155,6 +161,46 @@ class FocusSessionManager: ObservableObject {
         store.shield.applications = nil
         store.shield.applicationCategories = nil
         store.shield.webDomains = nil
+    }
+
+    // MARK: - Live Activity Management
+
+    private func startLiveActivity() {
+        // Check if Live Activities are supported
+        guard ActivityAuthorizationInfo().areActivitiesEnabled else {
+            print("⚠️ [FocusSessionManager] Live Activities are not enabled")
+            return
+        }
+
+        // End any existing activity first
+        endLiveActivity()
+
+        do {
+            let attributes = DriftWidgetAttributes(sessionStartDate: Date())
+            let contentState = DriftWidgetAttributes.ContentState()
+
+            let activity = try Activity.request(
+                attributes: attributes,
+                content: .init(state: contentState, staleDate: nil)
+            )
+
+            currentActivity = activity
+            print("✅ [FocusSessionManager] Live Activity started with ID: \(activity.id)")
+        } catch {
+            print("❌ [FocusSessionManager] Failed to start Live Activity: \(error)")
+        }
+    }
+
+    private func endLiveActivity() {
+        guard let activity = currentActivity else {
+            return
+        }
+
+        Task {
+            await activity.end(nil, dismissalPolicy: .immediate)
+            currentActivity = nil
+            print("✅ [FocusSessionManager] Live Activity ended")
+        }
     }
 
 
