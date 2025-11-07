@@ -14,16 +14,15 @@ struct SyncingPage: View {
     let onError: (String) -> Void
 
     @State private var syncState: SyncState = .validating
+    @State private var completedBadges: Int = 0 // 0, 1, 2, or 3 badges completed
     @StateObject private var tagManager = DriftTagManager.shared
     @StateObject private var sessionManager = FocusSessionManager.shared
+    private let haptics = HapticManager.shared
     @FocusState private var isTextFieldFocused: Bool
 
     enum SyncState: Equatable {
         case validating
-        case authorizing
         case namingTag
-        case finishing
-        case success
         case error(String)
     }
 
@@ -87,7 +86,7 @@ struct SyncingPage: View {
     @ViewBuilder
     private var contentView: some View {
         switch syncState {
-        case .validating, .authorizing, .finishing, .success:
+        case .validating:
             statusBadges
         case .namingTag:
             namingView
@@ -100,19 +99,19 @@ struct SyncingPage: View {
         VStack(spacing: DesignTokens.Spacing.large) {
             PillBadge(
                 text: "NFC Chip valid",
-                iconColor: badgeIconColor(for: SyncState.validating),
+                iconColor: badgeIconColor(for: 0),
                 iconSize: 8
             )
 
             PillBadge(
                 text: "Setting up...",
-                iconColor: badgeIconColor(for: SyncState.authorizing),
+                iconColor: badgeIconColor(for: 1),
                 iconSize: 8
             )
 
             PillBadge(
                 text: "Finishing up...",
-                iconColor: badgeIconColor(for: SyncState.finishing),
+                iconColor: badgeIconColor(for: 2),
                 iconSize: 8
             )
         }
@@ -188,12 +187,10 @@ struct SyncingPage: View {
 
     private var headingText: String {
         switch syncState {
-        case .validating, .authorizing, .finishing:
+        case .validating:
             return "Syncing..."
         case .namingTag:
             return "Almost done!"
-        case .success:
-            return "Success!"
         case .error:
             return "Error"
         }
@@ -201,34 +198,19 @@ struct SyncingPage: View {
 
     private var subheadingText: String {
         switch syncState {
-        case .validating, .authorizing, .finishing:
+        case .validating:
             return "Please wait for the sync to finish"
         case .namingTag:
             return "Let's give your drift a name"
-        case .success:
-            return "Your drift is ready to use"
         case .error:
             return "Something went wrong"
         }
     }
 
-    private func badgeIconColor(for step: SyncState) -> Color {
-        let isCompleted = isStepCompleted(step)
-
-        if isCompleted {
-            return .green
-        } else {
-            return Color.yellow
-        }
-    }
-
-    private func isStepCompleted(_ step: SyncState) -> Bool {
-        let progression: [SyncState] = [.validating, .authorizing, .finishing]
-        guard let currentIndex = progression.firstIndex(where: { $0 == syncState }),
-              let stepIndex = progression.firstIndex(where: { $0 == step }) else {
-            return false
-        }
-        return currentIndex > stepIndex || syncState == .namingTag || syncState == .success
+    private func badgeIconColor(for badgeIndex: Int) -> Color {
+        // Badge is green if its index is less than completedBadges
+        // badgeIndex: 0 = first badge, 1 = second, 2 = third
+        return badgeIndex < completedBadges ? .green : .yellow
     }
 
     // MARK: - Sync Logic
@@ -257,23 +239,22 @@ struct SyncingPage: View {
                 print("✅ [Sync] Validation complete - starting animations")
 
                 // NOW ANIMATE THROUGH STATES (purely for UX)
-                // Step 1: Show validating animation (badge 1 loading)
-                syncState = .validating
+                // Badge 1: NFC Chip valid ✓
+                completedBadges = 1
+                haptics.impactLight()
                 try await Task.sleep(nanoseconds: 1_000_000_000) // 1s
 
-                // Step 2: Show authorizing animation (badge 1 ✓, badge 2 loading)
-                syncState = .authorizing
+                // Badge 2: Setting up ✓
+                completedBadges = 2
+                haptics.impactLight()
                 try await Task.sleep(nanoseconds: 1_000_000_000) // 1s
 
-                // Step 3: Show finishing animation (badge 1 ✓, badge 2 ✓, badge 3 loading)
-                syncState = .finishing
+                // Badge 3: Finishing up ✓
+                completedBadges = 3
+                haptics.impactLight()
                 try await Task.sleep(nanoseconds: 1_000_000_000) // 1s
 
-                // Step 4: Show success briefly (all 3 badges ✓)
-                syncState = .success
-                try await Task.sleep(nanoseconds: 500_000_000) // 0.5s
-
-                // Step 5: All badges complete, prompt user to name their drift
+                // All badges complete, prompt user to name their drift
                 print("📝 [Sync] Ready for naming")
                 syncState = .namingTag
 
