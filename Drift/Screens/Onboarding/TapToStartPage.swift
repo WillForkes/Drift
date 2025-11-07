@@ -118,10 +118,15 @@ struct TapToStartPage: View {
                     onTagDetected(tagId)
                 }
             }
-            .onChange(of: nfcReader.isScanning) { isScanning in
+            .onChange(of: nfcReader.isScanning) { oldValue, newValue in
                 // Detect user cancellation (only if they started scanning)
                 // If scanning stopped but no tag detected and no error, user cancelled
-                if hasStartedScanning && !isScanning && !hasDetectedTag && nfcReader.errorMessage == nil {
+                let shouldCancel = hasStartedScanning &&
+                                  !newValue &&
+                                  !hasDetectedTag &&
+                                  nfcReader.errorMessage == nil
+
+                if shouldCancel {
                     print("ℹ️ [TapToStart] User cancelled NFC scan")
                     onCancelled()
                 }
