@@ -11,6 +11,7 @@ import FamilyControls
 struct BottomPresetSlider: View {
     @Binding var selectedDriftId: String?
     @State private var scrollPosition: String?
+    @State private var scrollWorkItem: DispatchWorkItem?
     @State private var showNameAlert = false
     @State private var newPresetName = ""
     @State private var editingPresetId: PresetIdentifier?
@@ -154,6 +155,9 @@ struct BottomPresetSlider: View {
                 onDismiss: { editingPresetId = nil }
             )
         }
+        .onDisappear {
+            scrollWorkItem?.cancel()
+        }
     }
 
     private func createPreset() {
@@ -164,10 +168,15 @@ struct BottomPresetSlider: View {
             editingPresetId = PresetIdentifier(id: preset.id)
             newPresetName = ""
 
+            // Cancel any pending scroll work
+            scrollWorkItem?.cancel()
+
             // Scroll to the newly created preset
-            DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+            let workItem = DispatchWorkItem {
                 scrollPosition = preset.id
             }
+            scrollWorkItem = workItem
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.5, execute: workItem)
         } catch {
             print("❌ [BottomPresetSlider] Error creating preset: \(error)")
         }

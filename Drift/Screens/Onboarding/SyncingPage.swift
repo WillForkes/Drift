@@ -15,6 +15,10 @@ struct SyncingPage: View {
 
     @State private var syncState: SyncState = .validating
     @State private var completedBadges: Int = 0 // 0, 1, 2, or 3 badges completed
+    @State private var syncTask: Task<Void, Never>?
+    @State private var registerTask: Task<Void, Never>?
+    @State private var errorTask: Task<Void, Never>?
+    @State private var focusWorkItem: DispatchWorkItem?
     @StateObject private var tagManager = DriftTagManager.shared
     @StateObject private var sessionManager = FocusSessionManager.shared
     private let haptics = HapticManager.shared
@@ -63,6 +67,12 @@ struct SyncingPage: View {
             .frame(maxWidth: .infinity, maxHeight: .infinity)
             .onAppear {
                 performSync()
+            }
+            .onDisappear {
+                syncTask?.cancel()
+                registerTask?.cancel()
+                errorTask?.cancel()
+                focusWorkItem?.cancel()
             }
         }
     }
@@ -162,9 +172,13 @@ struct SyncingPage: View {
         )
         .onAppear {
             // Auto-focus text field when naming view appears
-            DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
+            focusWorkItem?.cancel()
+
+            let workItem = DispatchWorkItem {
                 isTextFieldFocused = true
             }
+            focusWorkItem = workItem
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.3, execute: workItem)
         }
     }
 
@@ -216,7 +230,9 @@ struct SyncingPage: View {
     // MARK: - Sync Logic
 
     private func performSync() {
-        Task {
+        syncTask?.cancel()
+
+        syncTask = Task {
             do {
                 // REQUEST SCREEN TIME AUTHORIZATION FIRST
                 print("🔐 [Sync] Requesting Screen Time authorization...")
@@ -244,15 +260,21 @@ struct SyncingPage: View {
                 haptics.impactLight()
                 try await Task.sleep(nanoseconds: 1_000_000_000) // 1s
 
+                if Task.isCancelled { return }
+
                 // Badge 2: Setting up ✓
                 completedBadges = 2
                 haptics.impactLight()
                 try await Task.sleep(nanoseconds: 1_000_000_000) // 1s
 
+                if Task.isCancelled { return }
+
                 // Badge 3: Finishing up ✓
                 completedBadges = 3
                 haptics.impactLight()
                 try await Task.sleep(nanoseconds: 1_000_000_000) // 1s
+
+                if Task.isCancelled { return }
 
                 // All badges complete, prompt user to name their drift
                 print("📝 [Sync] Ready for naming")
@@ -265,7 +287,9 @@ struct SyncingPage: View {
     }
 
     private func registerTag() {
-        Task {
+        registerTask?.cancel()
+
+        registerTask = Task {
             do {
                 // Do actual registration (stay on naming screen)
                 let presetId = ""
@@ -278,6 +302,8 @@ struct SyncingPage: View {
                 )
 
                 print("✅ [Sync] Tag registered: \(tagId) as '\(trimmedName)'")
+
+                if Task.isCancelled { return }
 
                 // Complete without changing UI
                 onSuccess()
@@ -293,10 +319,15 @@ struct SyncingPage: View {
         print("❌ [Sync] Error: \(errorMessage)")
         syncState = .error(errorMessage)
 
-        Task {
+        errorTask?.cancel()
+
+        errorTask = Task {
             // Show error for 2 seconds before calling onError
             try? await Task.sleep(nanoseconds: 2_000_000_000)
-            onError(errorMessage)
+
+            if !Task.isCancelled {
+                onError(errorMessage)
+            }
         }
     }
 

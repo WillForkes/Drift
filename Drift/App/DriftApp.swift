@@ -15,6 +15,7 @@ struct DriftApp: App {
     @StateObject private var tagManager = DriftTagManager.shared
     @StateObject private var coordinator = NFCFocusCoordinator.shared
     @AppStorage("drift.onboarding.completed") private var hasCompletedOnboarding = false
+    @State private var urlHandlingTask: Task<Void, Never>?
 
     var body: some Scene {
         WindowGroup {
@@ -83,7 +84,9 @@ struct DriftApp: App {
         guard let tagId = tagId else { return }
         print("✅ [DriftApp] Parsed tag ID: \(tagId)")
 
-        Task { @MainActor in
+        urlHandlingTask?.cancel()
+
+        urlHandlingTask = Task { @MainActor in
             // Check if tag is registered
             if let tag = tagManager.getTag(by: tagId) {
                 // Tag is registered - handle session toggle
