@@ -23,40 +23,41 @@ struct ActiveSessionScreen: View {
                 .ignoresSafeArea()
 
             VStack(spacing: DesignTokens.Spacing.xxxLarge) {
-                Spacer()
 
                 // Session info
                 VStack(spacing: DesignTokens.Spacing.xLarge) {
-                    Text("Active Session")
-                        .heading1()
+                    Text("drift")
+                        .headingXL()
+                        .foregroundColor(DesignTokens.Colors.primary)
+                        .padding(.top, DesignTokens.Spacing.xLarge)
+                    
+                    Spacer()
+                    
+                    // Lock icon
+                    Image(systemName: "lock.fill")
+                        .font(.system(size: 80))
                         .foregroundColor(DesignTokens.Colors.textPrimary)
-
-                    if let driftTagId = sessionManager.activeDriftTagId,
-                       let drift = driftManager.getTag(by: driftTagId) {
-                        Text(drift.label)
-                            .heading2()
-                            .foregroundColor(DesignTokens.Colors.subtext)
-                    }
+                        .frame(width: 80, height: 80)
 
                     if let preset = presetManager.currentPreset {
-                        Text(preset.name)
+                        Text("Preset: \(preset.emoji) \(preset.name)")
                             .body()
                             .subtextColor()
                     }
 
-                    Text(nfcReader.isScanning ? "Hold drift near phone" : "Tap button to stop")
+                    Text("You are now focused.")
+                        .heading1()
+                        .foregroundColor(DesignTokens.Colors.textPrimary)
+
+                    Text(nfcReader.isScanning ? "Hold drift near phone" : "Tap your phone on drift to stop")
                         .bodySmall()
                         .extraSubtextColor()
                         .padding(.top, DesignTokens.Spacing.large)
+                    
+                    Spacer()
                 }
 
-                Spacer()
 
-                // Stop button
-                DriftButton(title: "Stop Session", icon: "stop.fill", style: .primary) {
-                    startStopScan()
-                }
-                .padding(.bottom, DesignTokens.Spacing.xxLarge)
             }
             .padding(DesignTokens.Padding.large)
         }
