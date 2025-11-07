@@ -1,518 +1,226 @@
 # Drift - Focus Ritual iOS App
 
-A minimalist focus ritual app that transforms phone blocking into a positive, aesthetic experience. Students tap a physical NFC object to enter a sanctuary of focus—no punishment, just intention.
+A minimalist focus app that transforms phone blocking into a positive, intentional experience. Tap a physical NFC tag to enter focus mode—blocking distracting apps with elegant design.
 
-## Why Drift Exists
+## Core Features
 
-**The Problem:**
-Students are chronically distracted by their phones—social media, notifications, and ambient digital noise fragment attention constantly. Existing "phone blockers" (apps, bricks, lockboxes) feel punitive and gimmicky. They turn work into prison, not flow.
-
-**The Drift Approach:**
-Instead of punishing distraction, Drift creates a **desire to focus**. A physical NFC object becomes a cognitive anchor—touching it signals: *"I am now focused."* The ritual is visible, elegant, and identity-affirming. It's not about locking yourself away; it's about creating a perfect working environment.
-
-**Why Now:**
-- Students are seeking subtle, tangible anchors for focus amid TikTok/Instagram scroll fatigue
-- Rising cultural trend of "aesthetic minimalism + ritual micro-actions" (viral-ready on social platforms)
-- Visible objects on desks/dorms signal self-discipline aesthetic, aligning with student identity trends
-
-**Psychology Leveraged:**
-1. **Physical Anchoring** — Touching the NFC object triggers a micro cognitive switch
-2. **Environmental Cueing** — The object visually defines a "focus zone" without explanation
-3. **Peer Signal** — Communicates aesthetic self-discipline, appealing to student social trends
-
-## Product Overview
-
-Drift is a premium iOS app that blocks distracting apps during focus sessions. Sessions are triggered by tapping a physical NFC tag—creating a tangible ritual around focused work that feels intentional, not restrictive.
-
-**📄 Documentation**:
-- **LEGACY_FUNCTIONALITY.md** - Complete documentation of all Core managers (FocusSessionManager, AnalyticsManager, ParentalControlsManager, DriftTagManager) and how to integrate them into the new design pages
-
-### Core Features
-
-- **NFC-Triggered Sessions**: Tap an NFC tag to start/stop focus sessions
-- **Multi-Tag Support**: Register multiple NFC tags with unique IDs and preset assignments
-- **Focus Presets**: Three built-in presets (Social Media, Work, All) with customizable app selections
-- **App Blocking**: Blocks access to pre-selected apps during focus sessions using Screen Time API
-- **Parental Controls**: Optional 4-digit passcode protection with security question recovery
-- **Session Analytics**: Track focus time, streaks, and session history (last 30 days)
+- **NFC-Triggered Sessions**: Tap an NFC tag to start/stop focus sessions instantly
+- **Multi-Tag Support**: Register multiple tags with unique names and preset assignments
+- **Focus Presets**: Create custom presets with emoji icons and app selections
+- **App Blocking**: Blocks selected apps using Screen Time API during sessions
+- **Session Analytics**: Track focus time, streaks, and session history
 - **Persistent Sessions**: Sessions survive app termination and device restarts
-- **Custom Shield Messages**: Shows "This app is a distraction" when blocked apps are accessed
-- **Swipeable Navigation**: Native iOS swipe gestures between 3 main pages (Analytics, Home, Settings)
-- **Design System**: Cohesive design with Futura PT font, custom colors, shadows, and reusable components
-- **Fully Local**: No backend required, all data stored securely on device (Keychain + UserDefaults)
+- **Haptic Feedback**: Tactile responses during sync and success states
+- **Fully Local**: No backend, all data stored securely on device
+
+## Recent Updates
+
+### January 2025
+- ✅ **Memory Leak Fixes**: Resolved critical memory leaks causing crashes after 4-5 minutes
+  - Fixed NFCReaderManager completion handler cycles
+  - Added task cancellation tracking for async operations
+  - Implemented DispatchWorkItem cancellation for delayed actions
+  - Memory savings: 50-200 KB per session
+- ✅ **Preset Emojis**: Each preset now has a customizable emoji icon
+- ✅ **New Button Style**: Added `.pillTertiary` style for subtle tertiary actions
+- ✅ **Haptic System**: Integrated haptic feedback during onboarding and success states
+- ✅ **Lock Screen**: Active session screen displays lock icon with preset information
 
 ## Project Structure
 
 ```
 Drift/
-├── Drift/
-│   ├── App/
-│   │   └── DriftApp.swift                      # Main app entry point with Universal Link handling
-│   │
-│   ├── Core/
-│   │   ├── Managers/
-│   │   │   ├── FocusSessionManager.swift       # Session state & Screen Time integration
-│   │   │   ├── ParentalControlsManager.swift   # Passcode & security (Keychain)
-│   │   │   ├── DriftTagManager.swift           # NFC tag registration
-│   │   │   └── AnalyticsManager.swift          # Session tracking & statistics
-│   │   └── Models/
-│   │       └── FocusPreset.swift               # Preset data models
-│   │
-│   ├── Screens/
-│   │   ├── Main/
-│   │   │   └── MainContainerView.swift         # Root coordinator with swipeable pages
-│   │   ├── Home/
-│   │   │   └── HomePage.swift                  # Home page with centered image & preset slider
-│   │   ├── Analytics/
-│   │   │   └── AnalyticsPage.swift             # Analytics page with 2x2 stats grid
-│   │   ├── Settings/
-│   │   │   └── SettingsPage.swift              # Settings page (design in progress)
-│   │   └── ParentalControls/
-│   │       ├── ParentalControlsSetupView.swift # Passcode setup flow
-│   │       └── PasscodeEntryView.swift         # 4-digit PIN entry
-│   │
-│   ├── Components/
-│   │   ├── PillBadge.swift                     # Status indicator badge
-│   │   ├── SlideIndicator.swift                # Page indicator dots
-│   │   ├── BottomPresetSlider.swift            # Horizontal preset carousel
-│   │   ├── StatCard.swift                      # Reusable analytics card
-│   │   └── ViewAllButton.swift                 # Action button with arrow icon
-│   │
-│   ├── DesignSystem/
-│   │   ├── DesignTokens.swift                  # Colors, spacing, typography
-│   │   ├── Typography.swift                    # Text style modifiers
-│   │   ├── LayoutExtensions.swift              # Padding helpers
-│   │   └── ExampleDesignView.swift             # Design showcase
-│   │
-│   └── Resources/
-│       ├── Fonts/
-│       │   └── FuturaCyrillicBook.ttf          # Futura PT Book font
-│       ├── Info.plist                          # App configuration
-│       └── Drift.entitlements                  # Required entitlements
-│
-└── DriftShieldConfiguration/
-    ├── ShieldConfigurationExtension.swift      # Custom blocked app messages
-    └── Info.plist                              # Extension configuration
+├── App/
+│   └── DriftApp.swift                    # Main app with URL handling
+├── Core/
+│   ├── Managers/
+│   │   ├── FocusSessionManager.swift     # Session state & Screen Time
+│   │   ├── DriftTagManager.swift         # NFC tag registration
+│   │   ├── PresetManager.swift           # Focus preset management
+│   │   ├── AnalyticsManager.swift        # Session tracking
+│   │   ├── NFCReaderManager.swift        # NFC scanning
+│   │   └── HapticManager.swift           # Haptic feedback
+│   ├── Models/
+│   │   └── FocusPreset.swift             # Preset data model
+│   └── Services/
+│       └── NFCFocusCoordinator.swift     # Session coordination
+├── Screens/
+│   ├── Home/
+│   │   └── HomePage.swift                # Main NFC scan page
+│   ├── ActiveSession/
+│   │   └── ActiveSessionScreen.swift    # Lock screen during sessions
+│   ├── Analytics/
+│   │   └── AnalyticsPage.swift          # Stats and history
+│   ├── Settings/
+│   │   ├── SettingsPage.swift           # Settings and drift management
+│   │   └── PresetEditSheet.swift        # Preset configuration
+│   └── Onboarding/
+│       ├── OnboardingFlow.swift         # Initial setup flow
+│       ├── SyncingPage.swift            # Tag registration with animations
+│       └── TapToStartPage.swift         # NFC scanning prompt
+├── Components/
+│   ├── DriftButton.swift                # Reusable button with multiple styles
+│   ├── PillBadge.swift                  # Status indicator badge
+│   ├── BottomPresetSlider.swift         # Horizontal preset carousel
+│   └── StatCard.swift                   # Analytics card
+└── DesignSystem/
+    ├── DesignTokens.swift               # Colors, spacing, typography
+    └── Typography.swift                 # Text style modifiers
 ```
 
 ## Technical Requirements
 
 - **iOS 17.0+**
 - **Xcode 15.0+**
-- **Required Frameworks**:
-  - SwiftUI
-  - FamilyControls
-  - ManagedSettings
-  - ManagedSettingsUI
+- **Required Frameworks**: SwiftUI, FamilyControls, ManagedSettings, CoreNFC
 
-### Entitlements
+### Entitlements Required
 
-The following entitlements are required and configured in `Resources/Drift.entitlements`:
-- `com.apple.developer.family-controls` - For app blocking (includes device activity in iOS 17+)
-- `com.apple.developer.associated-domains` - For Universal Links (NFC tag support)
-  - Domain: `applinks:get-drift.app`
+- `com.apple.developer.family-controls` - For app blocking
+- `com.apple.developer.associated-domains` - For Universal Links
+  - Domain: `applinks:links.get-drift.app`
+- `com.apple.developer.nfc.readersession.formats` - For NFC reading
 
-**Note**: Family Controls Distribution entitlement requires Apple approval for TestFlight/App Store distribution.
+## Setup Instructions
 
-## Xcode Setup Instructions
+### 1. Xcode Configuration
 
-### 1. Add Files to Xcode Project
+1. Open `Drift.xcodeproj`
+2. Set deployment target to iOS 17.0+
+3. Configure signing with your team
+4. Verify entitlements are included
 
-The source files have been created but need to be added to the Xcode project:
+### 2. NFC Tag Configuration
 
-1. Open `Drift.xcodeproj` in Xcode
-2. Add the following new files to the Drift target:
-   - `FocusSessionManager.swift`
-   - `SettingsView.swift`
-3. Ensure `Drift.entitlements` and `Info.plist` are included in the target
+The app supports both Universal Links and custom URL schemes:
 
-### 2. Create Shield Configuration Extension Target
+**Custom URL Scheme** (Recommended for development):
+```
+drift://focus?id=0001
+```
 
-The Shield Configuration extension requires a separate target:
+**Universal Link** (Production):
+```
+https://links.get-drift.app/focus?id=0001
+```
 
-1. In Xcode, go to **File > New > Target**
-2. Choose **iOS > App Extension > Shield Configuration Extension**
-3. Name it `DriftShieldConfiguration`
-4. Set the same team and bundle identifier prefix
-5. Add the files from `DriftShieldConfiguration/` folder to this target
-6. Ensure the extension's deployment target is iOS 17.0+
+To program an NFC tag:
+1. Get a writable NFC tag (NTAG213/215/216)
+2. Use an NFC writing app (NFC Tools)
+3. Write the URL with a unique ID for each tag
 
-### 3. Configure Project Settings
+### 3. Universal Link Setup (Production)
 
-#### Main App Target (Drift)
+Host an `apple-app-site-association` file at:
+```
+https://links.get-drift.app/.well-known/apple-app-site-association
+```
 
-1. **General Tab**:
-   - Set minimum deployment target to iOS 17.0
-   - Ensure `Drift.entitlements` is selected in Signing & Capabilities
-
-2. **Signing & Capabilities Tab**:
-   - Add **Family Controls** capability
-   - Add **Associated Domains** capability
-     - Add domain: `applinks:get-drift.app`
-   - Ensure entitlements file is `Drift/Resources/Drift.entitlements`
-
-3. **Info Tab**:
-   - Verify NFC and Universal Link configurations from `Info.plist`
-
-#### Shield Configuration Extension Target
-
-1. **General Tab**:
-   - Set minimum deployment target to iOS 17.0
-   - Ensure bundle identifier is `<main-bundle-id>.DriftShieldConfiguration`
-
-2. **Build Settings**:
-   - Set **Product Module Name** to `DriftShieldConfiguration`
-
-### 4. Remove Template Files
-
-Delete these template files that are no longer needed:
-- `Item.swift` (SwiftData template)
-
-Update imports in `DriftApp.swift` if needed (already updated in provided code).
-
-## Universal Link Configuration
-
-### Domain Setup
-
-For NFC to work, you need to configure the Universal Link domain:
-
-1. **Host the `apple-app-site-association` file** at `https://get-drift.app/.well-known/apple-app-site-association`:
-
+Content:
 ```json
 {
   "applinks": {
     "apps": [],
-    "details": [
-      {
-        "appID": "TEAMID.com.yourcompany.Drift",
-        "paths": ["/focus"]
-      }
-    ]
+    "details": [{
+      "appID": "TEAMID.com.yourcompany.Drift",
+      "paths": ["/focus"]
+    }]
   }
 }
 ```
 
-Replace `TEAMID` and bundle identifier with your actual values.
-
-2. **Testing Universal Links**: Universal Links only work properly in TestFlight or App Store builds. Development builds may open Safari instead of the app directly.
-
-### NFC Tag Setup
-
-To use with a physical NFC tag:
-
-1. Get a writable NFC tag (NTAG213/215/216)
-2. Use an NFC writing app (like NFC Tools)
-3. Write the Universal Link URL with unique ID: `https://get-drift.app/focus?id=XXXX`
-   - Each tag should have a unique ID (e.g., `?id=1234`, `?id=5678`)
-4. Tap the tag with your phone to trigger the tag registration flow (first time) or toggle sessions (registered tags)
-
-## Testing
-
-### Without NFC Tag
-
-The app includes a test button on the main screen for development:
-- Tap "Start Session (Test)" to begin blocking apps
-- Tap "End Session (Test)" to stop blocking
-
-This allows testing without a physical NFC tag or on the iOS Simulator.
-
-### With NFC Tag
-
-On a physical device with a configured NFC tag:
-1. Ensure the tag is programmed with `https://drift.app/focus`
-2. Tap the phone on the tag to toggle focus sessions
-3. The app will start/stop automatically when the tag is detected
-
-## Usage Flow
-
-### First Launch
-
-1. User opens Drift
-2. Taps "Enable App Blocking" to request Screen Time authorization
-3. Grants permission in iOS Settings when prompted
-4. Taps the settings gear icon
-5. Selects "Select Apps to Block"
-6. Chooses apps from FamilyActivityPicker
-7. Returns to main screen
-
-### Starting a Focus Session
-
-**Method 1 - NFC Tag (Production)**:
-- Tap phone on configured NFC tag
-- App automatically blocks selected apps
-- Green indicator shows session is active
-
-**Method 2 - Test Button (Development)**:
-- Tap "Start Session (Test)" button
-- Session starts immediately
-
-### During a Session
-
-- Selected apps are blocked
-- Attempting to open a blocked app shows: "This app is a distraction. Tap your Drift tag to end your focus session."
-- Session persists even if:
-  - App is closed
-  - Phone is restarted
-  - App is force-quit
-
-### Ending a Session
-
-- Tap the NFC tag again (or use test button)
-- All blocked apps immediately become accessible
-
-## App Structure
-
-### Swipeable Page Navigation
-
-The app uses a native iOS TabView with page style to provide smooth swipe navigation between three main pages:
-
-1. **Analytics Page** (Left) - View focus statistics, streaks, and daily usage
-2. **Home Page** (Center) - Main screen with centered image and preset selection
-3. **Settings Page** (Right) - Configure presets and app settings
-
-The `MainContainerView` coordinates page navigation with a synced `SlideIndicator` at the top showing the current page.
-
-### Home Page
-
-The home page features a minimalist, centered design:
-- **Pill Badge**: Status indicator with "drifting" text and red dot
-- **Heading**: "Tap drift to activate" in Futura PT heading1 style
-- **Centered Image**: Square image at 60% screen width, positioned absolutely centered
-- **Bottom Preset Slider**: Horizontal carousel with Work, Sleep, and Add cards
-  - Selected card: Full scale with shadow
-  - Unselected cards: 75% scale with reduced opacity
-  - Gradient background from accent to background color
-
-### Analytics Page
-
-The analytics page displays user statistics in a 2x2 grid layout:
-
-**Left Column** (2 stacked cards):
-- **Current Streak**: Flame icon with day count
-- **Today**: Clock icon with minutes tracked
-
-**Right Column** (Full-height card):
-- **Taps per Day**: Hand tap icon with list of 6 recent days
-- Shows date and tap count for each day
-- "View All" button at bottom to see full history
-
-All cards use:
-- White background with rounded corners
-- Subtle shadow (6px radius, 3px y-offset, 12% opacity)
-- Primary color icons (burnt orange)
-- Structured layout: Icon → Title → Content
-
-### Reusable Components
-
-**PillBadge**: Status indicator with text and colored dot
-- White background, rounded corners
-- 5x5px red circle indicator
-- Used for showing session status
-
-**SlideIndicator**: Page indicator dots
-- 3 horizontal rounded rectangles
-- Active page: 2x width, accent color
-- Inactive pages: Standard width, 50% opacity accent
-
-**BottomPresetSlider**: Horizontal preset carousel
-- Native iOS ScrollTargetBehavior for smooth snapping
-- Scale and opacity transitions on scroll
-- Gradient background overlay
-
-**StatCard**: Generic analytics card with flexible content
-- Uses ViewBuilder pattern for custom content
-- Consistent structure: Icon (32pt SF Symbol) → Title → Content
-- White background with shadow
-
-**ViewAllButton**: Action button with arrow
-- Black background, white text
-- Chevron right icon
-- Used for navigation to detail views
-
 ## Design System
 
-Drift uses a comprehensive design system for consistent, maintainable UI.
-
-### Design Tokens
-
-**Colors** (defined in `DesignSystem/DesignTokens.swift`):
+### Colors
 - Background: `#F7F0E9` (warm beige)
 - Accent: `#E2B899` (soft peach)
 - Primary: `#C86A1C` (burnt orange)
-- Text colors with opacity variations
+- Text: Black with opacity variations (100%, 80%, 50%)
 
-**Typography**:
-- Font: Futura PT Book (custom font - FuturaCyrillicBook.ttf)
-- Sizes: heading1 (28pt), heading2 (22pt), body (20pt), bodySmall (18pt)
-- Custom tracking and line height for each style
+### Typography
+- Font: **Futura PT Book** (custom font included)
+- Sizes: headingXL (48pt), heading1 (28pt), heading2 (22pt), body (20pt), bodySmall (18pt)
 
-**Spacing**:
-- xxxLarge: 32px
-- xxLarge: 24px
-- xLarge: 16px (standard)
-- large: 8px
-- medium: 4px
+### Button Styles
+- `.primary` - Orange background, white text
+- `.secondary` - White background, black text, subtle border
+- `.pill` - Black background, compact size
+- `.pillSecondary` - White background, compact size
+- `.pillTertiary` - Transparent background, extra subtle gray border (new)
 
-**Shadows**:
-- Subtle shadow for elevated UI elements
-- Color: Black with 12% opacity
-- Radius: 6px, Offset: (0, 3)
-- Used on cards, selected carousel items, and buttons
+### Components
+All components use consistent design tokens for spacing, shadows, and colors:
+- `DriftButton` - Multi-style button component
+- `PillBadge` - Status indicator with icon and text
+- `StatCard` - Analytics card with icon, title, and content
+- `BottomPresetSlider` - Horizontal scrolling preset selector
 
-### Usage
-
+### Usage Example
 ```swift
-// Typography modifiers
 Text("Focus Session").heading1()
-Text("Details").bodySmall().subtextColor()
-
-// Colors
-.background(DesignTokens.Colors.background)
-.foregroundColor(DesignTokens.Colors.primary)
-
-// Spacing & Padding
-VStack(spacing: DesignTokens.Spacing.standard) { ... }
-  .padding(.large)  // Semantic padding
+DriftButton(title: "Continue", style: .primary) { }
+VStack(spacing: DesignTokens.Spacing.xLarge) { }
+  .padding(.large)
 ```
 
-See `DesignSystem/ExampleDesignView.swift` for full examples.
+## Architecture
 
-For detailed setup instructions, see `DESIGN_SYSTEM_SETUP.md` and `FONT_SETUP.md`.
+### Session Flow
 
-### Custom Font Setup
+1. **First Launch**: User completes onboarding, grants Screen Time permission
+2. **Tag Registration**: Tap NFC tag → Sync screen with animated badges → Name your drift
+3. **Start Session**: Tap registered tag → Apps are blocked → Lock screen shows
+4. **Active Session**: Blocked apps show custom shield message
+5. **End Session**: Tap tag again → Apps unblocked → Return to home
 
-The app uses **Futura PT Book** (FuturaCyrillicBook.ttf) as the primary font:
+### State Management
 
-1. **Font File**: Located in `Resources/Fonts/FuturaCyrillicBook.ttf`
-2. **Registration**: Font must be registered in Xcode's Build Settings:
-   - Navigate to: Target → Info → Custom iOS Target Properties
-   - Add to "Fonts provided by application" array
-   - Value: `FuturaCyrillicBook.ttf`
-3. **Font Family Name**: The actual font family name is `"Futura PT"` (not the filename)
-4. **Usage in Code**: `DesignTokens.Typography.fontFamily = "Futura PT"`
+- **Singletons**: All managers use `@MainActor` singleton pattern
+- **Published Properties**: SwiftUI views observe manager state changes
+- **Persistence**: UserDefaults for most data, Keychain for sensitive data
+- **Session State**: Survives app termination and restarts
 
-**Debugging Font Loading**:
-To verify the font loaded correctly, you can temporarily add this to `DriftApp.init()`:
-```swift
-for family in UIFont.familyNames.sorted() {
-    let names = UIFont.fontNames(forFamilyName: family)
-    print("Family: \(family) - Fonts: \(names)")
-}
-```
-You should see: `Family: Futura PT - Fonts: ["FuturaCyrillicBook"]`
+### Memory Management
 
-## Architecture Notes
+All async operations use proper cancellation tracking:
+- Tasks are stored in `@State` variables and cancelled on view dismissal
+- `DispatchWorkItem` used for delayed actions with cancellation support
+- Prevents memory accumulation during extended sessions
 
-### App Entry Point
+## Testing
 
-The app launches with `MainContainerView` as the root view (configured in `DriftApp.swift`). This provides the swipeable 3-page navigation structure with Analytics, Home, and Settings pages.
+### On Physical Device
+1. Tap the centered image on HomePage to trigger manual NFC scan
+2. Program NFC tags with custom URL scheme: `drift://focus?id=XXXX`
+3. Tap phone on tag to toggle sessions
 
-**Note**: Legacy functional UI files (ContentView, AnalyticsView, SettingsView) have been documented in `LEGACY_FUNCTIONALITY.md` for reference. The new design pages will integrate the same Core managers (FocusSessionManager, AnalyticsManager, ParentalControlsManager, DriftTagManager) with the new design system.
+### Requirements
+- Screen Time features require physical device (cannot test in Simulator)
+- NFC requires iPhone XS or later
+- Universal Links only work in TestFlight/App Store builds
 
-### FocusSessionManager
+## Production Checklist
 
-The `FocusSessionManager` is a singleton that:
-- Manages session state with `@Published` properties
-- Handles three presets: Social Media, Work, All
-- Integrates with Screen Time API via `ManagedSettings`
-- Restores session on app launch
-- Applies/removes app blocking based on selected preset
-- Validates presets are configured before starting sessions
-- Integrates with AnalyticsManager to track sessions
-
-### ParentalControlsManager
-
-Manages passcode protection with secure storage:
-- 4-digit PIN stored in iOS Keychain (encrypted)
-- Security question/answer for password recovery
-- Validates passcode attempts
-- Optional feature (can be enabled/disabled)
-
-### DriftTagManager
-
-Handles multiple NFC tag registrations:
-- Store tag ID, label, and assigned preset
-- Persist tags to UserDefaults
-- Support tag editing and deletion
-- Each tag can be assigned to a different preset
-
-### AnalyticsManager
-
-Tracks focus session statistics:
-- Records session start/end times and preset used
-- Calculates daily focus time and total session count
-- Computes streaks with 1-day grace period
-- Keeps last 90 days of sessions, auto-prunes older data
-- All data stored locally in UserDefaults
-
-### State Persistence
-
-- **Session State**: UserDefaults (`drift.session.active`)
-- **Presets**: UserDefaults (`drift.presets`) - includes FamilyActivitySelection
-- **Tags**: UserDefaults (`drift.tags`)
-- **Analytics**: UserDefaults (`drift.analytics.sessions`)
-- **Passcode**: iOS Keychain (encrypted, secure)
-- All data persists across app launches and device restarts
-
-### Screen Time Integration
-
-- **Authorization**: Requested via `AuthorizationCenter`
-- **App Selection**: Uses `FamilyActivityPicker` for user to choose apps
-- **Blocking**: Applied via `ManagedSettingsStore.shield` properties
-- **Custom Messages**: Provided by `ShieldConfigurationExtension`
-
-## Next Steps
-
-### Required for Production
-
-1. ✅ **Universal Links configured** - Domain: `get-drift.app` with AASA file hosted
-2. ✅ **Physical NFC tags written** with unique IDs
-3. ⏳ **Family Controls Distribution entitlement** - Awaiting Apple approval (1-3 business days)
-4. 🔄 **Complete UI design phase** - Finish all screen designs, then integrate Core managers
-5. 🔄 **Integrate functionality** - Connect Core managers to new design pages
-6. **TestFlight testing** - Test Universal Links in TestFlight build
-7. **Privacy Policy** - Required for Screen Time API usage
-8. **App Store assets** - Screenshots, description, marketing materials
-
-### Implemented Features
-
-**Core Functionality** (Ready for UI Integration):
-✅ Session analytics/history with FocusSessionManager
-✅ Multiple focus modes with different app lists (Presets)
-✅ Parental controls with passcode protection
-✅ Multi-tag support with unique IDs
-✅ NFC Universal Link handling
-✅ Screen Time API integration
-
-**Design System & UI**:
-✅ Design system with custom typography, colors, and shadows
-✅ Swipeable 3-page navigation (Analytics, Home, Settings)
-✅ Complete home page with centered image and preset slider
-✅ Analytics page with 2x2 statistics grid (placeholder data)
-✅ Reusable component library (StatCard, ViewAllButton, PillBadge, etc.)
-
-**Current Phase**: Building new UI designs for all screens. Once designs are complete, we'll integrate the existing Core managers with the new pages.
-
-### Potential Enhancements
-
-- Configurable focus durations with timers
-- Widget showing current session status
-- Notifications when session starts/ends
-- Sound/haptic feedback on tag tap
-- Export analytics data
-- Custom preset creation (beyond the 3 defaults)
-- Focus session scheduling
+- [x] Universal Links configured
+- [x] NFC tags programmed
+- [x] Memory leaks resolved
+- [x] Haptic feedback implemented
+- [x] Design system complete
+- [x] Onboarding flow
+- [ ] Family Controls Distribution entitlement approval
+- [ ] Privacy Policy (required for Screen Time API)
+- [ ] App Store assets
 
 ## Important Notes
 
-- **Testing Limitations**: Screen Time features cannot be tested in the iOS Simulator - requires a physical device
-- **Authorization**: Users must grant Screen Time permission for app blocking to work
-- **NFC**: Requires iPhone XS or later for background NFC tag reading
-- **Domain Verification**: Universal Links require proper AASA file hosting and domain verification
+- **Testing**: Screen Time features require a physical iOS device
+- **Authorization**: Users must grant Screen Time permission for blocking
+- **NFC**: Background NFC reading requires iPhone XS or newer
+- **Memory**: App maintains stable memory usage during extended sessions
+- **Domain**: Universal Links require proper AASA file hosting and Apple verification
 
 ## Support
 
-For issues or questions about the Screen Time API, refer to Apple's documentation:
+For Screen Time API documentation:
 - [Family Controls Framework](https://developer.apple.com/documentation/familycontrols)
 - [ManagedSettings Framework](https://developer.apple.com/documentation/managedsettings)
-- [Shield Configuration Extension](https://developer.apple.com/documentation/managedsettingsui)
