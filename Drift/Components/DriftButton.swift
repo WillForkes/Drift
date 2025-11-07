@@ -53,11 +53,13 @@ enum DriftButtonStyle {
     case secondary
     case pill
     case pillSecondary
+    case pillTertiary
 
     var backgroundColor: Color {
         switch self {
         case .primary: return DesignTokens.Colors.primary
         case .secondary, .pillSecondary: return DesignTokens.Colors.whiteText
+        case .pillTertiary: return Color.clear
         case .pill: return Color.black
         }
     }
@@ -66,6 +68,7 @@ enum DriftButtonStyle {
         switch self {
         case .primary, .pill: return DesignTokens.Colors.whiteText
         case .secondary, .pillSecondary: return DesignTokens.Colors.textPrimary
+        case .pillTertiary: return DesignTokens.Colors.extraSubtext
         }
     }
 
@@ -73,20 +76,21 @@ enum DriftButtonStyle {
         switch self {
         case .primary, .pill: return .clear
         case .secondary, .pillSecondary: return DesignTokens.Colors.textPrimary.opacity(0.2)
+        case .pillTertiary: return DesignTokens.Colors.extraSubtext
         }
     }
 
     var borderWidth: CGFloat {
         switch self {
         case .primary, .pill: return 0
-        case .secondary, .pillSecondary: return 1
+        case .secondary, .pillSecondary, .pillTertiary: return 1
         }
     }
 
     var cornerRadius: CGFloat {
         switch self {
         case .primary, .secondary: return DesignTokens.Radii.radiusSmall
-        case .pill, .pillSecondary: return DesignTokens.Radii.radiusStandard
+        case .pill, .pillSecondary, .pillTertiary: return DesignTokens.Radii.radiusStandard
         }
     }
 
@@ -94,6 +98,7 @@ enum DriftButtonStyle {
         switch self {
         case .primary, .secondary: return DesignTokens.Padding.large
         case .pill, .pillSecondary: return DesignTokens.Padding.medium
+        case .pillTertiary: return DesignTokens.Padding.small
         }
     }
 
@@ -101,6 +106,7 @@ enum DriftButtonStyle {
         switch self {
         case .primary, .secondary: return DesignTokens.Typography.Size.body
         case .pill, .pillSecondary: return DesignTokens.Typography.Size.bodySmall
+        case .pillTertiary: return 16
         }
     }
 
@@ -112,6 +118,7 @@ enum DriftButtonStyle {
         switch self {
         case .primary, .secondary: return 20
         case .pill, .pillSecondary: return 12
+        case .pillTertiary: return 10
         }
     }
 }
@@ -122,6 +129,7 @@ enum DriftButtonStyle {
         DriftButton(title: "Secondary Button", icon: "gear", style: .secondary) {}
         DriftButton(title: "Pill button", icon: "xmark", style: .pill) {}
         DriftButton(title: "Pill Secondary", icon: "pencil", style: .pillSecondary) {}
+        DriftButton(title: "Pill Tertiary", icon: "trash", style: .pillTertiary) {}
         DriftButton(title: "No Icon Button", style: .primary) {}
     }
     .padding()

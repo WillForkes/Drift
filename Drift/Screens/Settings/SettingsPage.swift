@@ -29,7 +29,7 @@ struct SettingsPage: View {
 
                             Spacer()
 
-                            DriftButton(title: "New Drift", icon: "plus", style: .pill) {
+                            DriftButton(title: "New Drift", icon: "plus", style: .pillTertiary) {
                                 showAddDriftSheet = true
                             }
                         }
@@ -178,39 +178,42 @@ struct DriftCard: View {
         VStack(alignment: .leading, spacing: DesignTokens.Spacing.xLarge) {
             // Header with name and ID
             HStack {
-                Text(tag.label)
-                    .heading2()
-                    .foregroundColor(DesignTokens.Colors.textPrimary)
+                // Preset info
+                HStack(spacing: DesignTokens.Spacing.large) {
+                    Circle()
+                        .fill(DesignTokens.Colors.primary)
+                        .frame(width: 8, height: 8)
+
+                    Text(tag.label)
+                        .heading2()
+                        .foregroundColor(DesignTokens.Colors.textPrimary)
+                }
+                
+                Spacer()
+
+                Image("above")
+                    .resizable()
+                    .scaledToFill()
+                    .frame(width: 40, height: 40)
+            }
+
+
+
+            // Sync status and delete button
+            HStack {
+                Text("Preset: '\(presetName)'")
+                    .bodySmall()
+                    .subtextColor()
 
                 Spacer()
 
                 Text("ID: \(tag.id)")
                     .bodySmall()
                     .extraSubtextColor()
-            }
-
-            // Preset info
-            Text("Preset: \(presetName)")
-                .body()
-                .subtextColor()
-
-            // Sync status and delete button
-            HStack {
-                HStack(spacing: DesignTokens.Spacing.medium) {
-                    Circle()
-                        .fill(Color.green)
-                        .frame(width: 8, height: 8)
-
-                    Text("Synced")
-                        .bodySmall()
-                        .subtextColor()
-                }
-
-                Spacer()
-
-                DriftButton(title: "Delete", icon: "xmark", style: .pillSecondary) {
-                    onDelete()
-                }
+                
+//                DriftButton(title: "Delete", icon: "xmark", style: .pillTertiary) {
+//                    onDelete()
+//                }
             }
         }
         .padding(DesignTokens.Padding.large)
