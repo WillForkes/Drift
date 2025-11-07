@@ -56,7 +56,7 @@ struct SettingsPage: View {
 
                     // Modes Section
                     VStack(spacing: DesignTokens.Spacing.xLarge) {
-                        Text("Modes")
+                        Text("Presets")
                             .heading1()
                             .foregroundColor(DesignTokens.Colors.textPrimary)
                             .frame(maxWidth: .infinity, alignment: .leading)
@@ -232,6 +232,9 @@ struct PresetModeCard: View {
         VStack(alignment: .leading, spacing: DesignTokens.Spacing.xLarge) {
             // Header with name and apps count
             HStack {
+                Text(preset.emoji)
+                    .heading2()
+            
                 Text(preset.name)
                     .heading2()
                     .foregroundColor(DesignTokens.Colors.textPrimary)
@@ -311,9 +314,9 @@ struct SettingsRow: View {
     tagManager.registerTag(id: "0002", label: "Bedroom Drift", presetId: "preset-deep-focus")
 
     // Add 3 dummy presets
-    let workPreset = FocusPreset(id: "preset-work", name: "Work Mode", blocksAllApps: false)
-    let deepFocusPreset = FocusPreset(id: "preset-deep-focus", name: "Deep Focus", blocksAllApps: false)
-    let allPreset = FocusPreset(id: "preset-all", name: "All Apps", blocksAllApps: true)
+    let workPreset = FocusPreset(id: "preset-work", name: "Work Mode", emoji: "💼", blocksAllApps: false)
+    let deepFocusPreset = FocusPreset(id: "preset-deep-focus", name: "Deep Focus", emoji: "🧠", blocksAllApps: false)
+    let allPreset = FocusPreset(id: "preset-all", name: "All Apps", emoji: "🚫", blocksAllApps: true)
 
     presetManager.presets = [workPreset, deepFocusPreset, allPreset]
 
