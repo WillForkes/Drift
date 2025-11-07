@@ -208,7 +208,7 @@ struct DriftCard: View {
 
                 Spacer()
 
-                DriftButton(title: "Delete", icon: "xmark", style: .pill) {
+                DriftButton(title: "Delete", icon: "xmark", style: .pillSecondary) {
                     onDelete()
                 }
             }
@@ -295,5 +295,24 @@ struct SettingsRow: View {
 }
 
 #Preview {
-    SettingsPage()
+    // Setup preview with dummy data
+    let tagManager = DriftTagManager.shared
+    let presetManager = PresetManager.shared
+
+    // Clear existing data
+    tagManager.tags.removeAll()
+    presetManager.presets.removeAll()
+
+    // Add 2 dummy drifts
+    tagManager.registerTag(id: "0001", label: "Kitchen Drift", presetId: "preset-work")
+    tagManager.registerTag(id: "0002", label: "Bedroom Drift", presetId: "preset-deep-focus")
+
+    // Add 3 dummy presets
+    let workPreset = FocusPreset(id: "preset-work", name: "Work Mode", blocksAllApps: false)
+    let deepFocusPreset = FocusPreset(id: "preset-deep-focus", name: "Deep Focus", blocksAllApps: false)
+    let allPreset = FocusPreset(id: "preset-all", name: "All Apps", blocksAllApps: true)
+
+    presetManager.presets = [workPreset, deepFocusPreset, allPreset]
+
+    return SettingsPage()
 }
