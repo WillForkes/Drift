@@ -17,11 +17,13 @@ struct PresetEditSheet: View {
     @Environment(\.dismiss) private var dismiss
 
     @State private var editingName: String = ""
+    @State private var editingEmoji: String = "⚡️"
+    @State private var previousValidEmoji: String = "⚡️"
     @State private var editingSelection: FamilyActivitySelection = FamilyActivitySelection()
     @State private var showError = false
     @State private var errorMessage = ""
 
-    init(presetId: String, onDismiss: @escaping () -> Void = {}) {
+    init(presetId: String, onDismiss: @escaping () -> Void) {
         self.presetId = presetId
         self.onDismiss = onDismiss
     }
@@ -61,6 +63,31 @@ struct PresetEditSheet: View {
                         // Header Section
                         VStack(spacing: DesignTokens.Spacing.xLarge) {
                             HStack {
+                                // Emoji selector
+                                TextField("", text: $editingEmoji)
+                                    .font(.system(size: 40))
+                                    .multilineTextAlignment(.center)
+                                    .frame(width: 60, height: 60)
+                                    .background(DesignTokens.Colors.whiteText)
+                                    .cornerRadius(DesignTokens.Radii.radiusSmall)
+                                    .onChange(of: editingEmoji) { newValue in
+                                        // Filter to only allow emojis and limit to 1 character
+                                        let emojis = newValue.filter { $0.isEmoji }
+                                        if let firstEmoji = emojis.first {
+                                            // Keep only the first emoji
+                                            let singleEmoji = String(firstEmoji)
+                                            if newValue != singleEmoji {
+                                                editingEmoji = singleEmoji
+                                            }
+                                            previousValidEmoji = singleEmoji
+                                        } else if !newValue.isEmpty {
+                                            // No valid emoji found, revert to previous valid value
+                                            DispatchQueue.main.async {
+                                                editingEmoji = previousValidEmoji
+                                            }
+                                        }
+                                    }
+
                                 VStack(alignment: .leading, spacing: DesignTokens.Spacing.medium) {
                                     Text("Editing Mode")
                                         .bodySmall()
@@ -129,8 +156,10 @@ struct PresetEditSheet: View {
     private func loadPreset() {
         if let preset = presetManager.getPreset(id: presetId) {
             editingName = preset.name
+            editingEmoji = preset.emoji
+            previousValidEmoji = preset.emoji
             editingSelection = preset.selection
-            print("✅ [PresetEditSheet] Loaded preset: \(preset.name)")
+            print("✅ [PresetEditSheet] Loaded preset: \(preset.name) \(preset.emoji)")
         } else {
             print("❌ [PresetEditSheet] Failed to load preset with ID: \(presetId)")
             errorMessage = "Preset not found"
@@ -140,16 +169,17 @@ struct PresetEditSheet: View {
 
     private func savePreset() {
         do {
-            // Update preset with both name and selection
+            // Update preset with name, emoji, and selection
             try presetManager.updatePreset(
                 id: presetId,
                 name: editingName,
+                emoji: editingEmoji,
                 selection: editingSelection
             )
 
-            print("✅ [PresetEditSheet] Saved preset: \(editingName)")
-            dismiss()
+            print("✅ [PresetEditSheet] Saved preset: \(editingName) \(editingEmoji)")
             onDismiss()
+            dismiss()
 
         } catch {
             errorMessage = error.localizedDescription
@@ -177,19 +207,16 @@ struct DeviceAssignmentCard: View {
                 .extraSubtextColor()
         }
         .padding(DesignTokens.Padding.large)
-        .background(DesignTokens.Colors.whiteText)
-        .cornerRadius(DesignTokens.Radii.radiusStandard)
-        .shadow(
-            color: DesignTokens.Shadow.color,
-            radius: DesignTokens.Shadow.radius,
-            x: DesignTokens.Shadow.x,
-            y: DesignTokens.Shadow.y
-        )
+        .cardBackground()
     }
 }
 
-#Preview {
-    PresetEditSheet(
-        presetId: "testing",
-    )
+// MARK: - Character Extension
+
+extension Character {
+    /// Check if character is an emoji
+    var isEmoji: Bool {
+        guard let firstScalar = unicodeScalars.first else { return false }
+        return firstScalar.properties.isEmoji && (firstScalar.value >= 0x1F000 || unicodeScalars.count > 1)
+    }
 }

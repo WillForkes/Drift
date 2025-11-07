@@ -9,14 +9,18 @@ import SwiftUI
 
 struct OnboardingFlow: View {
     let onComplete: () -> Void
-    @State private var currentPage = 0
+    let isAddingAnotherDrift: Bool
+    @State private var currentPage: Int
     @State private var detectedTagId: String?
     @State private var driftName: String = ""
     @State private var syncError: String?
     private let totalPages = 4
 
-    init(onComplete: @escaping () -> Void) {
+    init(isAddingAnotherDrift: Bool = false, onComplete: @escaping () -> Void) {
+        self.isAddingAnotherDrift = isAddingAnotherDrift
         self.onComplete = onComplete
+        // Start on TapToStartPage when adding another drift, otherwise start on WelcomePage
+        _currentPage = State(initialValue: isAddingAnotherDrift ? 1 : 0)
     }
 
     var body: some View {
@@ -51,10 +55,14 @@ struct OnboardingFlow: View {
                             }
                         },
                         onCancelled: {
-                            print("ℹ️ [Onboarding] User cancelled NFC scan - returning to welcome")
-                            withAnimation {
-                                currentPage = 0
+                            print("ℹ️ [Onboarding] User cancelled NFC scan")
+                            // Only navigate back to welcome page if in initial onboarding
+                            if !isAddingAnotherDrift {
+                                withAnimation {
+                                    currentPage = 0
+                                }
                             }
+                            // When adding another drift, user will dismiss the sheet manually
                         },
                         errorMessage: syncError
                     ).tag(1)

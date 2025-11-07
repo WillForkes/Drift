@@ -18,13 +18,17 @@ class NFCReaderManager: NSObject, ObservableObject {
     @Published var errorMessage: String?
 
     private var nfcSession: NFCNDEFReaderSession?
+    private var scanCompletion: ((Result<String, NFCScanError>) -> Void)?
 
     private override init() {
         super.init()
     }
 
     /// Start scanning for NFC tags
-    func startScanning() {
+    func startScanning(completion: ((Result<String, NFCScanError>) -> Void)? = nil) {
+        // Store completion handler
+        scanCompletion = completion
+
         // Clear previous state
         detectedTagId = nil
         errorMessage = nil
@@ -33,6 +37,8 @@ class NFCReaderManager: NSObject, ObservableObject {
         guard NFCNDEFReaderSession.readingAvailable else {
             print("❌ [NFC] Not available on this device")
             errorMessage = "NFC is not available on this device"
+            scanCompletion?(.failure(.notAvailable))
+            scanCompletion = nil
             return
         }
 
@@ -77,12 +83,16 @@ extension NFCReaderManager: NFCNDEFReaderSessionDelegate {
                 case .readerSessionInvalidationErrorUserCanceled:
                     // User cancelled - don't show error
                     errorMessage = nil
+                    scanCompletion?(.failure(.userCancelled))
+                    scanCompletion = nil
                 case .readerSessionInvalidationErrorFirstNDEFTagRead:
                     // Successfully read tag - this is actually success
                     errorMessage = nil
                 case .readerSessionInvalidationErrorSessionTimeout:
                     print("⏱️ [NFC] Scan timed out")
                     errorMessage = "Scanning timed out. Please try again."
+                    scanCompletion?(.failure(.timeout))
+                    scanCompletion = nil
                 default:
                     // Check if it's a 200-level code (success states)
                     let errorCode = nfcError.code.rawValue
@@ -111,6 +121,8 @@ extension NFCReaderManager: NFCNDEFReaderSessionDelegate {
                                 print("✅ [NFC] Tag ID: \(tagId)")
                                 detectedTagId = tagId
                                 session.alertMessage = "Drift detected!"
+                                scanCompletion?(.success(tagId))
+                                scanCompletion = nil
                                 session.invalidate()
                                 return
                             }
@@ -124,6 +136,8 @@ extension NFCReaderManager: NFCNDEFReaderSessionDelegate {
                             print("✅ [NFC] Tag ID: \(tagId)")
                             detectedTagId = tagId
                             session.alertMessage = "Drift detected!"
+                            scanCompletion?(.success(tagId))
+                            scanCompletion = nil
                             session.invalidate()
                             return
                         }
@@ -134,7 +148,35 @@ extension NFCReaderManager: NFCNDEFReaderSessionDelegate {
             // If we get here, no valid tag was found
             print("❌ [NFC] Invalid Drift tag")
             errorMessage = "Invalid Drift tag. Please use an official Drift device."
+            scanCompletion?(.failure(.invalidTag))
+            scanCompletion = nil
             session.invalidate()
         }
     }
 }
+
+// MARK: - NFCScanError
+
+enum NFCScanError: LocalizedError {
+    case notAvailable
+    case userCancelled
+    case timeout
+    case invalidTag
+    case unknown
+
+    var errorDescription: String? {
+        switch self {
+        case .notAvailable:
+            return "NFC is not available on this device"
+        case .userCancelled:
+            return "Scan cancelled by user"
+        case .timeout:
+            return "Scanning timed out. Please try again."
+        case .invalidTag:
+            return "Invalid Drift tag. Please use an official Drift device."
+        case .unknown:
+            return "Unknown NFC error occurred"
+        }
+    }
+}
+

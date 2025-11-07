@@ -67,8 +67,8 @@ struct TapToStartPage: View {
                 } else {
                     PillBadge(
                         text: pillBadgeText,
-                        icon: pillBadgeIcon,
-                        style: .light
+                        iconColor: pillBadgeIconColor,
+                        iconSize: 8
                     )
                     .position(x: geometry.size.width / 2, y: (geometry.size.height / 2) + 100 + 60)
                 }
@@ -184,11 +184,11 @@ struct TapToStartPage: View {
         }
     }
 
-    private var pillBadgeIcon: PillIcon {
+    private var pillBadgeIconColor: Color {
         switch scanState {
-        case .detected: return .systemImage(name: "checkmark", color: .green, size: 12)
-        case .scanning: return .systemImage(name: "antenna.radiowaves.left.and.right", color: .blue, size: 12)
-        case .waiting: return .circle(color: .red, size: 12)
+        case .detected: return .green
+        case .scanning: return .blue
+        case .waiting: return .red
         }
     }
 }

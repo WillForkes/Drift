@@ -9,6 +9,7 @@ import SwiftUI
 
 struct SyncedWelcomePage: View {
     let onComplete: () -> Void
+    private let haptics = HapticManager.shared
 
     init(onComplete: @escaping () -> Void) {
         self.onComplete = onComplete
@@ -49,6 +50,9 @@ struct SyncedWelcomePage: View {
                 .position(x: geometry.size.width / 2, y: (geometry.size.height / 2) + 100 + 70)
             }
             .frame(maxWidth: .infinity, maxHeight: .infinity)
+            .onAppear {
+                haptics.success()
+            }
         }
     }
 }

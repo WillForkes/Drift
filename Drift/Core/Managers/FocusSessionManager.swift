@@ -28,11 +28,14 @@ class FocusSessionManager: ObservableObject {
                 removeAppBlocking()
                 // Stop analytics tracking
                 AnalyticsManager.shared.stopSession()
+                // Clear active drift tag when stopping
+                activeDriftTagId = nil
             }
         }
     }
 
     @Published private(set) var isAuthorized: Bool = false
+    @Published var activeDriftTagId: String?
 
     // MARK: - Private Properties
     private let store = ManagedSettingsStore()
@@ -75,6 +78,13 @@ class FocusSessionManager: ObservableObject {
         isSessionActive = true
     }
 
+    /// Start a focus session with a specific drift tag
+    func startSession(withDriftTagId driftTagId: String) {
+        guard !isSessionActive else { return }
+        activeDriftTagId = driftTagId
+        isSessionActive = true
+    }
+
     /// Stop the active focus session
     func stopSession() {
         guard isSessionActive else { return }
@@ -111,20 +121,33 @@ class FocusSessionManager: ObservableObject {
     }
 
     private func applyAppBlocking() {
-        guard let preset = currentPreset else { return }
+        print("🛡️ [FocusSessionManager] applyAppBlocking called")
+        print("🛡️ [FocusSessionManager] Authorization status: \(authCenter.authorizationStatus)")
+
+        guard let preset = currentPreset else {
+            print("❌ [FocusSessionManager] No current preset - cannot apply blocking")
+            return
+        }
+
+        print("🛡️ [FocusSessionManager] Using preset: \(preset.name)")
+        print("🛡️ [FocusSessionManager] Blocks all apps: \(preset.blocksAllApps)")
 
         if preset.blocksAllApps {
             // Block all applications for "All" preset
+            print("🛡️ [FocusSessionManager] Blocking ALL applications")
             store.shield.applicationCategories = .all()
         } else {
             // Block specific apps from preset selection
             let selection = preset.selection
+            print("🛡️ [FocusSessionManager] Blocking \(selection.applicationTokens.count) apps, \(selection.categoryTokens.count) categories, \(selection.webDomainTokens.count) web domains")
             store.shield.applications = selection.applicationTokens
             store.shield.applicationCategories = ShieldSettings.ActivityCategoryPolicy.specific(
                 selection.categoryTokens
             )
             store.shield.webDomains = selection.webDomainTokens
         }
+
+        print("✅ [FocusSessionManager] App blocking applied")
     }
 
     private func removeAppBlocking() {

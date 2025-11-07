@@ -12,14 +12,14 @@ struct DriftButton: View {
     let icon: String?
     let style: DriftButtonStyle
     let action: () -> Void
-    
+
     init(title: String, icon: String? = nil, style: DriftButtonStyle = .primary, action: @escaping () -> Void) {
         self.title = title
         self.icon = icon
         self.style = style
         self.action = action
     }
-    
+
     var body: some View {
         Button(action: action) {
             HStack(spacing: DesignTokens.Spacing.medium) {
@@ -27,13 +27,13 @@ struct DriftButton: View {
                     Image(systemName: icon)
                         .font(.system(size: style.iconSize))
                 }
-                
+
                 Text(title)
                     .font(.custom(DesignTokens.Typography.fontFamily, size: style.fontSize))
                     .fontWeight(style.fontWeight)
             }
             .foregroundColor(style.textColor)
-            .padding(.horizontal, style.horizontalPadding)
+            .padding(.horizontal, DesignTokens.Padding.large)
             .padding(.vertical, style.verticalPadding)
             .background(style.backgroundColor)
             .cornerRadius(style.cornerRadius)
@@ -42,7 +42,7 @@ struct DriftButton: View {
                     .stroke(style.borderColor, lineWidth: style.borderWidth)
             )
         }
-        .buttonStyle(PlainButtonStyle()) // Prevents default button styling from interfering
+        .buttonStyle(PlainButtonStyle())
     }
 }
 
@@ -53,123 +53,84 @@ enum DriftButtonStyle {
     case secondary
     case pill
     case pillSecondary
-    
+    case pillTertiary
+
     var backgroundColor: Color {
         switch self {
-        case .primary:
-            return DesignTokens.Colors.primary
-        case .secondary:
-            return DesignTokens.Colors.whiteText
-        case .pill, .pillSecondary:
-            return self == .pill ? Color.black : DesignTokens.Colors.whiteText
+        case .primary: return DesignTokens.Colors.primary
+        case .secondary, .pillSecondary: return DesignTokens.Colors.whiteText
+        case .pillTertiary: return Color.clear
+        case .pill: return Color.black
         }
     }
-    
+
     var textColor: Color {
         switch self {
-        case .primary:
-            return DesignTokens.Colors.whiteText
-        case .secondary, .pillSecondary:
-            return DesignTokens.Colors.textPrimary
-        case .pill:
-            return DesignTokens.Colors.whiteText
+        case .primary, .pill: return DesignTokens.Colors.whiteText
+        case .secondary, .pillSecondary: return DesignTokens.Colors.textPrimary
+        case .pillTertiary: return DesignTokens.Colors.extraSubtext
         }
     }
-    
+
     var borderColor: Color {
         switch self {
-        case .primary, .pill:
-            return Color.clear
-        case .secondary, .pillSecondary:
-            return DesignTokens.Colors.textPrimary.opacity(0.2)
+        case .primary, .pill: return .clear
+        case .secondary, .pillSecondary: return DesignTokens.Colors.textPrimary.opacity(0.2)
+        case .pillTertiary: return DesignTokens.Colors.extraSubtext
         }
     }
-    
+
     var borderWidth: CGFloat {
         switch self {
-        case .primary, .pill:
-            return 0
-        case .secondary, .pillSecondary:
-            return 1
+        case .primary, .pill: return 0
+        case .secondary, .pillSecondary, .pillTertiary: return 1
         }
     }
-    
+
     var cornerRadius: CGFloat {
         switch self {
-        case .primary, .secondary:
-            return DesignTokens.Radii.radiusSmall
-        case .pill, .pillSecondary:
-            return DesignTokens.Radii.radiusStandard
+        case .primary, .secondary: return DesignTokens.Radii.radiusSmall
+        case .pill, .pillSecondary, .pillTertiary: return DesignTokens.Radii.radiusStandard
         }
     }
-    
-    var horizontalPadding: CGFloat {
-        switch self {
-        case .primary, .secondary:
-            return DesignTokens.Padding.large
-        case .pill, .pillSecondary:
-            return DesignTokens.Padding.large
-        }
-    }
-    
+
     var verticalPadding: CGFloat {
         switch self {
-        case .primary, .secondary:
-            return DesignTokens.Padding.large
-        case .pill, .pillSecondary:
-            return DesignTokens.Padding.medium
+        case .primary, .secondary: return DesignTokens.Padding.large
+        case .pill, .pillSecondary: return DesignTokens.Padding.medium
+        case .pillTertiary: return DesignTokens.Padding.small
         }
     }
-    
+
     var fontSize: CGFloat {
         switch self {
-        case .primary, .secondary:
-            return DesignTokens.Typography.Size.body
-        case .pill, .pillSecondary:
-            return DesignTokens.Typography.Size.bodySmall
+        case .primary, .secondary: return DesignTokens.Typography.Size.body
+        case .pill, .pillSecondary: return DesignTokens.Typography.Size.bodySmall
+        case .pillTertiary: return 16
         }
     }
-    
+
     var fontWeight: Font.Weight {
-        switch self {
-        case .primary:
-            return .medium
-        case .secondary, .pill, .pillSecondary:
-            return .regular
-        }
+        self == .primary ? .medium : .regular
     }
-    
+
     var iconSize: CGFloat {
         switch self {
-        case .primary, .secondary:
-            return 20
-        case .pill, .pillSecondary:
-            return 12
+        case .primary, .secondary: return 20
+        case .pill, .pillSecondary: return 12
+        case .pillTertiary: return 10
         }
     }
 }
 
 #Preview {
     VStack(spacing: 20) {
-        DriftButton(title: "Primary Button", icon: "heart.fill", style: .primary) {
-            print("Primary tapped")
-        }
-        
-        DriftButton(title: "Secondary Button", icon: "gear", style: .secondary) {
-            print("Secondary tapped")
-        }
-        
-        DriftButton(title: "Pill button", icon: "xmark", style: .pill) {
-            print("Delete tapped")
-        }
-        
-        DriftButton(title: "Pill Secondary", icon: "pencil", style: .pillSecondary) {
-            print("Edit tapped")
-        }
-        
-        DriftButton(title: "No Icon Button", style: .primary) {
-            print("No icon tapped")
-        }
+        DriftButton(title: "Primary Button", icon: "heart.fill", style: .primary) {}
+        DriftButton(title: "Secondary Button", icon: "gear", style: .secondary) {}
+        DriftButton(title: "Pill button", icon: "xmark", style: .pill) {}
+        DriftButton(title: "Pill Secondary", icon: "pencil", style: .pillSecondary) {}
+        DriftButton(title: "Pill Tertiary", icon: "trash", style: .pillTertiary) {}
+        DriftButton(title: "No Icon Button", style: .primary) {}
     }
     .padding()
 }

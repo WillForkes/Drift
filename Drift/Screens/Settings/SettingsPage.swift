@@ -11,6 +11,7 @@ struct SettingsPage: View {
     @ObservedObject private var driftManager = DriftTagManager.shared
     @ObservedObject private var presetManager = PresetManager.shared
     @State private var editingPresetId: PresetIdentifier?
+    @State private var showAddDriftSheet = false
 
     var body: some View {
         ZStack {
@@ -21,11 +22,18 @@ struct SettingsPage: View {
                 VStack(spacing: DesignTokens.Spacing.xxxLarge) {
                     // Your drift's Section
                     VStack(spacing: DesignTokens.Spacing.xLarge) {
-                        Text("Your drift's")
-                            .heading1()
-                            .foregroundColor(DesignTokens.Colors.textPrimary)
-                            .frame(maxWidth: .infinity, alignment: .leading)
-                            .padding(.horizontal, DesignTokens.Padding.large)
+                        HStack {
+                            Text("Your drift's")
+                                .heading1()
+                                .foregroundColor(DesignTokens.Colors.textPrimary)
+
+                            Spacer()
+
+                            DriftButton(title: "New Drift", icon: "plus", style: .pillTertiary) {
+                                showAddDriftSheet = true
+                            }
+                        }
+                        .padding(.horizontal, DesignTokens.Padding.large)
 
                         if driftManager.tags.isEmpty {
                             Text("No drifts")
@@ -48,7 +56,7 @@ struct SettingsPage: View {
 
                     // Modes Section
                     VStack(spacing: DesignTokens.Spacing.xLarge) {
-                        Text("Modes")
+                        Text("Presets")
                             .heading1()
                             .foregroundColor(DesignTokens.Colors.textPrimary)
                             .frame(maxWidth: .infinity, alignment: .leading)
@@ -123,6 +131,11 @@ struct SettingsPage: View {
                 onDismiss: { editingPresetId = nil }
             )
         }
+        .sheet(isPresented: $showAddDriftSheet) {
+            OnboardingFlow(isAddingAnotherDrift: true) {
+                showAddDriftSheet = false
+            }
+        }
     }
 
     // MARK: - Helper Functions
@@ -165,51 +178,47 @@ struct DriftCard: View {
         VStack(alignment: .leading, spacing: DesignTokens.Spacing.xLarge) {
             // Header with name and ID
             HStack {
-                Text(tag.label)
-                    .heading2()
-                    .foregroundColor(DesignTokens.Colors.textPrimary)
+                // Preset info
+                HStack(spacing: DesignTokens.Spacing.large) {
+                    Circle()
+                        .fill(DesignTokens.Colors.primary)
+                        .frame(width: 8, height: 8)
+
+                    Text(tag.label)
+                        .heading2()
+                        .foregroundColor(DesignTokens.Colors.textPrimary)
+                }
+                
+                Spacer()
+
+                Image("above")
+                    .resizable()
+                    .scaledToFill()
+                    .frame(width: 40, height: 40)
+            }
+
+
+
+            // Sync status and delete button
+            HStack {
+                Text("Preset: '\(presetName)'")
+                    .bodySmall()
+                    .subtextColor()
 
                 Spacer()
 
                 Text("ID: \(tag.id)")
                     .bodySmall()
                     .extraSubtextColor()
-            }
-
-            // Preset info
-            Text("Preset: \(presetName)")
-                .body()
-                .subtextColor()
-
-            // Sync status and delete button
-            HStack {
-                HStack(spacing: DesignTokens.Spacing.medium) {
-                    Circle()
-                        .fill(Color.green)
-                        .frame(width: 8, height: 8)
-
-                    Text("Synced")
-                        .bodySmall()
-                        .subtextColor()
-                }
-
-                Spacer()
-
-                DriftButton(title: "Delete", icon: "xmark", style: .pill) {
-                    onDelete()
-                }
+                
+//                DriftButton(title: "Delete", icon: "xmark", style: .pillTertiary) {
+//                    onDelete()
+//                }
             }
         }
         .padding(DesignTokens.Padding.large)
         .frame(maxWidth: .infinity, alignment: .leading)
-        .background(DesignTokens.Colors.whiteText)
-        .cornerRadius(DesignTokens.Radii.radiusStandard)
-        .shadow(
-            color: DesignTokens.Shadow.color,
-            radius: DesignTokens.Shadow.radius,
-            x: DesignTokens.Shadow.x,
-            y: DesignTokens.Shadow.y
-        )
+        .cardBackground()
     }
 }
 
@@ -223,6 +232,9 @@ struct PresetModeCard: View {
         VStack(alignment: .leading, spacing: DesignTokens.Spacing.xLarge) {
             // Header with name and apps count
             HStack {
+                Text(preset.emoji)
+                    .heading2()
+            
                 Text(preset.name)
                     .heading2()
                     .foregroundColor(DesignTokens.Colors.textPrimary)
@@ -249,14 +261,7 @@ struct PresetModeCard: View {
         }
         .padding(DesignTokens.Padding.large)
         .frame(maxWidth: .infinity, alignment: .leading)
-        .background(DesignTokens.Colors.whiteText)
-        .cornerRadius(DesignTokens.Radii.radiusStandard)
-        .shadow(
-            color: DesignTokens.Shadow.color,
-            radius: DesignTokens.Shadow.radius,
-            x: DesignTokens.Shadow.x,
-            y: DesignTokens.Shadow.y
-        )
+        .cardBackground()
     }
 }
 
@@ -283,14 +288,7 @@ struct SettingsRow: View {
                 .extraSubtextColor()
         }
         .padding(DesignTokens.Padding.large)
-        .background(DesignTokens.Colors.whiteText)
-        .cornerRadius(DesignTokens.Radii.radiusStandard)
-        .shadow(
-            color: DesignTokens.Shadow.color,
-            radius: DesignTokens.Shadow.radius,
-            x: DesignTokens.Shadow.x,
-            y: DesignTokens.Shadow.y
-        )
+        .cardBackground()
         .onTapGesture {
             if let action = action {
                 action()
@@ -303,5 +301,24 @@ struct SettingsRow: View {
 }
 
 #Preview {
-    SettingsPage()
+    // Setup preview with dummy data
+    let tagManager = DriftTagManager.shared
+    let presetManager = PresetManager.shared
+
+    // Clear existing data
+    tagManager.tags.removeAll()
+    presetManager.presets.removeAll()
+
+    // Add 2 dummy drifts
+    tagManager.registerTag(id: "0001", label: "Kitchen Drift", presetId: "preset-work")
+    tagManager.registerTag(id: "0002", label: "Bedroom Drift", presetId: "preset-deep-focus")
+
+    // Add 3 dummy presets
+    let workPreset = FocusPreset(id: "preset-work", name: "Work Mode", emoji: "💼", blocksAllApps: false)
+    let deepFocusPreset = FocusPreset(id: "preset-deep-focus", name: "Deep Focus", emoji: "🧠", blocksAllApps: false)
+    let allPreset = FocusPreset(id: "preset-all", name: "All Apps", emoji: "🚫", blocksAllApps: true)
+
+    presetManager.presets = [workPreset, deepFocusPreset, allPreset]
+
+    return SettingsPage()
 }

@@ -35,14 +35,7 @@ struct StatCard<Content: View>: View {
         }
         .padding(DesignTokens.Padding.large)
         .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .background(DesignTokens.Colors.whiteText)
-        .cornerRadius(DesignTokens.Radii.radiusStandard)
-        .shadow(
-            color: DesignTokens.Shadow.color,
-            radius: DesignTokens.Shadow.radius,
-            x: DesignTokens.Shadow.x,
-            y: DesignTokens.Shadow.y
-        )
+        .cardBackground()
     }
 }
 

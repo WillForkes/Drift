@@ -9,45 +9,59 @@ import SwiftUI
 
 /// Main container view with swipeable pages
 struct MainContainerView: View {
+    @ObservedObject private var coordinator = NFCFocusCoordinator.shared
     @State private var currentPage: Int = 1 // Start on Home page (middle)
 
     var body: some View {
         ZStack {
-            // Swipeable pages
-            TabView(selection: $currentPage) {
-                // Page 0: Analytics
-                VStack(spacing: 0) {
-                    Spacer().frame(height: DesignTokens.Spacing.pageContentTop)
-                    AnalyticsPage()
+            if coordinator.shouldShowActiveSession {
+                // Show Active Session fullscreen (no TabView, no swiping)
+                ActiveSessionScreen()
+            } else {
+                // Swipeable pages
+                TabView(selection: $currentPage) {
+                    // Page 0: Analytics
+                    VStack(spacing: 0) {
+                        Spacer().frame(height: DesignTokens.Spacing.pageContentTop)
+                        AnalyticsPage()
+                    }
+                    .background(DesignTokens.Colors.background)
+                    .tag(0)
+
+                    // Page 1: Home (no top spacing - keeps centered layout)
+                    HomePage()
+                        .tag(1)
+
+                    // Page 2: Settings
+                    VStack(spacing: 0) {
+                        Spacer().frame(height: DesignTokens.Spacing.pageContentTop)
+                        SettingsPage()
+                    }
+                    .background(DesignTokens.Colors.background)
+                    .tag(2)
                 }
-                .background(DesignTokens.Colors.background)
-                .tag(0)
+                .tabViewStyle(.page(indexDisplayMode: .never))
+                .ignoresSafeArea()
 
-                // Page 1: Home (no top spacing - keeps centered layout)
-                HomePage()
-                    .tag(1)
+                // Fixed UI elements overlaid on top
+                VStack {
+                    // Slide Indicator - Fixed at top
+                    SlideIndicator(currentPage: currentPage)
+                        .padding(.top, DesignTokens.Spacing.xxLarge)
+                        .allowsHitTesting(false) // Let swipes pass through
 
-                // Page 2: Settings
-                VStack(spacing: 0) {
-                    Spacer().frame(height: DesignTokens.Spacing.pageContentTop)
-                    SettingsPage()
+                    Spacer()
                 }
-                .background(DesignTokens.Colors.background)
-                .tag(2)
+                .allowsHitTesting(false)
             }
-            .tabViewStyle(.page(indexDisplayMode: .never))
-            .ignoresSafeArea()
-
-            // Fixed UI elements overlaid on top
-            VStack {
-                // Slide Indicator - Fixed at top
-                SlideIndicator(currentPage: currentPage)
-                    .padding(.top, DesignTokens.Spacing.xxLarge)
-                    .allowsHitTesting(false) // Let swipes pass through
-
-                Spacer()
+        }
+        .onChange(of: coordinator.shouldShowActiveSession) { oldValue, newValue in
+            withAnimation {
+                if !newValue {
+                    // Navigate back to Home when session ends
+                    currentPage = 1
+                }
             }
-            .allowsHitTesting(false)
         }
     }
 }

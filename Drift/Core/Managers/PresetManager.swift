@@ -34,12 +34,13 @@ class PresetManager: ObservableObject {
     // MARK: - Public Methods
 
     /// Create a new preset
-    func createPreset(name: String, selection: FamilyActivitySelection = FamilyActivitySelection(), blocksAllApps: Bool = false) throws -> FocusPreset {
+    func createPreset(name: String, emoji: String = "⚡️", selection: FamilyActivitySelection = FamilyActivitySelection(), blocksAllApps: Bool = false) throws -> FocusPreset {
         try validateName(name, excludingId: nil)
 
         let preset = FocusPreset(
             id: UUID().uuidString,
             name: name,
+            emoji: emoji,
             selection: selection,
             blocksAllApps: blocksAllApps
         )
@@ -48,18 +49,19 @@ class PresetManager: ObservableObject {
         saveSelection(for: preset.id, selection: selection)
         savePresets()
 
-        print("✅ [PresetManager] Created preset: '\(name)'")
+        print("✅ [PresetManager] Created preset: '\(name)' with emoji: \(emoji)")
         return preset
     }
 
     /// Update an existing preset
-    func updatePreset(id: String, name: String? = nil, selection: FamilyActivitySelection? = nil) throws {
+    func updatePreset(id: String, name: String? = nil, emoji: String? = nil, selection: FamilyActivitySelection? = nil) throws {
         guard let index = presets.firstIndex(where: { $0.id == id }) else {
             throw PresetError.presetNotFound
         }
 
         let currentPreset = presets[index]
         let newName = name ?? currentPreset.name
+        let newEmoji = emoji ?? currentPreset.emoji
         let newSelection = selection ?? currentPreset.selection
 
         // Validate name if changed
@@ -71,6 +73,7 @@ class PresetManager: ObservableObject {
         presets[index] = FocusPreset(
             id: id,
             name: newName,
+            emoji: newEmoji,
             selection: newSelection,
             blocksAllApps: currentPreset.blocksAllApps
         )

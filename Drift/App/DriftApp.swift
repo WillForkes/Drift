@@ -13,6 +13,7 @@ struct DriftApp: App {
     @StateObject private var presetManager = PresetManager.shared
     @StateObject private var parentalControls = ParentalControlsManager.shared
     @StateObject private var tagManager = DriftTagManager.shared
+    @StateObject private var coordinator = NFCFocusCoordinator.shared
     @AppStorage("drift.onboarding.completed") private var hasCompletedOnboarding = false
 
     var body: some Scene {
@@ -20,7 +21,9 @@ struct DriftApp: App {
             if hasCompletedOnboarding {
                 MainContainerView()
                     .onOpenURL { url in
-                        handleUniversalLink(url)
+                        print("🔗 [DriftApp] onOpenURL called with: \(url.absoluteString)")
+                        print("🔗 [DriftApp] Scheme: \(url.scheme ?? "nil"), Host: \(url.host ?? "nil"), Path: \(url.path)")
+                        handleURL(url)
                     }
                     .onReceive(NotificationCenter.default.publisher(for: .hardResetRequested)) { _ in
                         performHardReset()
@@ -33,21 +36,52 @@ struct DriftApp: App {
         }
     }
 
-    /// Handle Universal Links from NFC tags
-    private func handleUniversalLink(_ url: URL) {
-        // Expected URL format: https://get-drift.app/focus?id=1234
-        guard url.host == "get-drift.app",
-              url.path == "/focus" else {
+    /// Handle both Universal Links (https://) and Custom URL Schemes (drift://)
+    private func handleURL(_ url: URL) {
+        let tagId: String?
+
+        // Handle custom URL scheme: drift://focus?id=0001
+        if url.scheme == "drift" {
+            print("📱 [DriftApp] Handling custom URL scheme")
+            guard url.host == "focus" || url.path == "/focus" else {
+                print("❌ [DriftApp] Invalid drift:// URL - expected focus path")
+                return
+            }
+
+            // Parse tag ID from query parameters
+            guard let components = URLComponents(url: url, resolvingAgainstBaseURL: false),
+                  let id = components.queryItems?.first(where: { $0.name == "id" })?.value else {
+                print("❌ [DriftApp] No ID parameter in drift:// URL")
+                NotificationCenter.default.post(name: .nfcTagMissingId, object: nil)
+                return
+            }
+            tagId = id
+        }
+        // Handle universal link: https://links.get-drift.app/focus?id=0001
+        else if url.scheme == "https" {
+            print("🌐 [DriftApp] Handling universal link")
+            guard url.host == "links.get-drift.app",
+                  url.path == "/focus" else {
+                print("❌ [DriftApp] Invalid universal link - expected links.get-drift.app/focus")
+                return
+            }
+
+            // Parse tag ID from URL
+            guard let components = URLComponents(url: url, resolvingAgainstBaseURL: false),
+                  let id = components.queryItems?.first(where: { $0.name == "id" })?.value else {
+                print("❌ [DriftApp] No ID parameter in universal link")
+                NotificationCenter.default.post(name: .nfcTagMissingId, object: nil)
+                return
+            }
+            tagId = id
+        } else {
+            print("❌ [DriftApp] Unsupported URL scheme: \(url.scheme ?? "nil")")
             return
         }
 
-        // Parse tag ID from URL
-        guard let components = URLComponents(url: url, resolvingAgainstBaseURL: false),
-              let tagId = components.queryItems?.first(where: { $0.name == "id" })?.value else {
-            // No ID parameter - show error
-            NotificationCenter.default.post(name: .nfcTagMissingId, object: nil)
-            return
-        }
+        // Handle the tag detection
+        guard let tagId = tagId else { return }
+        print("✅ [DriftApp] Parsed tag ID: \(tagId)")
 
         Task { @MainActor in
             // Check if tag is registered
@@ -62,24 +96,22 @@ struct DriftApp: App {
     }
 
     private func handleRegisteredTag(_ tag: DriftTag) {
-        // Get the preset for this tag
-        guard let preset = presetManager.presets.first(where: { $0.id == tag.presetId }) else {
-            // Preset not found - use first available preset
-            if let firstPreset = presetManager.presets.first {
-                sessionManager.selectPreset(firstPreset)
-            }
-            return
-        }
+        // Use coordinator to handle session toggle
+        let result = coordinator.handleTagDetection(tagId: tag.id)
 
-        // If stopping session and parental controls enabled, post notification
-        if sessionManager.isSessionActive && parentalControls.isEnabled {
-            NotificationCenter.default.post(name: .nfcStopRequested, object: nil)
-        } else {
-            // Switch to tag's preset and toggle session
-            if !sessionManager.isSessionActive {
-                sessionManager.selectPreset(preset)
+        switch result {
+        case .success(let action):
+            switch action {
+            case .started(let driftName, let presetName):
+                print("▶️ [DriftApp] Session started from universal link: \(driftName) - \(presetName)")
+
+            case .stopped:
+                print("⏹️ [DriftApp] Session stopped from universal link")
             }
-            sessionManager.toggleSession()
+
+        case .failure(let error):
+            print("❌ [DriftApp] Failed to handle tag: \(error.localizedDescription)")
+            // Could post a notification here to show error in UI if needed
         }
     }
 
