@@ -8,15 +8,43 @@
 import SwiftUI
 
 struct AnalyticsPage: View {
-    // Placeholder data
-    let tapData: [(date: String, taps: Int)] = [
-        ("25th Oct", 12),
-        ("26th Oct", 8),
-        ("27th Oct", 15),
-        ("28th Oct", 10),
-        ("29th Oct", 20),
-        ("30th Oct", 7)
-    ]
+    @StateObject private var analyticsManager = AnalyticsManager.shared
+
+    // Computed properties for real-time data
+    private var currentStreak: Int {
+        analyticsManager.getCurrentStreak()
+    }
+
+    private var todaysFocusedTime: String {
+        let time = analyticsManager.getTodaysFocusedTime()
+        let hours = Int(time) / 3600
+        let minutes = Int(time) % 3600 / 60
+
+        if hours > 0 {
+            return "\(hours)h \(minutes)m"
+        } else if minutes > 0 {
+            return "\(minutes)m"
+        } else {
+            return "0m"
+        }
+    }
+
+    private var sessionsThisWeek: [(date: String, count: Int)] {
+        let stats = analyticsManager.getDailyStats(days: 7)
+        let formatter = DateFormatter()
+        formatter.dateFormat = "d MMM"
+
+        return stats.reversed().map { stat in
+            (formatter.string(from: stat.date), stat.sessionCount)
+        }
+    }
+
+    private var weeklyGraphData: [(date: Date, minutes: Double)] {
+        let stats = analyticsManager.getDailyStats(days: 7)
+        return stats.reversed().map { stat in
+            (stat.date, stat.totalFocusedTime / 60.0) // Convert seconds to minutes
+        }
+    }
 
     var body: some View {
         GeometryReader { geometry in
@@ -38,26 +66,26 @@ struct AnalyticsPage: View {
                         // Left Column - Two stacked cards
                         VStack(spacing: DesignTokens.Spacing.xLarge) {
                             // Current Streak Card
-                            StatCard(icon: "flame.fill", title: "Current Streak") {
-                                Text("7 days")
+                            StatCard(icon: "flame.fill", title: "Streak") {
+                                Text(currentStreak == 0 ? "No streak" : "\(currentStreak) \(currentStreak == 1 ? "day" : "days")")
                                     .body()
                                     .foregroundColor(DesignTokens.Colors.textPrimary)
                             }
 
                             // Today Card
                             StatCard(icon: "clock.fill", title: "Today") {
-                                Text("45 minutes")
+                                Text(todaysFocusedTime)
                                     .body()
                                     .foregroundColor(DesignTokens.Colors.textPrimary)
                             }
                         }
                         .frame(maxWidth: .infinity)
 
-                        // Right Column - Taps per day (full height)
-                        StatCard(icon: "hand.tap.fill", title: "Taps per day") {
+                        // Right Column - Sessions per day (full height)
+                        StatCard(icon: "chart.bar.fill", title: "Sessions per day") {
                             VStack(spacing: DesignTokens.Spacing.large) {
                                 // List of days
-                                ForEach(tapData, id: \.date) { item in
+                                ForEach(sessionsThisWeek, id: \.date) { item in
                                     HStack {
                                         Text(item.date)
                                             .bodySmall()
@@ -65,7 +93,7 @@ struct AnalyticsPage: View {
 
                                         Spacer()
 
-                                        Text("\(item.taps)")
+                                        Text("\(item.count)")
                                             .bodySmall()
                                             .foregroundColor(DesignTokens.Colors.primary)
                                     }
@@ -86,10 +114,22 @@ struct AnalyticsPage: View {
                     .padding(.horizontal, DesignTokens.Padding.large)
 
                     // Full Width Card Below (40% of remaining space)
-                    VStack {
-                        Text("Placeholder Content")
-                            .body()
-                            .foregroundColor(DesignTokens.Colors.textPrimary)
+                    VStack(spacing: DesignTokens.Spacing.xLarge) {
+                        // Header
+                        HStack {
+                            Image(systemName: "calendar")
+                                .font(.system(size: 24))
+                                .foregroundColor(DesignTokens.Colors.primary)
+
+                            Text("This Week")
+                                .heading1()
+                                .foregroundColor(DesignTokens.Colors.textPrimary)
+
+                            Spacer()
+                        }
+
+                        // Graph
+                        WeeklyFocusGraph(data: weeklyGraphData)
                     }
                     .frame(maxWidth: .infinity, maxHeight: .infinity)
                     .padding(DesignTokens.Padding.large)
