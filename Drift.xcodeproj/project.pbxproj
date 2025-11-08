@@ -10,6 +10,9 @@
 		BEBF707E2EA6DD910066B37F /* ManagedSettings.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = BEBF707D2EA6DD910066B37F /* ManagedSettings.framework */; };
 		BEBF70802EA6DD910066B37F /* ManagedSettingsUI.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = BEBF707F2EA6DD910066B37F /* ManagedSettingsUI.framework */; };
 		BEBF70882EA6DD910066B37F /* DriftShieldConfiguration.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = BEBF707B2EA6DD910066B37F /* DriftShieldConfiguration.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
+		BED1C6B32EBEA2B9003F7852 /* WidgetKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = BED1C6B22EBEA2B9003F7852 /* WidgetKit.framework */; };
+		BED1C6B52EBEA2B9003F7852 /* SwiftUI.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = BED1C6B42EBEA2B9003F7852 /* SwiftUI.framework */; };
+		BED1C6C42EBEA2BC003F7852 /* DriftWidgetExtension.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = BED1C6B12EBEA2B8003F7852 /* DriftWidgetExtension.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -20,6 +23,13 @@
 			remoteGlobalIDString = BEBF707A2EA6DD910066B37F;
 			remoteInfo = DriftShieldConfiguration;
 		};
+		BED1C6C22EBEA2BC003F7852 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = BEBF70582EA6CF690066B37F /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = BED1C6B02EBEA2B8003F7852;
+			remoteInfo = DriftWidgetExtension;
+		};
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -29,6 +39,7 @@
 			dstPath = "";
 			dstSubfolderSpec = 13;
 			files = (
+				BED1C6C42EBEA2BC003F7852 /* DriftWidgetExtension.appex in Embed Foundation Extensions */,
 				BEBF70882EA6DD910066B37F /* DriftShieldConfiguration.appex in Embed Foundation Extensions */,
 			);
 			name = "Embed Foundation Extensions";
@@ -41,6 +52,10 @@
 		BEBF707B2EA6DD910066B37F /* DriftShieldConfiguration.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = DriftShieldConfiguration.appex; sourceTree = BUILT_PRODUCTS_DIR; };
 		BEBF707D2EA6DD910066B37F /* ManagedSettings.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = ManagedSettings.framework; path = System/Library/Frameworks/ManagedSettings.framework; sourceTree = SDKROOT; };
 		BEBF707F2EA6DD910066B37F /* ManagedSettingsUI.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = ManagedSettingsUI.framework; path = System/Library/Frameworks/ManagedSettingsUI.framework; sourceTree = SDKROOT; };
+		BED1C6B12EBEA2B8003F7852 /* DriftWidgetExtension.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = DriftWidgetExtension.appex; sourceTree = BUILT_PRODUCTS_DIR; };
+		BED1C6B22EBEA2B9003F7852 /* WidgetKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = WidgetKit.framework; path = System/Library/Frameworks/WidgetKit.framework; sourceTree = SDKROOT; };
+		BED1C6B42EBEA2B9003F7852 /* SwiftUI.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SwiftUI.framework; path = System/Library/Frameworks/SwiftUI.framework; sourceTree = SDKROOT; };
+		BED1C6C92EBEA30A003F7852 /* DriftWidgetExtension.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = DriftWidgetExtension.entitlements; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
@@ -58,6 +73,31 @@
 			);
 			target = BEBF707A2EA6DD910066B37F /* DriftShieldConfiguration */;
 		};
+		BED1C6C82EBEA2BC003F7852 /* Exceptions for "DriftWidget" folder in "DriftWidgetExtension" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				Info.plist,
+			);
+			target = BED1C6B02EBEA2B8003F7852 /* DriftWidgetExtension */;
+		};
+		BED1C6CB2EBEA41A003F7852 /* Exceptions for "Drift" folder in "DriftWidgetExtension" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				Assets.xcassets,
+				Core/SharedDefaults.swift,
+				DesignSystem/DesignTokens.swift,
+				DesignSystem/LayoutExtensions.swift,
+				DesignSystem/Typography.swift,
+			);
+			target = BED1C6B02EBEA2B8003F7852 /* DriftWidgetExtension */;
+		};
+		BED1C6D02EBEA93A003F7852 /* Exceptions for "DriftWidget" folder in "Drift" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				DriftWidgetLiveActivity.swift,
+			);
+			target = BEBF705F2EA6CF690066B37F /* Drift */;
+		};
 /* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
@@ -65,6 +105,7 @@
 			isa = PBXFileSystemSynchronizedRootGroup;
 			exceptions = (
 				BE441A1B2EAFD7380059A045 /* Exceptions for "Drift" folder in "Drift" target */,
+				BED1C6CB2EBEA41A003F7852 /* Exceptions for "Drift" folder in "DriftWidgetExtension" target */,
 			);
 			path = Drift;
 			sourceTree = "<group>";
@@ -75,6 +116,15 @@
 				BEBF70892EA6DD910066B37F /* Exceptions for "DriftShieldConfiguration" folder in "DriftShieldConfiguration" target */,
 			);
 			path = DriftShieldConfiguration;
+			sourceTree = "<group>";
+		};
+		BED1C6B62EBEA2B9003F7852 /* DriftWidget */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+				BED1C6D02EBEA93A003F7852 /* Exceptions for "DriftWidget" folder in "Drift" target */,
+				BED1C6C82EBEA2BC003F7852 /* Exceptions for "DriftWidget" folder in "DriftWidgetExtension" target */,
+			);
+			path = DriftWidget;
 			sourceTree = "<group>";
 		};
 /* End PBXFileSystemSynchronizedRootGroup section */
@@ -96,14 +146,25 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		BED1C6AE2EBEA2B8003F7852 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				BED1C6B52EBEA2B9003F7852 /* SwiftUI.framework in Frameworks */,
+				BED1C6B32EBEA2B9003F7852 /* WidgetKit.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
 		BEBF70572EA6CF690066B37F = {
 			isa = PBXGroup;
 			children = (
+				BED1C6C92EBEA30A003F7852 /* DriftWidgetExtension.entitlements */,
 				BEBF70622EA6CF690066B37F /* Drift */,
 				BEBF70812EA6DD910066B37F /* DriftShieldConfiguration */,
+				BED1C6B62EBEA2B9003F7852 /* DriftWidget */,
 				BEBF707C2EA6DD910066B37F /* Frameworks */,
 				BEBF70612EA6CF690066B37F /* Products */,
 			);
@@ -114,6 +175,7 @@
 			children = (
 				BEBF70602EA6CF690066B37F /* Drift.app */,
 				BEBF707B2EA6DD910066B37F /* DriftShieldConfiguration.appex */,
+				BED1C6B12EBEA2B8003F7852 /* DriftWidgetExtension.appex */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -123,6 +185,8 @@
 			children = (
 				BEBF707D2EA6DD910066B37F /* ManagedSettings.framework */,
 				BEBF707F2EA6DD910066B37F /* ManagedSettingsUI.framework */,
+				BED1C6B22EBEA2B9003F7852 /* WidgetKit.framework */,
+				BED1C6B42EBEA2B9003F7852 /* SwiftUI.framework */,
 			);
 			name = Frameworks;
 			sourceTree = "<group>";
@@ -143,6 +207,7 @@
 			);
 			dependencies = (
 				BEBF70872EA6DD910066B37F /* PBXTargetDependency */,
+				BED1C6C32EBEA2BC003F7852 /* PBXTargetDependency */,
 			);
 			fileSystemSynchronizedGroups = (
 				BEBF70622EA6CF690066B37F /* Drift */,
@@ -176,6 +241,28 @@
 			productReference = BEBF707B2EA6DD910066B37F /* DriftShieldConfiguration.appex */;
 			productType = "com.apple.product-type.app-extension";
 		};
+		BED1C6B02EBEA2B8003F7852 /* DriftWidgetExtension */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = BED1C6C52EBEA2BC003F7852 /* Build configuration list for PBXNativeTarget "DriftWidgetExtension" */;
+			buildPhases = (
+				BED1C6AD2EBEA2B8003F7852 /* Sources */,
+				BED1C6AE2EBEA2B8003F7852 /* Frameworks */,
+				BED1C6AF2EBEA2B8003F7852 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			fileSystemSynchronizedGroups = (
+				BED1C6B62EBEA2B9003F7852 /* DriftWidget */,
+			);
+			name = DriftWidgetExtension;
+			packageProductDependencies = (
+			);
+			productName = DriftWidgetExtension;
+			productReference = BED1C6B12EBEA2B8003F7852 /* DriftWidgetExtension.appex */;
+			productType = "com.apple.product-type.app-extension";
+		};
 /* End PBXNativeTarget section */
 
 /* Begin PBXProject section */
@@ -183,7 +270,7 @@
 			isa = PBXProject;
 			attributes = {
 				BuildIndependentTargetsInParallel = 1;
-				LastSwiftUpdateCheck = 1640;
+				LastSwiftUpdateCheck = 2610;
 				LastUpgradeCheck = 1640;
 				TargetAttributes = {
 					BEBF705F2EA6CF690066B37F = {
@@ -191,6 +278,9 @@
 					};
 					BEBF707A2EA6DD910066B37F = {
 						CreatedOnToolsVersion = 16.4;
+					};
+					BED1C6B02EBEA2B8003F7852 = {
+						CreatedOnToolsVersion = 26.1;
 					};
 				};
 			};
@@ -210,6 +300,7 @@
 			targets = (
 				BEBF705F2EA6CF690066B37F /* Drift */,
 				BEBF707A2EA6DD910066B37F /* DriftShieldConfiguration */,
+				BED1C6B02EBEA2B8003F7852 /* DriftWidgetExtension */,
 			);
 		};
 /* End PBXProject section */
@@ -223,6 +314,13 @@
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 		BEBF70792EA6DD910066B37F /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		BED1C6AF2EBEA2B8003F7852 /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -246,6 +344,13 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		BED1C6AD2EBEA2B8003F7852 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXSourcesBuildPhase section */
 
 /* Begin PBXTargetDependency section */
@@ -253,6 +358,11 @@
 			isa = PBXTargetDependency;
 			target = BEBF707A2EA6DD910066B37F /* DriftShieldConfiguration */;
 			targetProxy = BEBF70862EA6DD910066B37F /* PBXContainerItemProxy */;
+		};
+		BED1C6C32EBEA2BC003F7852 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = BED1C6B02EBEA2B8003F7852 /* DriftWidgetExtension */;
+			targetProxy = BED1C6C22EBEA2BC003F7852 /* PBXContainerItemProxy */;
 		};
 /* End PBXTargetDependency section */
 
@@ -506,6 +616,72 @@
 			};
 			name = Release;
 		};
+		BED1C6C62EBEA2BC003F7852 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				ASSETCATALOG_COMPILER_WIDGET_BACKGROUND_COLOR_NAME = WidgetBackground;
+				CODE_SIGN_ENTITLEMENTS = DriftWidgetExtension.entitlements;
+				CODE_SIGN_IDENTITY = "Apple Development";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = SRM3XRAN3S;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = DriftWidget/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = DriftWidget;
+				INFOPLIST_KEY_NSHumanReadableCopyright = "";
+				IPHONEOS_DEPLOYMENT_TARGET = 18.6;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = williamforkes.Drift.DriftWidget;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = YES;
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		BED1C6C72EBEA2BC003F7852 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				ASSETCATALOG_COMPILER_WIDGET_BACKGROUND_COLOR_NAME = WidgetBackground;
+				CODE_SIGN_ENTITLEMENTS = DriftWidgetExtension.entitlements;
+				CODE_SIGN_IDENTITY = "Apple Development";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = SRM3XRAN3S;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = DriftWidget/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = DriftWidget;
+				INFOPLIST_KEY_NSHumanReadableCopyright = "";
+				IPHONEOS_DEPLOYMENT_TARGET = 18.6;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = williamforkes.Drift.DriftWidget;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = YES;
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Release;
+		};
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
@@ -532,6 +708,15 @@
 			buildConfigurations = (
 				BEBF708B2EA6DD910066B37F /* Debug */,
 				BEBF708C2EA6DD910066B37F /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		BED1C6C52EBEA2BC003F7852 /* Build configuration list for PBXNativeTarget "DriftWidgetExtension" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				BED1C6C62EBEA2BC003F7852 /* Debug */,
+				BED1C6C72EBEA2BC003F7852 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
