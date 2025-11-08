@@ -34,10 +34,15 @@ struct DailyStats: Identifiable {
     let totalFocusedTime: TimeInterval
     let sessionCount: Int
 
-    var dateString: String {
+    // Static cached DateFormatter to avoid creating new instances repeatedly
+    private static let dateFormatter: DateFormatter = {
         let formatter = DateFormatter()
         formatter.dateStyle = .medium
-        return formatter.string(from: date)
+        return formatter
+    }()
+
+    var dateString: String {
+        return Self.dateFormatter.string(from: date)
     }
 
     var formattedTime: String {

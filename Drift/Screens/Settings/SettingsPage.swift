@@ -12,6 +12,8 @@ struct SettingsPage: View {
     @ObservedObject private var presetManager = PresetManager.shared
     @State private var editingPresetId: PresetIdentifier?
     @State private var showAddDriftSheet = false
+    @State private var activeSettingsSheet: SettingsSheetType?
+    @Environment(\.openURL) var openURL
 
     var body: some View {
         ZStack {
@@ -89,12 +91,41 @@ struct SettingsPage: View {
                             .padding(.horizontal, DesignTokens.Padding.large)
 
                         VStack(spacing: DesignTokens.Spacing.large) {
-                            SettingsRow(title: "Privacy Policy", icon: "hand.raised.fill")
-                            SettingsRow(title: "Terms of Service", icon: "doc.text.fill")
-                            SettingsRow(title: "Notifications", icon: "bell.fill")
-                            SettingsRow(title: "Data & Storage", icon: "externaldrive.fill")
-                            SettingsRow(title: "About Drift", icon: "info.circle.fill")
-                            SettingsRow(title: "Contact Support", icon: "questionmark.circle.fill")
+                            SettingsRow(
+                                title: "Privacy Policy",
+                                icon: "hand.raised.fill",
+                                action: openPrivacyPolicy
+                            )
+                            SettingsRow(
+                                title: "Terms of Service",
+                                icon: "doc.text.fill",
+                                action: openTermsOfService
+                            )
+                            SettingsRow(
+                                title: "Notifications",
+                                icon: "bell.fill",
+                                action: { activeSettingsSheet = .notifications }
+                            )
+                            SettingsRow(
+                                title: "Troubleshooting",
+                                icon: "wrench.and.screwdriver.fill",
+                                action: { activeSettingsSheet = .troubleshooting }
+                            )
+                            SettingsRow(
+                                title: "About Drift",
+                                icon: "info.circle.fill",
+                                action: { activeSettingsSheet = .about }
+                            )
+                            SettingsRow(
+                                title: "Contact Support",
+                                icon: "questionmark.circle.fill",
+                                action: { activeSettingsSheet = .contactSupport }
+                            )
+                            SettingsRow(
+                                title: "Get a new drift",
+                                icon: "cart.fill",
+                                action: openGetNewDrift
+                            )
                         }
                         .padding(.horizontal, DesignTokens.Padding.large)
                     }
@@ -136,6 +167,12 @@ struct SettingsPage: View {
                 showAddDriftSheet = false
             }
         }
+        .sheet(item: $activeSettingsSheet) { sheetType in
+            SettingsDetailSheet(
+                sheetType: sheetType,
+                onDismiss: { activeSettingsSheet = nil }
+            )
+        }
     }
 
     // MARK: - Helper Functions
@@ -156,6 +193,26 @@ struct SettingsPage: View {
             return "1 drift"
         } else {
             return "\(count) drifts"
+        }
+    }
+
+    // MARK: - URL Actions
+
+    private func openPrivacyPolicy() {
+        if let url = URL(string: "https://example.com/privacy") {
+            openURL(url)
+        }
+    }
+
+    private func openTermsOfService() {
+        if let url = URL(string: "https://example.com/terms") {
+            openURL(url)
+        }
+    }
+
+    private func openGetNewDrift() {
+        if let url = URL(string: "https://get-drift.app") {
+            openURL(url)
         }
     }
 

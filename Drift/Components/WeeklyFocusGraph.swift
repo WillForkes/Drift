@@ -15,6 +15,13 @@ struct WeeklyFocusGraph: View {
     private let dotSize: CGFloat = 8
     private let lineWidth: CGFloat = 3
 
+    // Static cached DateFormatter to avoid creating new instances repeatedly
+    private static let dayFormatter: DateFormatter = {
+        let formatter = DateFormatter()
+        formatter.dateFormat = "EEE" // Mon, Tue, Wed
+        return formatter
+    }()
+
     // Computed properties
     private var maxMinutes: Double {
         let max = data.map { $0.minutes }.max() ?? 60
@@ -22,9 +29,7 @@ struct WeeklyFocusGraph: View {
     }
 
     private var dayLabels: [String] {
-        let formatter = DateFormatter()
-        formatter.dateFormat = "EEE" // Mon, Tue, Wed
-        return data.map { formatter.string(from: $0.date) }
+        return data.map { Self.dayFormatter.string(from: $0.date) }
     }
 
     var body: some View {

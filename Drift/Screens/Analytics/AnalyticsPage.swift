@@ -10,6 +10,13 @@ import SwiftUI
 struct AnalyticsPage: View {
     @StateObject private var analyticsManager = AnalyticsManager.shared
 
+    // Static cached DateFormatter to avoid creating new instances repeatedly
+    private static let dateFormatter: DateFormatter = {
+        let formatter = DateFormatter()
+        formatter.dateFormat = "d MMM"
+        return formatter
+    }()
+
     // Computed properties for real-time data
     private var currentStreak: Int {
         analyticsManager.getCurrentStreak()
@@ -31,11 +38,8 @@ struct AnalyticsPage: View {
 
     private var sessionsThisWeek: [(date: String, count: Int)] {
         let stats = analyticsManager.getDailyStats(days: 7)
-        let formatter = DateFormatter()
-        formatter.dateFormat = "d MMM"
-
         return stats.reversed().map { stat in
-            (formatter.string(from: stat.date), stat.sessionCount)
+            (Self.dateFormatter.string(from: stat.date), stat.sessionCount)
         }
     }
 
