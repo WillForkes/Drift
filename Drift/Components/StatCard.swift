@@ -25,13 +25,14 @@ struct StatCard<Content: View>: View {
                 .font(.system(size: 32))
                 .foregroundColor(DesignTokens.Colors.primary)
 
-            // Title
-            Text(title)
-                .heading1()
-                .foregroundColor(DesignTokens.Colors.textPrimary)
-
             // Content
             content
+            
+            // Title
+            Text(title)
+                .body()
+                .foregroundColor(DesignTokens.Colors.textPrimary)
+
         }
         .padding(DesignTokens.Padding.large)
         .frame(maxWidth: .infinity, maxHeight: .infinity)

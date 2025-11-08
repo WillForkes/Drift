@@ -53,38 +53,51 @@ struct AnalyticsPage: View {
                 DesignTokens.Colors.background
                     .ignoresSafeArea()
 
-                VStack(spacing: DesignTokens.Spacing.xxLarge) {
-                    // Page Title
-                    Text("Your Analytics")
-                        .heading1()
-                        .foregroundColor(DesignTokens.Colors.textPrimary)
-                        .frame(maxWidth: .infinity, alignment: .leading)
-                        .padding(.horizontal, DesignTokens.Padding.large)
+                ScrollView(showsIndicators: false) {
+                    VStack(spacing: DesignTokens.Spacing.xxLarge) {
+                        // Page Title
+                        Text("Your Analytics")
+                            .heading1()
+                            .foregroundColor(DesignTokens.Colors.textPrimary)
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                            .padding(.horizontal, DesignTokens.Padding.large)
 
-                    // Grid Layout (60% of available space)
-                    HStack(spacing: DesignTokens.Spacing.xLarge) {
+                    // Grid Layout
+                    HStack(alignment: .top, spacing: DesignTokens.Spacing.xLarge) {
                         // Left Column - Two stacked cards
                         VStack(spacing: DesignTokens.Spacing.xLarge) {
                             // Current Streak Card
                             StatCard(icon: "flame.fill", title: "Streak") {
                                 Text(currentStreak == 0 ? "No streak" : "\(currentStreak) \(currentStreak == 1 ? "day" : "days")")
-                                    .body()
+                                    .heading1()
                                     .foregroundColor(DesignTokens.Colors.textPrimary)
                             }
+                            .frame(height: 175)
 
                             // Today Card
                             StatCard(icon: "clock.fill", title: "Today") {
                                 Text(todaysFocusedTime)
-                                    .body()
+                                    .heading1()
                                     .foregroundColor(DesignTokens.Colors.textPrimary)
                             }
+                            .frame(height: 175)
                         }
                         .frame(maxWidth: .infinity)
 
                         // Right Column - Sessions per day (full height)
-                        StatCard(icon: "chart.bar.fill", title: "Sessions per day") {
-                            VStack(spacing: DesignTokens.Spacing.large) {
-                                // List of days
+                        VStack(spacing: DesignTokens.Spacing.xLarge) {
+                            // Icon
+                            Image(systemName: "chart.bar.fill")
+                                .font(.system(size: 32))
+                                .foregroundColor(DesignTokens.Colors.primary)
+
+                            // Title
+                            Text("Sessions")
+                                .heading1()
+                                .foregroundColor(DesignTokens.Colors.textPrimary)
+
+                            // List of days
+                            VStack(spacing: DesignTokens.Spacing.medium) {
                                 ForEach(sessionsThisWeek, id: \.date) { item in
                                     HStack {
                                         Text(item.date)
@@ -98,22 +111,23 @@ struct AnalyticsPage: View {
                                             .foregroundColor(DesignTokens.Colors.primary)
                                     }
                                 }
+                            }
 
-                                Spacer()
+                            Spacer()
 
-                                // View All Button
-                                ViewAllButton {
-                                    // Action placeholder
-                                    print("View All tapped")
-                                }
+                            // View All Button
+                            ViewAllButton {
+                                // Action placeholder
+                                print("View All tapped")
                             }
                         }
+                        .padding(DesignTokens.Padding.large)
                         .frame(maxWidth: .infinity)
+                        .cardBackground()
                     }
-                    .frame(height: geometry.size.height * 0.6)
                     .padding(.horizontal, DesignTokens.Padding.large)
 
-                    // Full Width Card Below (40% of remaining space)
+                    // Full Width Card Below
                     VStack(spacing: DesignTokens.Spacing.xLarge) {
                         // Header
                         HStack {
@@ -131,13 +145,12 @@ struct AnalyticsPage: View {
                         // Graph
                         WeeklyFocusGraph(data: weeklyGraphData)
                     }
-                    .frame(maxWidth: .infinity, maxHeight: .infinity)
+                    .frame(maxWidth: .infinity)
                     .padding(DesignTokens.Padding.large)
                     .cardBackground()
                     .padding(.horizontal, DesignTokens.Padding.large)
                     .padding(.bottom, DesignTokens.Spacing.xxLarge)
-
-                    Spacer()
+                    }
                 }
             }
         }
