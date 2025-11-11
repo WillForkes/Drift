@@ -8,15 +8,47 @@
 import SwiftUI
 
 struct AnalyticsPage: View {
-    // Placeholder data
-    let tapData: [(date: String, taps: Int)] = [
-        ("25th Oct", 12),
-        ("26th Oct", 8),
-        ("27th Oct", 15),
-        ("28th Oct", 10),
-        ("29th Oct", 20),
-        ("30th Oct", 7)
-    ]
+    @StateObject private var analyticsManager = AnalyticsManager.shared
+
+    // Static cached DateFormatter to avoid creating new instances repeatedly
+    private static let dateFormatter: DateFormatter = {
+        let formatter = DateFormatter()
+        formatter.dateFormat = "d MMM"
+        return formatter
+    }()
+
+    // Computed properties for real-time data
+    private var currentStreak: Int {
+        analyticsManager.getCurrentStreak()
+    }
+
+    private var todaysFocusedTime: String {
+        let time = analyticsManager.getTodaysFocusedTime()
+        let hours = Int(time) / 3600
+        let minutes = Int(time) % 3600 / 60
+
+        if hours > 0 {
+            return "\(hours)h \(minutes)m"
+        } else if minutes > 0 {
+            return "\(minutes)m"
+        } else {
+            return "0m"
+        }
+    }
+
+    private var sessionsThisWeek: [(date: String, count: Int)] {
+        let stats = analyticsManager.getDailyStats(days: 7)
+        return stats.reversed().map { stat in
+            (Self.dateFormatter.string(from: stat.date), stat.sessionCount)
+        }
+    }
+
+    private var weeklyGraphData: [(date: Date, minutes: Double)] {
+        let stats = analyticsManager.getDailyStats(days: 7)
+        return stats.reversed().map { stat in
+            (stat.date, stat.totalFocusedTime / 60.0) // Convert seconds to minutes
+        }
+    }
 
     var body: some View {
         GeometryReader { geometry in
@@ -25,39 +57,52 @@ struct AnalyticsPage: View {
                 DesignTokens.Colors.background
                     .ignoresSafeArea()
 
-                VStack(spacing: DesignTokens.Spacing.xxLarge) {
-                    // Page Title
-                    Text("Your Analytics")
-                        .heading1()
-                        .foregroundColor(DesignTokens.Colors.textPrimary)
-                        .frame(maxWidth: .infinity, alignment: .leading)
-                        .padding(.horizontal, DesignTokens.Padding.large)
+                ScrollView(showsIndicators: false) {
+                    VStack(spacing: DesignTokens.Spacing.xxLarge) {
+                        // Page Title
+                        Text("Your Analytics")
+                            .heading1()
+                            .foregroundColor(DesignTokens.Colors.textPrimary)
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                            .padding(.horizontal, DesignTokens.Padding.large)
 
-                    // Grid Layout (60% of available space)
-                    HStack(spacing: DesignTokens.Spacing.xLarge) {
+                    // Grid Layout
+                    HStack(alignment: .top, spacing: DesignTokens.Spacing.xLarge) {
                         // Left Column - Two stacked cards
                         VStack(spacing: DesignTokens.Spacing.xLarge) {
                             // Current Streak Card
-                            StatCard(icon: "flame.fill", title: "Current Streak") {
-                                Text("7 days")
-                                    .body()
+                            StatCard(icon: "flame.fill", title: "Streak") {
+                                Text(currentStreak == 0 ? "No streak" : "\(currentStreak) \(currentStreak == 1 ? "day" : "days")")
+                                    .heading1()
                                     .foregroundColor(DesignTokens.Colors.textPrimary)
                             }
+                            .frame(height: 175)
 
                             // Today Card
                             StatCard(icon: "clock.fill", title: "Today") {
-                                Text("45 minutes")
-                                    .body()
+                                Text(todaysFocusedTime)
+                                    .heading1()
                                     .foregroundColor(DesignTokens.Colors.textPrimary)
                             }
+                            .frame(height: 175)
                         }
                         .frame(maxWidth: .infinity)
 
-                        // Right Column - Taps per day (full height)
-                        StatCard(icon: "hand.tap.fill", title: "Taps per day") {
-                            VStack(spacing: DesignTokens.Spacing.large) {
-                                // List of days
-                                ForEach(tapData, id: \.date) { item in
+                        // Right Column - Sessions per day (full height)
+                        VStack(spacing: DesignTokens.Spacing.xLarge) {
+                            // Icon
+                            Image(systemName: "chart.bar.fill")
+                                .font(.system(size: 32))
+                                .foregroundColor(DesignTokens.Colors.primary)
+
+                            // Title
+                            Text("Sessions")
+                                .heading1()
+                                .foregroundColor(DesignTokens.Colors.textPrimary)
+
+                            // List of days
+                            VStack(spacing: DesignTokens.Spacing.medium) {
+                                ForEach(sessionsThisWeek, id: \.date) { item in
                                     HStack {
                                         Text(item.date)
                                             .bodySmall()
@@ -65,39 +110,51 @@ struct AnalyticsPage: View {
 
                                         Spacer()
 
-                                        Text("\(item.taps)")
+                                        Text("\(item.count)")
                                             .bodySmall()
                                             .foregroundColor(DesignTokens.Colors.primary)
                                     }
                                 }
+                            }
 
-                                Spacer()
+                            Spacer()
 
-                                // View All Button
-                                ViewAllButton {
-                                    // Action placeholder
-                                    print("View All tapped")
-                                }
+                            // View All Button
+                            ViewAllButton {
+                                // Action placeholder
+                                print("View All tapped")
                             }
                         }
+                        .padding(DesignTokens.Padding.large)
                         .frame(maxWidth: .infinity)
+                        .cardBackground()
                     }
-                    .frame(height: geometry.size.height * 0.6)
                     .padding(.horizontal, DesignTokens.Padding.large)
 
-                    // Full Width Card Below (40% of remaining space)
-                    VStack {
-                        Text("Placeholder Content")
-                            .body()
-                            .foregroundColor(DesignTokens.Colors.textPrimary)
+                    // Full Width Card Below
+                    VStack(spacing: DesignTokens.Spacing.xLarge) {
+                        // Header
+                        HStack {
+                            Image(systemName: "calendar")
+                                .font(.system(size: 24))
+                                .foregroundColor(DesignTokens.Colors.primary)
+
+                            Text("This Week")
+                                .heading1()
+                                .foregroundColor(DesignTokens.Colors.textPrimary)
+
+                            Spacer()
+                        }
+
+                        // Graph
+                        WeeklyFocusGraph(data: weeklyGraphData)
                     }
-                    .frame(maxWidth: .infinity, maxHeight: .infinity)
+                    .frame(maxWidth: .infinity)
                     .padding(DesignTokens.Padding.large)
                     .cardBackground()
                     .padding(.horizontal, DesignTokens.Padding.large)
                     .padding(.bottom, DesignTokens.Spacing.xxLarge)
-
-                    Spacer()
+                    }
                 }
             }
         }

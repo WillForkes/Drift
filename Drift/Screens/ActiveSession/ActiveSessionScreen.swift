@@ -23,7 +23,6 @@ struct ActiveSessionScreen: View {
                 .ignoresSafeArea()
 
             VStack(spacing: DesignTokens.Spacing.xxxLarge) {
-
                 // Session info
                 VStack(spacing: DesignTokens.Spacing.xLarge) {
                     Text("drift")
@@ -39,20 +38,23 @@ struct ActiveSessionScreen: View {
                         .foregroundColor(DesignTokens.Colors.textPrimary)
                         .frame(width: 80, height: 80)
 
-                    if let preset = presetManager.currentPreset {
-                        Text("Preset: \(preset.emoji) \(preset.name)")
-                            .body()
-                            .subtextColor()
+                    
+                    VStack(spacing: DesignTokens.Spacing.medium) {
+                        Text("You are now focused.")
+                            .heading1()
+                            .foregroundColor(DesignTokens.Colors.textPrimary)
+                        
+                        Text(nfcReader.isScanning ? "Hold drift near phone" : "Tap your phone on drift to stop")
+                            .bodySmall()
+                            .extraSubtextColor()
+                            .padding(.top, DesignTokens.Spacing.large)
                     }
-
-                    Text("You are now focused.")
-                        .heading1()
-                        .foregroundColor(DesignTokens.Colors.textPrimary)
-
-                    Text(nfcReader.isScanning ? "Hold drift near phone" : "Tap your phone on drift to stop")
-                        .bodySmall()
-                        .extraSubtextColor()
-                        .padding(.top, DesignTokens.Spacing.large)
+                    
+                    VStack {
+                        if let preset = presetManager.currentPreset {
+                            PillBadge(text: "\(preset.emoji) \(preset.name)", iconColor: .green, iconSize: 5)
+                        }
+                    }.padding(.top, DesignTokens.Padding.large)
                     
                     Spacer()
                 }
@@ -111,5 +113,15 @@ struct ActiveSessionScreen: View {
 }
 
 #Preview {
-    ActiveSessionScreen()
+    let presetManager = PresetManager.shared
+
+    // Set up dummy preset for preview
+    if presetManager.presets.isEmpty {
+        try? presetManager.createPreset(name: "Deep Work", emoji: "🎯")
+    }
+    if presetManager.currentPresetId == nil, let firstPreset = presetManager.presets.first {
+        presetManager.setCurrentPreset(firstPreset.id)
+    }
+
+    return ActiveSessionScreen()
 }
