@@ -196,9 +196,11 @@ class FocusSessionManager: ObservableObject {
             return
         }
 
+        // Clear reference immediately to prevent race condition
+        currentActivity = nil
+
         Task {
             await activity.end(nil, dismissalPolicy: .immediate)
-            currentActivity = nil
             print("✅ [FocusSessionManager] Live Activity ended")
         }
     }

@@ -8,19 +8,45 @@ A minimalist focus app that transforms phone blocking into a positive, intention
 - **Multi-Tag Support**: Register multiple tags with unique names and preset assignments
 - **Focus Presets**: Create custom presets with emoji icons and app selections
 - **App Blocking**: Blocks selected apps using Screen Time API during sessions
-- **Session Analytics**: Track focus time, streaks, and session history
+- **Live Activity Widget**: Lock screen timer showing session duration in real-time
+- **Session Analytics**: Track focus time, streaks, and daily statistics with graph visualization
 - **Persistent Sessions**: Sessions survive app termination and device restarts
 - **Haptic Feedback**: Tactile responses during sync and success states
-- **Fully Local**: No backend, all data stored securely on device
+- **Shield Configuration**: Custom blocked app screen with design-matched UI
+- **Fully Local**: No backend, all data stored securely on device with App Groups support
 
 ## Recent Updates
+
+### November 2025
+- ✅ **Live Activity Widget**: Real-time lock screen timer with Dynamic Island support
+  - Shows session duration using `Text(timerInterval:)` for automatic countdown
+  - Displays "above" image and warm beige background matching design system
+  - Automatically starts/ends with focus sessions
+- ✅ **Analytics Implementation**: Connected AnalyticsPage to real session data
+  - Current streak calculation from consecutive days
+  - Today's focused time tracking
+  - Weekly graph with smooth Bézier curves showing last 7 days
+  - Sessions per day list with real counts
+- ✅ **DateFormatter Optimization**: Fixed memory leak from repeated DateFormatter creation
+  - Implemented static cached formatters in AnalyticsPage, WeeklyFocusGraph, and DailyStats
+  - Prevents hundreds of formatter allocations per minute
+  - Memory usage now stable at 25-35MB (previously climbing to crash)
+- ✅ **Settings Enhancement**: Added permission management and info sheets
+  - Notifications permission request with status checking
+  - Screen Time permission re-request in troubleshooting
+  - About sheet with app version and build info
+  - Contact support sheet with web link
+- ✅ **Shield Configuration**: Custom blocked app screen matching app design
+  - Warm beige background (#F7F0E9)
+  - Primary orange lock icon (#C86A1C)
+  - Aggressive messaging: "This app is distracting you"
+  - Black OK button with white text
 
 ### January 2025
 - ✅ **Memory Leak Fixes**: Resolved critical memory leaks causing crashes after 4-5 minutes
   - Fixed NFCReaderManager completion handler cycles
   - Added task cancellation tracking for async operations
   - Implemented DispatchWorkItem cancellation for delayed actions
-  - Memory savings: 50-200 KB per session
 - ✅ **Preset Emojis**: Each preset now has a customizable emoji icon
 - ✅ **New Button Style**: Added `.pillTertiary` style for subtle tertiary actions
 - ✅ **Haptic System**: Integrated haptic feedback during onboarding and success states
@@ -31,41 +57,53 @@ A minimalist focus app that transforms phone blocking into a positive, intention
 ```
 Drift/
 ├── App/
-│   └── DriftApp.swift                    # Main app with URL handling
+│   └── DriftApp.swift                         # Main app with URL handling
 ├── Core/
 │   ├── Managers/
-│   │   ├── FocusSessionManager.swift     # Session state & Screen Time
-│   │   ├── DriftTagManager.swift         # NFC tag registration
-│   │   ├── PresetManager.swift           # Focus preset management
-│   │   ├── AnalyticsManager.swift        # Session tracking
-│   │   ├── NFCReaderManager.swift        # NFC scanning
-│   │   └── HapticManager.swift           # Haptic feedback
+│   │   ├── FocusSessionManager.swift          # Session state, Screen Time & Live Activity
+│   │   ├── DriftTagManager.swift              # NFC tag registration
+│   │   ├── PresetManager.swift                # Focus preset management
+│   │   ├── AnalyticsManager.swift             # Session tracking with cached formatters
+│   │   ├── NFCReaderManager.swift             # NFC scanning
+│   │   └── HapticManager.swift                # Haptic feedback
 │   ├── Models/
-│   │   └── FocusPreset.swift             # Preset data model
-│   └── Services/
-│       └── NFCFocusCoordinator.swift     # Session coordination
+│   │   └── FocusPreset.swift                  # Preset data model
+│   ├── Services/
+│   │   └── NFCFocusCoordinator.swift          # Session coordination
+│   └── SharedDefaults.swift                   # App Groups UserDefaults helper
 ├── Screens/
 │   ├── Home/
-│   │   └── HomePage.swift                # Main NFC scan page
+│   │   └── HomePage.swift                     # Main NFC scan page
 │   ├── ActiveSession/
-│   │   └── ActiveSessionScreen.swift    # Lock screen during sessions
+│   │   └── ActiveSessionScreen.swift         # Lock screen during sessions
 │   ├── Analytics/
-│   │   └── AnalyticsPage.swift          # Stats and history
+│   │   └── AnalyticsPage.swift               # Stats, graph & history
 │   ├── Settings/
-│   │   ├── SettingsPage.swift           # Settings and drift management
-│   │   └── PresetEditSheet.swift        # Preset configuration
+│   │   ├── SettingsPage.swift                # Settings and drift management
+│   │   ├── SettingsDetailSheet.swift         # Permission & info sheets
+│   │   └── PresetEditSheet.swift             # Preset configuration
 │   └── Onboarding/
-│       ├── OnboardingFlow.swift         # Initial setup flow
-│       ├── SyncingPage.swift            # Tag registration with animations
-│       └── TapToStartPage.swift         # NFC scanning prompt
+│       ├── OnboardingFlow.swift              # Initial setup flow
+│       ├── SyncingPage.swift                 # Tag registration with animations
+│       └── TapToStartPage.swift              # NFC scanning prompt
 ├── Components/
-│   ├── DriftButton.swift                # Reusable button with multiple styles
-│   ├── PillBadge.swift                  # Status indicator badge
-│   ├── BottomPresetSlider.swift         # Horizontal preset carousel
-│   └── StatCard.swift                   # Analytics card
+│   ├── DriftButton.swift                     # Reusable button with multiple styles
+│   ├── PillBadge.swift                       # Status indicator badge
+│   ├── BottomPresetSlider.swift              # Horizontal preset carousel
+│   ├── StatCard.swift                        # Analytics card
+│   ├── WeeklyFocusGraph.swift                # Smooth line graph for weekly data
+│   └── ViewAllButton.swift                   # View all action button
 └── DesignSystem/
-    ├── DesignTokens.swift               # Colors, spacing, typography
-    └── Typography.swift                 # Text style modifiers
+    ├── DesignTokens.swift                    # Colors, spacing, typography
+    └── Typography.swift                      # Text style modifiers
+
+DriftWidget/                                  # Widget Extension Target
+├── DriftWidgetLiveActivity.swift             # Live Activity implementation
+├── DriftWidgetBundle.swift                   # Widget bundle entry point
+└── Assets.xcassets/                          # Widget-specific assets
+
+DriftShieldConfiguration/                     # Shield Extension Target
+└── ShieldConfigurationExtension.swift        # Custom blocked app screen
 ```
 
 ## Technical Requirements
