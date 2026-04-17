@@ -2,7 +2,7 @@
 //  NFCReaderManager.swift
 //  Drift
 //
-//  Created by Claude Code on 05/11/2025.
+//  Created by William Forkes on 05/11/2025.
 //
 
 import Foundation
@@ -24,16 +24,11 @@ class NFCReaderManager: NSObject, ObservableObject {
         super.init()
     }
 
-    /// Start scanning for NFC tags
     func startScanning(completion: ((Result<String, NFCScanError>) -> Void)? = nil) {
-        // Store completion handler
         scanCompletion = completion
-
-        // Clear previous state
         detectedTagId = nil
         errorMessage = nil
 
-        // Check if NFC is available on this device
         guard NFCNDEFReaderSession.readingAvailable else {
             print("❌ [NFC] Not available on this device")
             errorMessage = "NFC is not available on this device"
@@ -42,7 +37,6 @@ class NFCReaderManager: NSObject, ObservableObject {
             return
         }
 
-        // Create and start NFC session
         nfcSession = NFCNDEFReaderSession(delegate: self, queue: nil, invalidateAfterFirstRead: true)
         nfcSession?.alertMessage = "Hold your iPhone near the Drift device"
         nfcSession?.begin()
@@ -50,15 +44,13 @@ class NFCReaderManager: NSObject, ObservableObject {
         isScanning = true
     }
 
-    /// Stop scanning for NFC tags
     func stopScanning() {
         nfcSession?.invalidate()
         nfcSession = nil
         isScanning = false
     }
 
-    /// Parse tag ID from URL string
-    /// Expected format: https://get-drift.app/focus?id=1234
+    // Expected format: https://get-drift.app/focus?id=1234
     private func parseTagId(from urlString: String) -> String? {
         guard let url = URL(string: urlString),
               let components = URLComponents(url: url, resolvingAgainstBaseURL: false),
@@ -110,12 +102,9 @@ extension NFCReaderManager: NFCNDEFReaderSessionDelegate {
 
     nonisolated func readerSession(_ session: NFCNDEFReaderSession, didDetectNDEFs messages: [NFCNDEFMessage]) {
         Task { @MainActor in
-            // Parse NDEF messages for URL records
             for message in messages {
                 for record in message.records {
-                    // Check if this is a URI record
                     if record.typeNameFormat == .nfcWellKnown {
-                        // Try to get URL from payload
                         if let url = record.wellKnownTypeURIPayload()?.absoluteString {
                             if let tagId = parseTagId(from: url) {
                                 print("✅ [NFC] Tag ID: \(tagId)")
@@ -129,9 +118,8 @@ extension NFCReaderManager: NFCNDEFReaderSessionDelegate {
                         }
                     }
 
-                    // Also check absoluteURI (alternative way to get URL)
+                    // Some NFC tags encode the URL in the payload directly
                     if let payload = String(data: record.payload, encoding: .utf8) {
-                        // Some NFC tags encode the URL in the payload directly
                         if payload.contains("get-drift.app"), let tagId = parseTagId(from: payload) {
                             print("✅ [NFC] Tag ID: \(tagId)")
                             detectedTagId = tagId
@@ -145,7 +133,6 @@ extension NFCReaderManager: NFCNDEFReaderSessionDelegate {
                 }
             }
 
-            // If we get here, no valid tag was found
             print("❌ [NFC] Invalid Drift tag")
             errorMessage = "Invalid Drift tag. Please use an official Drift device."
             scanCompletion?(.failure(.invalidTag))

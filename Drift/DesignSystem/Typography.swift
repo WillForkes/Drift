@@ -58,37 +58,30 @@ struct BodySmallModifier: ViewModifier {
 // MARK: - View Extensions
 
 extension View {
-    /// Apply Heading XL text style (48pt, -0.06 tracking, 1.4 line height)
     func headingXL() -> some View {
         modifier(HeadingXLModifier())
     }
 
-    /// Apply Heading 1 text style (28pt, -0.04 tracking, 1.4 line height)
     func heading1() -> some View {
         modifier(Heading1Modifier())
     }
 
-    /// Apply Heading 2 text style (20pt, -0.02 tracking, 1.4 line height)
     func heading2() -> some View {
         modifier(Heading2Modifier())
     }
 
-    /// Apply Body text style (18pt, 0 tracking, 1.6 line height)
     func body() -> some View {
         modifier(BodyModifier())
     }
 
-    /// Apply Body Small text style (16pt, 0 tracking, 1.4 line height)
     func bodySmall() -> some View {
         modifier(BodySmallModifier())
     }
 
-    /// Apply subtext color (80% opacity black)
     func subtextColor() -> some View {
         foregroundColor(DesignTokens.Colors.subtext)
     }
 
-    /// Apply extra subtext color (50% opacity black)
     func extraSubtextColor() -> some View {
         foregroundColor(DesignTokens.Colors.extraSubtext)
     }

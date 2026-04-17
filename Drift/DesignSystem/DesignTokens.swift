@@ -7,7 +7,6 @@
 
 import SwiftUI
 
-/// Central design system tokens for Drift
 enum DesignTokens {
 
     // MARK: - Colors
@@ -120,7 +119,6 @@ extension Color {
 // MARK: - View Extensions
 
 extension View {
-    /// Applies standard card shadow
     func cardShadow() -> some View {
         self.shadow(
             color: DesignTokens.Shadow.color,
@@ -130,7 +128,6 @@ extension View {
         )
     }
 
-    /// Applies standard card background with white color, corner radius, and shadow
     func cardBackground() -> some View {
         self
             .background(DesignTokens.Colors.whiteText)

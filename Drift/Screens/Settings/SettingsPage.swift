@@ -2,7 +2,7 @@
 //  SettingsPage.swift
 //  Drift
 //
-//  Created by Claude Code on 28/10/2025.
+//  Created by William Forkes on 28/10/2025.
 //
 
 import SwiftUI
@@ -22,7 +22,6 @@ struct SettingsPage: View {
 
             ScrollView {
                 VStack(spacing: DesignTokens.Spacing.xxxLarge) {
-                    // Your drift's Section
                     VStack(spacing: DesignTokens.Spacing.xLarge) {
                         HStack {
                             Text("Your drift's")
@@ -56,7 +55,6 @@ struct SettingsPage: View {
                         }
                     }
 
-                    // Modes Section
                     VStack(spacing: DesignTokens.Spacing.xLarge) {
                         Text("Presets")
                             .heading1()
@@ -82,7 +80,6 @@ struct SettingsPage: View {
                         }
                     }
 
-                    // Privacy & Settings Section
                     VStack(spacing: DesignTokens.Spacing.xLarge) {
                         Text("Privacy & Settings")
                             .heading1()
@@ -130,7 +127,6 @@ struct SettingsPage: View {
                         .padding(.horizontal, DesignTokens.Padding.large)
                     }
 
-                    // Debug Section (only in DEBUG builds)
                     #if DEBUG
                     VStack(spacing: DesignTokens.Spacing.xLarge) {
                         Text("Debug")
@@ -150,7 +146,6 @@ struct SettingsPage: View {
                     }
                     #endif
 
-                    // Bottom spacing
                     Spacer()
                         .frame(height: DesignTokens.Spacing.xxxLarge)
                 }
@@ -219,12 +214,11 @@ struct SettingsPage: View {
     // MARK: - Debug Methods
 
     private func performHardReset() {
-        // Post notification to trigger app-level hard reset
         NotificationCenter.default.post(name: .hardResetRequested, object: nil)
     }
 }
 
-/// MARK: - Supporting Views
+// MARK: - Supporting Views
 
 struct DriftCard: View {
     let tag: DriftTag
@@ -233,9 +227,7 @@ struct DriftCard: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: DesignTokens.Spacing.xLarge) {
-            // Header with name and ID
             HStack {
-                // Preset info
                 HStack(spacing: DesignTokens.Spacing.large) {
                     Circle()
                         .fill(DesignTokens.Colors.primary)
@@ -256,7 +248,6 @@ struct DriftCard: View {
 
 
 
-            // Sync status and delete button
             HStack {
                 Text("Preset: '\(presetName)'")
                     .bodySmall()
@@ -287,7 +278,6 @@ struct PresetModeCard: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: DesignTokens.Spacing.xLarge) {
-            // Header with name and apps count
             HStack {
                 Text(preset.emoji)
                     .heading2()
@@ -303,7 +293,6 @@ struct PresetModeCard: View {
                     .extraSubtextColor()
             }
 
-            // Assignment info and edit button
             HStack {
                 Text("Assigned to: \(assignedToText)")
                     .body()
@@ -350,7 +339,6 @@ struct SettingsRow: View {
             if let action = action {
                 action()
             } else {
-                // Settings row tap placeholder
                 print("\(title) tapped")
             }
         }
@@ -358,19 +346,15 @@ struct SettingsRow: View {
 }
 
 #Preview {
-    // Setup preview with dummy data
     let tagManager = DriftTagManager.shared
     let presetManager = PresetManager.shared
 
-    // Clear existing data
     tagManager.tags.removeAll()
     presetManager.presets.removeAll()
 
-    // Add 2 dummy drifts
     tagManager.registerTag(id: "0001", label: "Kitchen Drift", presetId: "preset-work")
     tagManager.registerTag(id: "0002", label: "Bedroom Drift", presetId: "preset-deep-focus")
 
-    // Add 3 dummy presets
     let workPreset = FocusPreset(id: "preset-work", name: "Work Mode", emoji: "💼", blocksAllApps: false)
     let deepFocusPreset = FocusPreset(id: "preset-deep-focus", name: "Deep Focus", emoji: "🧠", blocksAllApps: false)
     let allPreset = FocusPreset(id: "preset-all", name: "All Apps", emoji: "🚫", blocksAllApps: true)

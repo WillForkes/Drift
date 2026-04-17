@@ -2,7 +2,7 @@
 //  SyncedWelcomePage.swift
 //  Drift
 //
-//  Created by Claude Code on 04/11/2025.
+//  Created by William Forkes on 04/11/2025.
 //
 
 import SwiftUI
@@ -19,7 +19,6 @@ struct SyncedWelcomePage: View {
         GeometryReader { geometry in
             ZStack {
                 VStack(spacing: 0) {
-                    // Heading Section - Fixed 80px from top
                     VStack(spacing: DesignTokens.Spacing.medium) {
                         Text("Synced!")
                             .heading1()
@@ -36,14 +35,12 @@ struct SyncedWelcomePage: View {
                     Spacer()
                 }
 
-                // Image - Absolute vertical center (dead center)
                 Image("above")
                     .resizable()
                     .scaledToFill()
                     .frame(width: 200, height: 200)
                     .position(x: geometry.size.width / 2, y: geometry.size.height / 2)
 
-                // Get Started button - positioned below center image
                 DriftButton(title: "Get Started", style: .primary) {
                     onComplete()
                 }

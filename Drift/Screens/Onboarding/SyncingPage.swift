@@ -2,7 +2,7 @@
 //  SyncingPage.swift
 //  Drift
 //
-//  Created by Claude Code on 04/11/2025.
+//  Created by William Forkes on 04/11/2025.
 //
 
 import SwiftUI
@@ -33,30 +33,27 @@ struct SyncingPage: View {
     var body: some View {
         GeometryReader { geometry in
             ZStack {
-                // Non-naming states: Use absolute positioning
+                // absolute positioning for validation/error states so the image stays dead-center
                 if syncState != .namingTag {
                     VStack(spacing: 0) {
                         headingView
                         Spacer()
                     }
 
-                    // Image - Absolute vertical center (dead center)
                     Image("above")
                         .resizable()
                         .scaledToFill()
                         .frame(width: 200, height: 200)
                         .position(x: geometry.size.width / 2, y: geometry.size.height / 2)
 
-                    // Content - positioned below center image
                     contentView
                         .position(x: geometry.size.width / 2, y: (geometry.size.height / 2) + 100 + 110)
                 } else {
-                    // Naming state: Use flexible layout for keyboard handling
+                    // flexible layout when naming so keyboard can push content up
                     VStack(spacing: 0) {
                         headingView
                         Spacer()
 
-                        // Naming form - in normal flow
                         contentView
                             .padding(.horizontal, DesignTokens.Padding.large)
 
@@ -171,7 +168,6 @@ struct SyncingPage: View {
                 )
         )
         .onAppear {
-            // Auto-focus text field when naming view appears
             focusWorkItem?.cancel()
 
             let workItem = DispatchWorkItem {
@@ -222,9 +218,7 @@ struct SyncingPage: View {
     }
 
     private func badgeIconColor(for badgeIndex: Int) -> Color {
-        // Badge is green if its index is less than completedBadges
-        // badgeIndex: 0 = first badge, 1 = second, 2 = third
-        return badgeIndex < completedBadges ? .green : .yellow
+        badgeIndex < completedBadges ? .green : .yellow
     }
 
     // MARK: - Sync Logic
@@ -242,12 +236,10 @@ struct SyncingPage: View {
                 // DO ALL VALIDATION UPFRONT (no delays)
                 print("🔄 [Sync] Validating tag...")
 
-                // Check if tag ID is valid
                 guard !tagId.isEmpty else {
                     throw SyncError.invalidTag
                 }
 
-                // Check if already registered
                 if tagManager.isRegistered(id: tagId) {
                     throw SyncError.alreadyRegistered
                 }
@@ -276,7 +268,6 @@ struct SyncingPage: View {
 
                 if Task.isCancelled { return }
 
-                // All badges complete, prompt user to name their drift
                 print("📝 [Sync] Ready for naming")
                 syncState = .namingTag
 

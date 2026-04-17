@@ -1,160 +1,90 @@
-# Drift - Focus Ritual iOS App
+# Drift
 
-A minimalist focus app that transforms phone blocking into a positive, intentional experience. Tap a physical NFC tag to enter focus mode—blocking distracting apps with elegant design.
+A focus app built around physical NFC tags. Tap a tag to start a session — Drift blocks distracting apps and shows a live timer on the lock screen. Tap again to stop.
 
-## Core Features
+## Features
 
-- **NFC-Triggered Sessions**: Tap an NFC tag to start/stop focus sessions instantly
-- **Multi-Tag Support**: Register multiple tags with unique names and preset assignments
-- **Focus Presets**: Create custom presets with emoji icons and app selections
-- **App Blocking**: Blocks selected apps using Screen Time API during sessions
-- **Live Activity Widget**: Lock screen timer showing session duration in real-time
-- **Session Analytics**: Track focus time, streaks, and daily statistics with graph visualization
-- **Persistent Sessions**: Sessions survive app termination and device restarts
-- **Haptic Feedback**: Tactile responses during sync and success states
-- **Shield Configuration**: Custom blocked app screen with design-matched UI
-- **Fully Local**: No backend, all data stored securely on device with App Groups support
+- **NFC-triggered sessions** — tap a physical tag to start and stop focus
+- **Multiple tags** — register several tags, each with its own name and preset
+- **Focus presets** — configure which apps get blocked per session, with a custom emoji
+- **App blocking** — uses Screen Time API to enforce blocking during sessions
+- **Live Activity** — lock screen timer showing elapsed session time with Dynamic Island support
+- **Analytics** — streak tracking, daily focus time, and a weekly graph
+- **Shield screen** — custom blocked-app UI matching the Drift design
+- **Fully local** — no backend, everything stored on-device via App Groups
 
-## Recent Updates
+## How it works
 
-### November 2025
-- ✅ **Live Activity Widget**: Real-time lock screen timer with Dynamic Island support
-  - Shows session duration using `Text(timerInterval:)` for automatic countdown
-  - Displays "above" image and warm beige background matching design system
-  - Automatically starts/ends with focus sessions
-- ✅ **Analytics Implementation**: Connected AnalyticsPage to real session data
-  - Current streak calculation from consecutive days
-  - Today's focused time tracking
-  - Weekly graph with smooth Bézier curves showing last 7 days
-  - Sessions per day list with real counts
-- ✅ **DateFormatter Optimization**: Fixed memory leak from repeated DateFormatter creation
-  - Implemented static cached formatters in AnalyticsPage, WeeklyFocusGraph, and DailyStats
-  - Prevents hundreds of formatter allocations per minute
-  - Memory usage now stable at 25-35MB (previously climbing to crash)
-- ✅ **Settings Enhancement**: Added permission management and info sheets
-  - Notifications permission request with status checking
-  - Screen Time permission re-request in troubleshooting
-  - About sheet with app version and build info
-  - Contact support sheet with web link
-- ✅ **Shield Configuration**: Custom blocked app screen matching app design
-  - Warm beige background (#F7F0E9)
-  - Primary orange lock icon (#C86A1C)
-  - Aggressive messaging: "This app is distracting you"
-  - Black OK button with white text
+1. Write a URL with a unique ID to an NFC tag (`drift://focus?id=0001` or the production Universal Link)
+2. Open Drift and tap the tag — the app walks you through registration and Screen Time authorization
+3. Give the tag a name and assign it a focus preset
+4. From then on, tapping the tag toggles focus sessions on and off
 
-### January 2025
-- ✅ **Memory Leak Fixes**: Resolved critical memory leaks causing crashes after 4-5 minutes
-  - Fixed NFCReaderManager completion handler cycles
-  - Added task cancellation tracking for async operations
-  - Implemented DispatchWorkItem cancellation for delayed actions
-- ✅ **Preset Emojis**: Each preset now has a customizable emoji icon
-- ✅ **New Button Style**: Added `.pillTertiary` style for subtle tertiary actions
-- ✅ **Haptic System**: Integrated haptic feedback during onboarding and success states
-- ✅ **Lock Screen**: Active session screen displays lock icon with preset information
-
-## Project Structure
+## Project structure
 
 ```
 Drift/
 ├── App/
-│   └── DriftApp.swift                         # Main app with URL handling
+│   └── DriftApp.swift
 ├── Core/
 │   ├── Managers/
-│   │   ├── FocusSessionManager.swift          # Session state, Screen Time & Live Activity
-│   │   ├── DriftTagManager.swift              # NFC tag registration
-│   │   ├── PresetManager.swift                # Focus preset management
-│   │   ├── AnalyticsManager.swift             # Session tracking with cached formatters
-│   │   ├── NFCReaderManager.swift             # NFC scanning
-│   │   └── HapticManager.swift                # Haptic feedback
+│   │   ├── FocusSessionManager.swift      # Session state, Screen Time & Live Activity
+│   │   ├── DriftTagManager.swift          # NFC tag registration
+│   │   ├── PresetManager.swift            # Focus preset management
+│   │   ├── AnalyticsManager.swift         # Session tracking
+│   │   ├── NFCReaderManager.swift         # NFC scanning
+│   │   └── ParentalControlsManager.swift  # Parental controls passcode
 │   ├── Models/
-│   │   └── FocusPreset.swift                  # Preset data model
+│   │   └── FocusPreset.swift
 │   ├── Services/
-│   │   └── NFCFocusCoordinator.swift          # Session coordination
-│   └── SharedDefaults.swift                   # App Groups UserDefaults helper
+│   │   ├── NFCFocusCoordinator.swift      # Coordinates NFC detection with session state
+│   │   └── HapticManager.swift
+│   └── SharedDefaults.swift               # App Groups UserDefaults helper
 ├── Screens/
 │   ├── Home/
-│   │   └── HomePage.swift                     # Main NFC scan page
 │   ├── ActiveSession/
-│   │   └── ActiveSessionScreen.swift         # Lock screen during sessions
 │   ├── Analytics/
-│   │   └── AnalyticsPage.swift               # Stats, graph & history
 │   ├── Settings/
-│   │   ├── SettingsPage.swift                # Settings and drift management
-│   │   ├── SettingsDetailSheet.swift         # Permission & info sheets
-│   │   └── PresetEditSheet.swift             # Preset configuration
+│   ├── ParentalControls/
 │   └── Onboarding/
-│       ├── OnboardingFlow.swift              # Initial setup flow
-│       ├── SyncingPage.swift                 # Tag registration with animations
-│       └── TapToStartPage.swift              # NFC scanning prompt
 ├── Components/
-│   ├── DriftButton.swift                     # Reusable button with multiple styles
-│   ├── PillBadge.swift                       # Status indicator badge
-│   ├── BottomPresetSlider.swift              # Horizontal preset carousel
-│   ├── StatCard.swift                        # Analytics card
-│   ├── WeeklyFocusGraph.swift                # Smooth line graph for weekly data
-│   └── ViewAllButton.swift                   # View all action button
+│   ├── DriftButton.swift
+│   ├── PillBadge.swift
+│   ├── BottomPresetSlider.swift
+│   ├── StatCard.swift
+│   ├── WeeklyFocusGraph.swift
+│   └── DriftSelector.swift
 └── DesignSystem/
-    ├── DesignTokens.swift                    # Colors, spacing, typography
-    └── Typography.swift                      # Text style modifiers
+    ├── DesignTokens.swift
+    ├── Typography.swift
+    └── LayoutExtensions.swift
 
-DriftWidget/                                  # Widget Extension Target
-├── DriftWidgetLiveActivity.swift             # Live Activity implementation
-├── DriftWidgetBundle.swift                   # Widget bundle entry point
-└── Assets.xcassets/                          # Widget-specific assets
-
-DriftShieldConfiguration/                     # Shield Extension Target
-└── ShieldConfigurationExtension.swift        # Custom blocked app screen
+DriftWidget/                               # Live Activity widget extension
+DriftShieldConfiguration/                 # Custom blocked-app screen extension
 ```
 
-## Technical Requirements
+## Setup
 
-- **iOS 17.0+**
-- **Xcode 15.0+**
-- **Required Frameworks**: SwiftUI, FamilyControls, ManagedSettings, CoreNFC
-
-### Entitlements Required
-
-- `com.apple.developer.family-controls` - For app blocking
-- `com.apple.developer.associated-domains` - For Universal Links
-  - Domain: `applinks:links.get-drift.app`
-- `com.apple.developer.nfc.readersession.formats` - For NFC reading
-
-## Setup Instructions
-
-### 1. Xcode Configuration
-
-1. Open `Drift.xcodeproj`
-2. Set deployment target to iOS 17.0+
+1. Open `Drift.xcodeproj` in Xcode
+2. Set the deployment target to iOS 17.0+
 3. Configure signing with your team
-4. Verify entitlements are included
+4. Make sure the required entitlements are in place (see below)
 
-### 2. NFC Tag Configuration
+### NFC tag format
 
-The app supports both Universal Links and custom URL schemes:
+Both URL schemes are supported:
 
-**Custom URL Scheme** (Recommended for development):
 ```
-drift://focus?id=0001
-```
-
-**Universal Link** (Production):
-```
-https://links.get-drift.app/focus?id=0001
+drift://focus?id=0001          # custom scheme (dev)
+https://links.get-drift.app/focus?id=0001  # Universal Link (production)
 ```
 
-To program an NFC tag:
-1. Get a writable NFC tag (NTAG213/215/216)
-2. Use an NFC writing app (NFC Tools)
-3. Write the URL with a unique ID for each tag
+Use any NFC writing app (NFC Tools works well) with a writable NTAG213/215/216 tag.
 
-### 3. Universal Link Setup (Production)
+### Universal Links
 
-Host an `apple-app-site-association` file at:
-```
-https://links.get-drift.app/.well-known/apple-app-site-association
-```
+Host an `apple-app-site-association` file at `https://links.get-drift.app/.well-known/apple-app-site-association`:
 
-Content:
 ```json
 {
   "applinks": {
@@ -167,98 +97,32 @@ Content:
 }
 ```
 
-## Design System
+## Requirements
 
-### Colors
-- Background: `#F7F0E9` (warm beige)
-- Accent: `#E2B899` (soft peach)
-- Primary: `#C86A1C` (burnt orange)
-- Text: Black with opacity variations (100%, 80%, 50%)
+- iOS 17.0+
+- Xcode 15.0+
+- Physical device for NFC and Screen Time features (Simulator won't work)
+- iPhone XS or later for NFC
 
-### Typography
-- Font: **Futura PT Book** (custom font included)
-- Sizes: headingXL (48pt), heading1 (28pt), heading2 (22pt), body (20pt), bodySmall (18pt)
+### Entitlements
 
-### Button Styles
-- `.primary` - Orange background, white text
-- `.secondary` - White background, black text, subtle border
-- `.pill` - Black background, compact size
-- `.pillSecondary` - White background, compact size
-- `.pillTertiary` - Transparent background, extra subtle gray border (new)
+- `com.apple.developer.family-controls` — app blocking via Screen Time
+- `com.apple.developer.nfc.readersession.formats` — NFC reading
+- `com.apple.developer.associated-domains` (`applinks:links.get-drift.app`) — Universal Links
 
-### Components
-All components use consistent design tokens for spacing, shadows, and colors:
-- `DriftButton` - Multi-style button component
-- `PillBadge` - Status indicator with icon and text
-- `StatCard` - Analytics card with icon, title, and content
-- `BottomPresetSlider` - Horizontal scrolling preset selector
+## Design system
 
-### Usage Example
-```swift
-Text("Focus Session").heading1()
-DriftButton(title: "Continue", style: .primary) { }
-VStack(spacing: DesignTokens.Spacing.xLarge) { }
-  .padding(.large)
-```
+Colors: warm beige `#F7F0E9`, soft peach `#E2B899`, burnt orange `#C86A1C`  
+Font: Futura PT Book (bundled)  
+Sizes: 48pt / 28pt / 22pt / 20pt / 18pt
 
-## Architecture
+## Production checklist
 
-### Session Flow
-
-1. **First Launch**: User completes onboarding, grants Screen Time permission
-2. **Tag Registration**: Tap NFC tag → Sync screen with animated badges → Name your drift
-3. **Start Session**: Tap registered tag → Apps are blocked → Lock screen shows
-4. **Active Session**: Blocked apps show custom shield message
-5. **End Session**: Tap tag again → Apps unblocked → Return to home
-
-### State Management
-
-- **Singletons**: All managers use `@MainActor` singleton pattern
-- **Published Properties**: SwiftUI views observe manager state changes
-- **Persistence**: UserDefaults for most data, Keychain for sensitive data
-- **Session State**: Survives app termination and restarts
-
-### Memory Management
-
-All async operations use proper cancellation tracking:
-- Tasks are stored in `@State` variables and cancelled on view dismissal
-- `DispatchWorkItem` used for delayed actions with cancellation support
-- Prevents memory accumulation during extended sessions
-
-## Testing
-
-### On Physical Device
-1. Tap the centered image on HomePage to trigger manual NFC scan
-2. Program NFC tags with custom URL scheme: `drift://focus?id=XXXX`
-3. Tap phone on tag to toggle sessions
-
-### Requirements
-- Screen Time features require physical device (cannot test in Simulator)
-- NFC requires iPhone XS or later
-- Universal Links only work in TestFlight/App Store builds
-
-## Production Checklist
-
-- [x] Universal Links configured
-- [x] NFC tags programmed
+- [x] Universal Links
 - [x] Memory leaks resolved
-- [x] Haptic feedback implemented
-- [x] Design system complete
-- [x] Onboarding flow
+- [x] Live Activity
+- [x] Analytics
+- [x] Shield configuration
 - [ ] Family Controls Distribution entitlement approval
-- [ ] Privacy Policy (required for Screen Time API)
+- [ ] Privacy Policy
 - [ ] App Store assets
-
-## Important Notes
-
-- **Testing**: Screen Time features require a physical iOS device
-- **Authorization**: Users must grant Screen Time permission for blocking
-- **NFC**: Background NFC reading requires iPhone XS or newer
-- **Memory**: App maintains stable memory usage during extended sessions
-- **Domain**: Universal Links require proper AASA file hosting and Apple verification
-
-## Support
-
-For Screen Time API documentation:
-- [Family Controls Framework](https://developer.apple.com/documentation/familycontrols)
-- [ManagedSettings Framework](https://developer.apple.com/documentation/managedsettings)

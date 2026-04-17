@@ -2,7 +2,7 @@
 //  PresetEditSheet.swift
 //  Drift
 //
-//  Created by Claude Code on 04/11/2025.
+//  Created by William Forkes on 04/11/2025.
 //
 
 import SwiftUI
@@ -214,7 +214,6 @@ struct DeviceAssignmentCard: View {
 // MARK: - Character Extension
 
 extension Character {
-    /// Check if character is an emoji
     var isEmoji: Bool {
         guard let firstScalar = unicodeScalars.first else { return false }
         return firstScalar.properties.isEmoji && (firstScalar.value >= 0x1F000 || unicodeScalars.count > 1)

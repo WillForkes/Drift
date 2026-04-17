@@ -2,7 +2,7 @@
 //  PillBadge.swift
 //  Drift
 //
-//  Created by Claude Code on 28/10/2025.
+//  Created by William Forkes on 28/10/2025.
 //
 
 import SwiftUI

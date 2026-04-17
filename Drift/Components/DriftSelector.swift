@@ -2,7 +2,7 @@
 //  DriftSelector.swift
 //  Drift
 //
-//  Created by Claude Code on 06/11/2025.
+//  Created by William Forkes on 06/11/2025.
 //
 
 import SwiftUI
@@ -15,7 +15,6 @@ struct DriftSelector: View {
 
     var body: some View {
         ZStack {
-            // Main pill badge
             pillBadgeView
                 .onTapGesture {
                     if driftManager.tags.count > 1 {
@@ -25,7 +24,6 @@ struct DriftSelector: View {
                     }
                 }
 
-            // Dropdown menu (if 2+ drifts)
             if showDropdown && driftManager.tags.count > 1 {
                 dropdownMenu
             }
@@ -36,17 +34,14 @@ struct DriftSelector: View {
 
     private var pillBadgeView: some View {
         HStack(spacing: DesignTokens.Spacing.large) {
-            // Red circle icon
             Circle()
                 .fill(Color.red)
                 .frame(width: 5, height: 5)
 
-            // Drift name
             Text(selectedDriftName)
                 .bodySmall()
                 .foregroundColor(DesignTokens.Colors.textPrimary)
 
-            // Chevron if multiple drifts
             if driftManager.tags.count > 1 {
                 Image(systemName: showDropdown ? "chevron.up" : "chevron.down")
                     .bodySmall()
@@ -63,7 +58,7 @@ struct DriftSelector: View {
 
     private var dropdownMenu: some View {
         ZStack(alignment: .top) {
-            // Dismiss background
+            // nearly-invisible tap target to dismiss
             Color.black.opacity(0.001)
                 .ignoresSafeArea()
                 .onTapGesture {
@@ -72,7 +67,6 @@ struct DriftSelector: View {
                     }
                 }
 
-            // Dropdown list
             VStack(alignment: .leading, spacing: 0) {
                 ForEach(driftManager.tags) { drift in
                     dropdownItem(for: drift)

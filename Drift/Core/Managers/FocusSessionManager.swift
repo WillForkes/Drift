@@ -11,7 +11,6 @@ import FamilyControls
 import ManagedSettings
 import ActivityKit
 
-/// Manages focus session state and app blocking
 @MainActor
 class FocusSessionManager: ObservableObject {
     static let shared = FocusSessionManager()
@@ -22,18 +21,13 @@ class FocusSessionManager: ObservableObject {
             UserDefaults.standard.set(isSessionActive, forKey: Constants.sessionActiveKey)
             if isSessionActive {
                 applyAppBlocking()
-                // Start analytics tracking
                 let presetName = currentPreset?.name ?? "Unknown"
                 AnalyticsManager.shared.startSession(presetName: presetName)
-                // Start Live Activity
                 startLiveActivity()
             } else {
                 removeAppBlocking()
-                // Stop analytics tracking
                 AnalyticsManager.shared.stopSession()
-                // Clear active drift tag when stopping
                 activeDriftTagId = nil
-                // End Live Activity
                 endLiveActivity()
             }
         }
@@ -59,13 +53,8 @@ class FocusSessionManager: ObservableObject {
 
     // MARK: - Initialization
     private init() {
-        // Restore session state from UserDefaults
         self.isSessionActive = UserDefaults.standard.bool(forKey: Constants.sessionActiveKey)
-
-        // Check authorization status
         checkAuthorization()
-
-        // If session was active, reapply blocking
         if isSessionActive {
             applyAppBlocking()
         }
@@ -73,41 +62,33 @@ class FocusSessionManager: ObservableObject {
 
     // MARK: - Public Methods
 
-    /// Toggle the focus session on or off
     func toggleSession() {
         isSessionActive.toggle()
     }
 
-    /// Start a focus session
     func startSession() {
         guard !isSessionActive else { return }
         isSessionActive = true
     }
 
-    /// Start a focus session with a specific drift tag
     func startSession(withDriftTagId driftTagId: String) {
         guard !isSessionActive else { return }
         activeDriftTagId = driftTagId
         isSessionActive = true
     }
 
-    /// Stop the active focus session
     func stopSession() {
         guard isSessionActive else { return }
         isSessionActive = false
     }
 
-    /// Request Screen Time authorization
     func requestAuthorization() async throws {
         try await authCenter.requestAuthorization(for: .individual)
         await checkAuthorization()
     }
 
-    /// Select a preset to use for sessions
     func selectPreset(_ preset: FocusPreset) {
         PresetManager.shared.setCurrentPreset(preset.id)
-
-        // If session is active, immediately apply new blocking rules
         if isSessionActive {
             applyAppBlocking()
         }
@@ -139,11 +120,9 @@ class FocusSessionManager: ObservableObject {
         print("🛡️ [FocusSessionManager] Blocks all apps: \(preset.blocksAllApps)")
 
         if preset.blocksAllApps {
-            // Block all applications for "All" preset
             print("🛡️ [FocusSessionManager] Blocking ALL applications")
             store.shield.applicationCategories = .all()
         } else {
-            // Block specific apps from preset selection
             let selection = preset.selection
             print("🛡️ [FocusSessionManager] Blocking \(selection.applicationTokens.count) apps, \(selection.categoryTokens.count) categories, \(selection.webDomainTokens.count) web domains")
             store.shield.applications = selection.applicationTokens
@@ -166,13 +145,11 @@ class FocusSessionManager: ObservableObject {
     // MARK: - Live Activity Management
 
     private func startLiveActivity() {
-        // Check if Live Activities are supported
         guard ActivityAuthorizationInfo().areActivitiesEnabled else {
             print("⚠️ [FocusSessionManager] Live Activities are not enabled")
             return
         }
 
-        // End any existing activity first
         endLiveActivity()
 
         do {
@@ -208,20 +185,10 @@ class FocusSessionManager: ObservableObject {
 
     // MARK: - Debug/Reset
 
-    /// Clear all session data and reset to defaults (for development/testing)
     func resetAllData() {
-        // Stop any active session
-        if isSessionActive {
-            stopSession()
-        }
-
-        // Clear app blocking
+        if isSessionActive { stopSession() }
         removeAppBlocking()
-
-        // Reset current preset to first available
         PresetManager.shared.setCurrentPreset(PresetManager.shared.presets.first?.id)
-
-        // Clear UserDefaults
         UserDefaults.standard.removeObject(forKey: Constants.sessionActiveKey)
     }
 }

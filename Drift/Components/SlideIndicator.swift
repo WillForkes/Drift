@@ -2,7 +2,7 @@
 //  SlideIndicator.swift
 //  Drift
 //
-//  Created by Claude Code on 28/10/2025.
+//  Created by William Forkes on 28/10/2025.
 //
 
 import SwiftUI
@@ -20,7 +20,6 @@ struct SlideIndicator: View {
         self.totalPages = 3
     }
     
-    // Full initializer for custom page counts
     init(currentPage: Int, totalPages: Int) {
         self.currentPage = currentPage
         self.totalPages = totalPages

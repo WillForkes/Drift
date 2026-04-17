@@ -2,7 +2,7 @@
 //  StatCard.swift
 //  Drift
 //
-//  Created by Claude Code on 28/10/2025.
+//  Created by William Forkes on 28/10/2025.
 //
 
 import SwiftUI
@@ -20,15 +20,12 @@ struct StatCard<Content: View>: View {
 
     var body: some View {
         VStack(spacing: DesignTokens.Spacing.xLarge) {
-            // Icon
             Image(systemName: icon)
                 .font(.system(size: 32))
                 .foregroundColor(DesignTokens.Colors.primary)
 
-            // Content
             content
-            
-            // Title
+
             Text(title)
                 .body()
                 .foregroundColor(DesignTokens.Colors.textPrimary)

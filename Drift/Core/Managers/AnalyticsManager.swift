@@ -7,7 +7,6 @@
 
 import Foundation
 
-/// Represents a single focus session
 struct FocusSession: Codable, Identifiable {
     let id: UUID
     let startTime: Date
@@ -27,7 +26,6 @@ struct FocusSession: Codable, Identifiable {
     }
 }
 
-/// Daily statistics summary
 struct DailyStats: Identifiable {
     let id = UUID()
     let date: Date
@@ -57,7 +55,6 @@ struct DailyStats: Identifiable {
     }
 }
 
-/// Manages focus session analytics and statistics
 @MainActor
 class AnalyticsManager: ObservableObject {
     static let shared = AnalyticsManager()
@@ -76,13 +73,11 @@ class AnalyticsManager: ObservableObject {
 
     // MARK: - Session Tracking
 
-    /// Start tracking a new focus session
     func startSession(presetName: String) {
         let session = FocusSession(startTime: Date(), presetName: presetName)
         currentSession = session
     }
 
-    /// Stop the current session and save it
     func stopSession() {
         guard var session = currentSession else { return }
 
@@ -98,26 +93,22 @@ class AnalyticsManager: ObservableObject {
 
     // MARK: - Statistics
 
-    /// Get the last completed session
     func getLastSession() -> FocusSession? {
         return sessions.last
     }
 
-    /// Get daily statistics for the last N days
     func getDailyStats(days: Int = 30) -> [DailyStats] {
         let calendar = Calendar.current
         let today = calendar.startOfDay(for: Date())
 
         var statsDict: [Date: (time: TimeInterval, count: Int)] = [:]
 
-        // Initialize last N days
         for i in 0..<days {
             if let date = calendar.date(byAdding: .day, value: -i, to: today) {
                 statsDict[date] = (0, 0)
             }
         }
 
-        // Aggregate session data
         for session in sessions {
             guard let endTime = session.endTime else { continue }
             let sessionDate = calendar.startOfDay(for: session.startTime)
@@ -127,7 +118,6 @@ class AnalyticsManager: ObservableObject {
             }
         }
 
-        // Convert to array and sort
         let stats = statsDict.map { date, data in
             DailyStats(date: date, totalFocusedTime: data.time, sessionCount: data.count)
         }.sorted { $0.date > $1.date }
@@ -135,7 +125,6 @@ class AnalyticsManager: ObservableObject {
         return stats
     }
 
-    /// Get total focused time for today
     func getTodaysFocusedTime() -> TimeInterval {
         let calendar = Calendar.current
         let today = calendar.startOfDay(for: Date())
@@ -147,12 +136,10 @@ class AnalyticsManager: ObservableObject {
         return todaySessions.reduce(0) { $0 + $1.duration }
     }
 
-    /// Calculate current streak (consecutive days with at least one session)
     func getCurrentStreak() -> Int {
         let calendar = Calendar.current
         let today = calendar.startOfDay(for: Date())
 
-        // Get unique session dates
         let sessionDates = Set(sessions.compactMap { session -> Date? in
             guard session.endTime != nil else { return nil }
             return calendar.startOfDay(for: session.startTime)
@@ -168,11 +155,10 @@ class AnalyticsManager: ObservableObject {
             return 0 // Streak broken
         }
 
-        // Count consecutive days
         var streak = 0
         var checkDate = today
 
-        for _ in 0..<365 { // Max 365 days to prevent infinite loop
+        for _ in 0..<365 { // capped to prevent pathological loops
             if sessionDates.contains(checkDate) {
                 streak += 1
                 guard let previousDay = calendar.date(byAdding: .day, value: -1, to: checkDate) else { break }
@@ -214,7 +200,6 @@ class AnalyticsManager: ObservableObject {
 
     // MARK: - Debug/Reset
 
-    /// Clear all analytics data (for development/testing)
     func resetAllData() {
         currentSession = nil
         sessions = []

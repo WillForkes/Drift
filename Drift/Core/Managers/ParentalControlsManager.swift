@@ -8,7 +8,6 @@
 import Foundation
 import Security
 
-/// Manages parental controls passcode and security
 @MainActor
 class ParentalControlsManager: ObservableObject {
     static let shared = ParentalControlsManager()
@@ -26,7 +25,6 @@ class ParentalControlsManager: ObservableObject {
         static let answerKey = "drift.parental.answer"
     }
 
-    // Common security questions
     static let securityQuestions = [
         "What was the name of your first pet?",
         "What city were you born in?",
@@ -41,7 +39,6 @@ class ParentalControlsManager: ObservableObject {
 
     // MARK: - Setup
 
-    /// Set up parental controls with passcode and security question
     func setupPasscode(_ passcode: String, question: String, answer: String) -> Bool {
         guard passcode.count == 4, passcode.allSatisfy({ $0.isNumber }) else {
             return false
@@ -51,7 +48,6 @@ class ParentalControlsManager: ObservableObject {
             return false
         }
 
-        // Save to keychain
         _ = saveToKeychain(key: Constants.passcodeKey, value: passcode)
         _ = saveToKeychain(key: Constants.questionKey, value: question)
         _ = saveToKeychain(key: Constants.answerKey, value: answer.lowercased())
@@ -62,7 +58,6 @@ class ParentalControlsManager: ObservableObject {
 
     // MARK: - Verification
 
-    /// Verify the entered passcode
     func verifyPasscode(_ passcode: String) -> Bool {
         guard let stored = retrieveFromKeychain(key: Constants.passcodeKey) else {
             return false
@@ -70,7 +65,6 @@ class ParentalControlsManager: ObservableObject {
         return passcode == stored
     }
 
-    /// Verify security answer and allow passcode reset
     func verifySecurityAnswer(_ answer: String) -> Bool {
         guard let stored = retrieveFromKeychain(key: Constants.answerKey) else {
             return false
@@ -78,14 +72,12 @@ class ParentalControlsManager: ObservableObject {
         return answer.lowercased().trimmingCharacters(in: .whitespacesAndNewlines) == stored
     }
 
-    /// Get the security question
     func getSecurityQuestion() -> String? {
         return retrieveFromKeychain(key: Constants.questionKey)
     }
 
     // MARK: - Reset
 
-    /// Reset/change the passcode (requires current passcode or security answer)
     func resetPasscode(_ newPasscode: String) -> Bool {
         guard newPasscode.count == 4, newPasscode.allSatisfy({ $0.isNumber }) else {
             return false
@@ -94,10 +86,8 @@ class ParentalControlsManager: ObservableObject {
         return saveToKeychain(key: Constants.passcodeKey, value: newPasscode)
     }
 
-    /// Disable parental controls
     func disable() {
         isEnabled = false
-        // Optionally clear keychain data
         deleteFromKeychain(key: Constants.passcodeKey)
         deleteFromKeychain(key: Constants.questionKey)
         deleteFromKeychain(key: Constants.answerKey)
@@ -105,7 +95,6 @@ class ParentalControlsManager: ObservableObject {
 
     // MARK: - Debug/Reset
 
-    /// Clear all parental controls data (for development/testing)
     func resetAllData() {
         disable()
     }

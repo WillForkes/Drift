@@ -2,14 +2,13 @@
 //  PresetManager.swift
 //  Drift
 //
-//  Created by Claude Code on 05/11/2025.
+//  Created by William Forkes on 05/11/2025.
 //
 
 import Foundation
 import FamilyControls
 import ManagedSettings
 
-/// Manages focus presets with persistent storage
 @MainActor
 class PresetManager: ObservableObject {
     static let shared = PresetManager()
@@ -33,7 +32,6 @@ class PresetManager: ObservableObject {
 
     // MARK: - Public Methods
 
-    /// Create a new preset
     func createPreset(name: String, emoji: String = "⚡️", selection: FamilyActivitySelection = FamilyActivitySelection(), blocksAllApps: Bool = false) throws -> FocusPreset {
         try validateName(name, excludingId: nil)
 
@@ -53,7 +51,6 @@ class PresetManager: ObservableObject {
         return preset
     }
 
-    /// Update an existing preset
     func updatePreset(id: String, name: String? = nil, emoji: String? = nil, selection: FamilyActivitySelection? = nil) throws {
         guard let index = presets.firstIndex(where: { $0.id == id }) else {
             throw PresetError.presetNotFound
@@ -64,12 +61,10 @@ class PresetManager: ObservableObject {
         let newEmoji = emoji ?? currentPreset.emoji
         let newSelection = selection ?? currentPreset.selection
 
-        // Validate name if changed
         if let name = name, name != currentPreset.name {
             try validateName(name, excludingId: id)
         }
 
-        // Update preset
         presets[index] = FocusPreset(
             id: id,
             name: newName,
@@ -93,17 +88,14 @@ class PresetManager: ObservableObject {
         print("✅ [PresetManager] Updated preset: \(id)")
     }
 
-    /// Delete a preset
     func deletePreset(id: String) throws {
         guard presets.contains(where: { $0.id == id }) else {
             throw PresetError.presetNotFound
         }
 
-        // Reassign drifts using this preset
         let reassignToId = presets.first(where: { $0.id != id })?.id
         DriftTagManager.shared.reassignPreset(from: id, to: reassignToId)
 
-        // Remove preset and its selection
         presets.removeAll(where: { $0.id == id })
         UserDefaults.standard.removeObject(forKey: Constants.selectionPrefix + id)
         savePresets()
@@ -118,29 +110,24 @@ class PresetManager: ObservableObject {
         print("✅ [PresetManager] Deleted preset: \(id)")
     }
 
-    /// Get a preset by ID
     func getPreset(id: String) -> FocusPreset? {
         return presets.first(where: { $0.id == id })
     }
 
-    /// Get the currently selected preset
     var currentPreset: FocusPreset? {
         guard let id = currentPresetId else {
             cachedCurrentPreset = nil
             return nil
         }
 
-        // Return cached preset if ID matches
         if cachedCurrentPreset?.id == id {
             return cachedCurrentPreset
         }
 
-        // Otherwise, fetch and cache
         cachedCurrentPreset = getPreset(id: id)
         return cachedCurrentPreset
     }
 
-    /// Set the current preset
     func setCurrentPreset(_ presetId: String?) {
         currentPresetId = presetId
         // Update cache immediately
@@ -260,13 +247,11 @@ class PresetManager: ObservableObject {
 
     // MARK: - Debug/Reset
 
-    /// Clear all presets (for development/testing)
     func resetAllData() {
         presets = []
         currentPresetId = nil
         UserDefaults.standard.removeObject(forKey: Constants.presetsKey)
         UserDefaults.standard.removeObject(forKey: Constants.currentPresetKey)
-        // Remove all selection data
         for key in UserDefaults.standard.dictionaryRepresentation().keys {
             if key.hasPrefix(Constants.selectionPrefix) {
                 UserDefaults.standard.removeObject(forKey: key)

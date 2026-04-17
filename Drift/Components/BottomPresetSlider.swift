@@ -2,7 +2,7 @@
 //  BottomPresetSlider.swift
 //  Drift
 //
-//  Created by Claude Code on 28/10/2025.
+//  Created by William Forkes on 28/10/2025.
 //
 
 import SwiftUI
@@ -41,7 +41,6 @@ struct BottomPresetSlider: View {
     var body: some View {
         GeometryReader { geometry in
             ZStack {
-                // Vertical gradient background
                 LinearGradient(
                     gradient: Gradient(colors: [
                         DesignTokens.Colors.background,
@@ -52,7 +51,6 @@ struct BottomPresetSlider: View {
                 )
                 .ignoresSafeArea()
 
-                // Scrollable carousel
                 ScrollView(.horizontal, showsIndicators: false) {
                     HStack(spacing: DesignTokens.Spacing.large) {
                         ForEach(displayItems) { item in
@@ -100,7 +98,6 @@ struct BottomPresetSlider: View {
                     handlePresetSelection(newValue)
                 }
                 .onChange(of: selectedDriftId) { oldValue, newValue in
-                    // When drift selection changes, auto-scroll to that drift's preset
                     guard let driftId = newValue,
                           let drift = driftManager.getTag(by: driftId),
                           presetManager.getPreset(id: drift.presetId) != nil else {
@@ -115,24 +112,11 @@ struct BottomPresetSlider: View {
                 .frame(width: geometry.size.width * 0.8)
                 .mask(
                     HStack(spacing: 0) {
-                        // Left fade
-                        LinearGradient(
-                            colors: [.clear, .black],
-                            startPoint: .leading,
-                            endPoint: .trailing
-                        )
-                        .frame(width: 60)
-
-                        // Center (no fade)
+                        LinearGradient(colors: [.clear, .black], startPoint: .leading, endPoint: .trailing)
+                            .frame(width: 60)
                         Rectangle()
-
-                        // Right fade
-                        LinearGradient(
-                            colors: [.black, .clear],
-                            startPoint: .leading,
-                            endPoint: .trailing
-                        )
-                        .frame(width: 60)
+                        LinearGradient(colors: [.black, .clear], startPoint: .leading, endPoint: .trailing)
+                            .frame(width: 60)
                     }
                 )
             }
@@ -168,10 +152,7 @@ struct BottomPresetSlider: View {
             editingPresetId = PresetIdentifier(id: preset.id)
             newPresetName = ""
 
-            // Cancel any pending scroll work
             scrollWorkItem?.cancel()
-
-            // Scroll to the newly created preset
             let workItem = DispatchWorkItem {
                 scrollPosition = preset.id
             }
@@ -188,10 +169,9 @@ struct BottomPresetSlider: View {
             return
         }
 
-        // Update current preset via PresetManager
         presetManager.setCurrentPreset(presetId)
 
-        // Auto-link this preset to the selected drift
+        // auto-link to the currently selected drift
         if let driftId = selectedDriftId {
             driftManager.updateDriftPreset(driftId: driftId, presetId: presetId)
         }
@@ -223,7 +203,6 @@ struct PresetCard: View {
                 .foregroundColor(DesignTokens.Colors.textPrimary)
         }
         .overlay(alignment: .topTrailing) {
-            // Green circle indicator for active preset
             if isActive {
                 Circle()
                     .fill(Color.green)

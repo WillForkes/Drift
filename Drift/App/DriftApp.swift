@@ -37,7 +37,6 @@ struct DriftApp: App {
         }
     }
 
-    /// Handle both Universal Links (https://) and Custom URL Schemes (drift://)
     private func handleURL(_ url: URL) {
         let tagId: String?
 
@@ -118,7 +117,6 @@ struct DriftApp: App {
         }
     }
 
-    /// Perform hard reset of all app data (for development/testing)
     private func performHardReset() {
         print("🗑️ [Debug] Hard reset - clearing all data")
 

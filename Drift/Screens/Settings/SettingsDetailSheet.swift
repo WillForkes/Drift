@@ -2,7 +2,7 @@
 //  SettingsDetailSheet.swift
 //  Drift
 //
-//  Created by Claude Code on 08/11/2025.
+//  Created by William Forkes on 08/11/2025.
 //
 
 import SwiftUI

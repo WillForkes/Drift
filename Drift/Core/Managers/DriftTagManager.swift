@@ -7,11 +7,10 @@
 
 import Foundation
 
-/// Represents a physical Drift NFC tag
 struct DriftTag: Codable, Identifiable {
     let id: String // Unique identifier from URL (e.g., "1234")
     var label: String // User-given name (e.g., "Kitchen")
-    var presetId: String // Which preset to use
+    var presetId: String
     let dateAdded: Date
 
     init(id: String, label: String, presetId: String) {
@@ -22,7 +21,6 @@ struct DriftTag: Codable, Identifiable {
     }
 }
 
-/// Manages registered Drift NFC tags
 @MainActor
 class DriftTagManager: ObservableObject {
     static let shared = DriftTagManager()
@@ -39,14 +37,12 @@ class DriftTagManager: ObservableObject {
 
     // MARK: - Public Methods
 
-    /// Register a new tag
     func registerTag(id: String, label: String, presetId: String) {
         let tag = DriftTag(id: id, label: label, presetId: presetId)
         tags.append(tag)
         saveTags()
     }
 
-    /// Update an existing tag
     func updateTag(id: String, label: String, presetId: String) {
         guard let index = tags.firstIndex(where: { $0.id == id }) else { return }
         tags[index].label = label
@@ -54,7 +50,6 @@ class DriftTagManager: ObservableObject {
         saveTags()
     }
 
-    /// Update the preset linked to a drift
     func updateDriftPreset(driftId: String, presetId: String) {
         guard let index = tags.firstIndex(where: { $0.id == driftId }) else {
             print("⚠️ [DriftTagManager] Cannot update preset - drift not found: \(driftId)")
@@ -66,18 +61,15 @@ class DriftTagManager: ObservableObject {
         print("✅ [DriftTagManager] Updated drift '\(tags[index].label)' to preset: \(presetId)")
     }
 
-    /// Delete a tag
     func deleteTag(id: String) {
         tags.removeAll(where: { $0.id == id })
         saveTags()
     }
 
-    /// Get a tag by ID
     func getTag(by id: String) -> DriftTag? {
         return tags.first(where: { $0.id == id })
     }
 
-    /// Check if a tag is registered
     func isRegistered(id: String) -> Bool {
         return tags.contains(where: { $0.id == id })
     }
@@ -116,7 +108,6 @@ class DriftTagManager: ObservableObject {
 
     // MARK: - Debug/Reset
 
-    /// Clear all registered tags (for development/testing)
     func resetAllData() {
         tags = []
         UserDefaults.standard.removeObject(forKey: Constants.tagsKey)

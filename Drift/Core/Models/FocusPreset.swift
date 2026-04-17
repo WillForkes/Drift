@@ -8,7 +8,6 @@
 import Foundation
 import FamilyControls
 
-/// Represents a focus preset with a name and app selection
 struct FocusPreset: Identifiable, Equatable, Codable {
     let id: String
     let name: String

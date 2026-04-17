@@ -2,7 +2,7 @@
 //  HomePage.swift
 //  Drift
 //
-//  Created by Claude Code on 28/10/2025.
+//  Created by William Forkes on 28/10/2025.
 //
 
 import SwiftUI
@@ -37,16 +37,12 @@ struct HomePage: View {
 
     var body: some View {
         ZStack {
-            // Background
             DesignTokens.Colors.background
                 .ignoresSafeArea()
 
-            // Main Content - Image centered, text above
             VStack(spacing: DesignTokens.Spacing.xLarge) {
-                // Drift Selector
                 DriftSelector(selectedDriftId: $selectedDriftId)
 
-                // Heading text
                 Text(headingText)
                     .heading1()
                     .foregroundColor(DesignTokens.Colors.textPrimary)
@@ -54,7 +50,6 @@ struct HomePage: View {
                 Spacer()
                     .frame(height: DesignTokens.Spacing.xxxLarge)
 
-                // Square Image - Centered and tappable
                 Image("above")
                     .resizable()
                     .scaledToFill()
@@ -69,7 +64,6 @@ struct HomePage: View {
             .padding(.large)
             .offset(y: -30)
 
-            // Bottom Preset Slider - Fixed at bottom
             VStack {
                 Spacer()
                 BottomPresetSlider(selectedDriftId: $selectedDriftId)
@@ -81,13 +75,10 @@ struct HomePage: View {
             Text(errorMessage)
         }
         .onAppear {
-            // Initialize selectedDriftId on first load
             if selectedDriftId == nil {
-                // If only 1 drift, auto-select it
                 if driftManager.tags.count == 1 {
                     selectedDriftId = driftManager.tags.first?.id
                 } else if let firstDrift = driftManager.tags.first {
-                    // Multiple drifts - select the first one by default
                     selectedDriftId = firstDrift.id
                 }
             }

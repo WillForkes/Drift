@@ -7,7 +7,6 @@
 
 import SwiftUI
 
-/// Initial setup flow for parental controls
 struct ParentalControlsSetupView: View {
     @Environment(\.dismiss) private var dismiss
     @StateObject private var parentalControls = ParentalControlsManager.shared
@@ -141,7 +140,6 @@ struct ParentalControlsSetupView: View {
     }
 }
 
-/// Security question recovery flow
 struct SecurityQuestionRecoveryView: View {
     @Environment(\.dismiss) private var dismiss
     @StateObject private var parentalControls = ParentalControlsManager.shared
@@ -209,7 +207,6 @@ struct SecurityQuestionRecoveryView: View {
     }
 }
 
-/// Reset passcode after security question verification
 struct ResetPasscodeView: View {
     @Environment(\.dismiss) private var dismiss
     @StateObject private var parentalControls = ParentalControlsManager.shared

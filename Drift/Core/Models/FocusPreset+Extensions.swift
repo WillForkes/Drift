@@ -2,14 +2,13 @@
 //  FocusPreset+Extensions.swift
 //  Drift
 //
-//  Created by Claude Code on 06/11/2025.
+//  Created by William Forkes on 06/11/2025.
 //
 
 import SwiftUI
 
 // MARK: - Preset Identifier
 
-/// Identifiable wrapper for preset ID to use with item-based sheet presentation
 struct PresetIdentifier: Identifiable {
     let id: String
 }
@@ -17,7 +16,6 @@ struct PresetIdentifier: Identifiable {
 // MARK: - FocusPreset Display Utilities
 
 extension FocusPreset {
-    /// Returns formatted text showing app and category counts
     var appCountText: String {
         if blocksAllApps {
             return "All apps"
@@ -44,7 +42,6 @@ extension FocusPreset {
 
 // MARK: - Shared UI Components
 
-/// Custom shape for rounding specific corners
 struct RoundedCorner: Shape {
     var radius: CGFloat = .infinity
     var corners: UIRectCorner = .allCorners
@@ -60,7 +57,6 @@ struct RoundedCorner: Shape {
 }
 
 extension View {
-    /// Apply rounded corners to specific corners of a view
     func cornerRadius(_ radius: CGFloat, corners: UIRectCorner) -> some View {
         clipShape(RoundedCorner(radius: radius, corners: corners))
     }

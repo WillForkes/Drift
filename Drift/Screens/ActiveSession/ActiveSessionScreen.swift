@@ -2,7 +2,7 @@
 //  ActiveSessionScreen.swift
 //  Drift
 //
-//  Created by Claude Code on 06/11/2025.
+//  Created by William Forkes on 06/11/2025.
 //
 
 import SwiftUI
@@ -23,7 +23,6 @@ struct ActiveSessionScreen: View {
                 .ignoresSafeArea()
 
             VStack(spacing: DesignTokens.Spacing.xxxLarge) {
-                // Session info
                 VStack(spacing: DesignTokens.Spacing.xLarge) {
                     Text("drift")
                         .headingXL()
@@ -31,8 +30,7 @@ struct ActiveSessionScreen: View {
                         .padding(.top, DesignTokens.Spacing.xLarge)
                     
                     Spacer()
-                    
-                    // Lock icon
+
                     Image(systemName: "lock.fill")
                         .font(.system(size: 80))
                         .foregroundColor(DesignTokens.Colors.textPrimary)
@@ -115,7 +113,6 @@ struct ActiveSessionScreen: View {
 #Preview {
     let presetManager = PresetManager.shared
 
-    // Set up dummy preset for preview
     if presetManager.presets.isEmpty {
         try? presetManager.createPreset(name: "Deep Work", emoji: "🎯")
     }

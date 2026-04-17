@@ -2,7 +2,7 @@
 //  AnalyticsPage.swift
 //  Drift
 //
-//  Created by Claude Code on 28/10/2025.
+//  Created by William Forkes on 28/10/2025.
 //
 
 import SwiftUI
@@ -17,7 +17,6 @@ struct AnalyticsPage: View {
         return formatter
     }()
 
-    // Computed properties for real-time data
     private var currentStreak: Int {
         analyticsManager.getCurrentStreak()
     }
@@ -53,7 +52,6 @@ struct AnalyticsPage: View {
     var body: some View {
         GeometryReader { geometry in
             ZStack {
-                // Background
                 DesignTokens.Colors.background
                     .ignoresSafeArea()
 
@@ -66,11 +64,8 @@ struct AnalyticsPage: View {
                             .frame(maxWidth: .infinity, alignment: .leading)
                             .padding(.horizontal, DesignTokens.Padding.large)
 
-                    // Grid Layout
                     HStack(alignment: .top, spacing: DesignTokens.Spacing.xLarge) {
-                        // Left Column - Two stacked cards
                         VStack(spacing: DesignTokens.Spacing.xLarge) {
-                            // Current Streak Card
                             StatCard(icon: "flame.fill", title: "Streak") {
                                 Text(currentStreak == 0 ? "No streak" : "\(currentStreak) \(currentStreak == 1 ? "day" : "days")")
                                     .heading1()
@@ -78,7 +73,6 @@ struct AnalyticsPage: View {
                             }
                             .frame(height: 175)
 
-                            // Today Card
                             StatCard(icon: "clock.fill", title: "Today") {
                                 Text(todaysFocusedTime)
                                     .heading1()
@@ -88,19 +82,15 @@ struct AnalyticsPage: View {
                         }
                         .frame(maxWidth: .infinity)
 
-                        // Right Column - Sessions per day (full height)
                         VStack(spacing: DesignTokens.Spacing.xLarge) {
-                            // Icon
                             Image(systemName: "chart.bar.fill")
                                 .font(.system(size: 32))
                                 .foregroundColor(DesignTokens.Colors.primary)
 
-                            // Title
                             Text("Sessions")
                                 .heading1()
                                 .foregroundColor(DesignTokens.Colors.textPrimary)
 
-                            // List of days
                             VStack(spacing: DesignTokens.Spacing.medium) {
                                 ForEach(sessionsThisWeek, id: \.date) { item in
                                     HStack {
@@ -119,9 +109,7 @@ struct AnalyticsPage: View {
 
                             Spacer()
 
-                            // View All Button
                             ViewAllButton {
-                                // Action placeholder
                                 print("View All tapped")
                             }
                         }
@@ -131,9 +119,7 @@ struct AnalyticsPage: View {
                     }
                     .padding(.horizontal, DesignTokens.Padding.large)
 
-                    // Full Width Card Below
                     VStack(spacing: DesignTokens.Spacing.xLarge) {
-                        // Header
                         HStack {
                             Image(systemName: "calendar")
                                 .font(.system(size: 24))
@@ -146,7 +132,6 @@ struct AnalyticsPage: View {
                             Spacer()
                         }
 
-                        // Graph
                         WeeklyFocusGraph(data: weeklyGraphData)
                     }
                     .frame(maxWidth: .infinity)
