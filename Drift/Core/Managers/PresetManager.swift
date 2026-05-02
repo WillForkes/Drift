@@ -2,7 +2,6 @@
 //  PresetManager.swift
 //  Drift
 //
-//  Created by William Forkes on 05/11/2025.
 //
 
 import Foundation

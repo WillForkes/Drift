@@ -2,7 +2,6 @@
 //  MainContainerView.swift
 //  Drift
 //
-//  Created by William Forkes on 27/10/2025.
 //
 
 import SwiftUI

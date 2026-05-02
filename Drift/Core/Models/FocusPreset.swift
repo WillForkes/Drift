@@ -2,7 +2,6 @@
 //  FocusPreset.swift
 //  Drift
 //
-//  Created by William Forkes on 20/10/2025.
 //
 
 import Foundation

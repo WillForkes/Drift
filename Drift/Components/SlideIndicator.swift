@@ -2,7 +2,6 @@
 //  SlideIndicator.swift
 //  Drift
 //
-//  Created by William Forkes on 28/10/2025.
 //
 
 import SwiftUI

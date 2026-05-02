@@ -2,7 +2,6 @@
 //  SyncedWelcomePage.swift
 //  Drift
 //
-//  Created by William Forkes on 04/11/2025.
 //
 
 import SwiftUI

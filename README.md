@@ -116,6 +116,12 @@ Colors: warm beige `#F7F0E9`, soft peach `#E2B899`, burnt orange `#C86A1C`
 Font: Futura PT Book (bundled)  
 Sizes: 48pt / 28pt / 22pt / 20pt / 18pt
 
+## Disclaimer
+
+This project was developed with the assistance of Claude Code (Anthropic, 2025). Claude Code was used as a collaborative development tool to aid in the design, implementation, and refinement of this codebase.
+
+Anthropic (2025) *Claude Code* [AI coding assistant]. Available at: https://claude.ai/code (Accessed: 20 October 2025).
+
 ## Production checklist
 
 - [x] Universal Links

@@ -2,7 +2,6 @@
 //  DriftSelector.swift
 //  Drift
 //
-//  Created by William Forkes on 06/11/2025.
 //
 
 import SwiftUI

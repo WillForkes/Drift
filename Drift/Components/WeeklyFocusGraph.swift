@@ -2,7 +2,6 @@
 //  WeeklyFocusGraph.swift
 //  Drift
 //
-//  Created by William Forkes on 07/11/2025.
 //
 
 import SwiftUI
